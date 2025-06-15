@@ -24,9 +24,7 @@ def _extract_arxiv_id(identifier: str) -> str:
     - 1706.03762v1
     """
     # Regex to capture the arXiv ID (e.g., 2405.18386 or 2405.18386v1)
-    match = re.search(
-        r"(\d{4}\.\d{5}(?:v\d+)?|\w+\-?\d{4}\.\d{4}(?:v\d+)?)", identifier
-    )
+    match = re.search(r"(\d{4}\.\d{5}(?:v\d+)?|\w+\-?\d{4}\.\d{4}(?:v\d+)?)", identifier)
     if match:
         return match.group(1)
     return identifier  # Return original if no match, let calling function handle error
@@ -48,9 +46,7 @@ def _download_file(url: str, save_path: str) -> bool:
         print(f"Successfully downloaded to {save_path}")
         return True
     except requests.exceptions.HTTPError as e:
-        print(
-            f"HTTP error downloading {url}: {e}. Status code: {e.response.status_code}"
-        )
+        print(f"HTTP error downloading {url}: {e}. Status code: {e.response.status_code}")
     except requests.exceptions.ConnectionError as e:
         print(f"Connection error downloading {url}: {e}")
     except requests.exceptions.Timeout as e:
@@ -73,9 +69,7 @@ def _extract_tex_content(tar_gz_path: str, extract_dir: str) -> Optional[str]:
                 abs_directory = os.path.abspath(directory)
                 abs_path = os.path.abspath(path)
                 if follow_symlinks:
-                    return (
-                        os.path.commonpath([abs_directory, abs_path]) == abs_directory
-                    )
+                    return os.path.commonpath([abs_directory, abs_path]) == abs_directory
                 else:
                     return abs_path.startswith(abs_directory)
 
@@ -96,14 +90,10 @@ def _extract_tex_content(tar_gz_path: str, extract_dir: str) -> Optional[str]:
                     tar.extract(tex_file_info, path=extract_dir, filter="data")
                     extracted_path = os.path.join(extract_dir, tex_file_info.name)
                     if os.path.exists(extracted_path):
-                        with open(
-                            extracted_path, "r", encoding="utf-8", errors="ignore"
-                        ) as f:
+                        with open(extracted_path, "r", encoding="utf-8", errors="ignore") as f:
                             paper_content += f.read() + "\n\n"
                     else:
-                        print(
-                            f"Warning: Extracted .tex file not found at {extracted_path}"
-                        )
+                        print(f"Warning: Extracted .tex file not found at {extracted_path}")
                 except Exception as e:
                     print(f"Error extracting or reading {tex_file_info.name}: {e}")
             return paper_content.strip() if paper_content else None
@@ -149,7 +139,7 @@ def fetch_arxiv_paper_content(arxiv_identifier: str) -> str:
 
     Args:
         arxiv_identifier: The arXiv paper ID, or a URL to the paper.
-                          Examples: "1705.03762", "https://arxiv.org/abs/1705.03762v7"
+                          Examples: "1705.03762", "https://arxiv.org/abs/1705.03762v7", "https://arxiv.org/pdf/1705.03762"
 
     Returns:
         The content of the paper as a string (LaTeX or Markdown),
@@ -187,7 +177,9 @@ def fetch_arxiv_paper_content(arxiv_identifier: str) -> str:
             if pdf_content:
                 return pdf_content
             else:
-                return f"Error: Could not convert PDF for {arxiv_id} to Markdown or content is empty."
+                return (
+                    f"Error: Could not convert PDF for {arxiv_id} to Markdown or content is empty."
+                )
         else:
             return f"Error: Failed to download PDF for {arxiv_id}."
 
