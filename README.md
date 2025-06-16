@@ -12,3 +12,6 @@ A simple MCP server to fetch the content of ArXiv papers. It prioritizes downloa
 - Flexible Input: Accepts ArXiv IDs (e.g., 1706.03762) or full ArXiv URLs (e.g., https://arxiv.org/abs/1706.03762, or https://arxiv.org/pdf/1706.03762).
 - LaTeX Source Priority: Attempts to download and extract .tex files from the paper's source archive first.
 - PDF Fallback: If LaTeX source is not available or extraction fails, it downloads the PDF and converts it to Markdown using [Markitdown](https://github.com/microsoft/markitdown).
+
+# Example
+![arxiv-mcp](https://github.com/user-attachments/assets/d965e081-ec07-43ca-b9a2-619107c10ad2)
