@@ -7,11 +7,15 @@ import tempfile
 from typing import Optional
 
 import requests
+from diskcache import Cache
 from markitdown import MarkItDown
 from mcp.server.fastmcp import FastMCP
 
 # Create an MCP server
 mcp = FastMCP("ArxivMCP")
+
+# Initialize diskcache
+cache = Cache("arxiv_cache")
 
 
 def _extract_arxiv_id(identifier: str) -> str:
@@ -149,6 +153,12 @@ def fetch_arxiv_paper_content(arxiv_identifier: str) -> str:
     if not arxiv_id:
         return f"Error: Could not extract arXiv ID from '{arxiv_identifier}'"
 
+    # Check cache first
+    cached_content = cache.get(arxiv_id)
+    if cached_content:
+        print(f"Serving {arxiv_id} from cache.")
+        return cached_content
+
     temp_dir = None
     try:
         temp_dir = tempfile.mkdtemp()
@@ -162,6 +172,7 @@ def fetch_arxiv_paper_content(arxiv_identifier: str) -> str:
         if _download_file(source_url, source_filename):
             latex_content = _extract_tex_content(source_filename, temp_dir)
             if latex_content:
+                cache.set(arxiv_id, latex_content, expire=36000)  # Cache the result
                 return latex_content
             else:
                 print(f"Could not get valid LaTeX content for {arxiv_id}. Trying PDF.")
@@ -175,6 +186,7 @@ def fetch_arxiv_paper_content(arxiv_identifier: str) -> str:
         if _download_file(pdf_url, pdf_filename):
             pdf_content = _convert_pdf_to_markdown(pdf_filename)
             if pdf_content:
+                cache.set(arxiv_id, pdf_content, expire=36000)  # Cache the result
                 return pdf_content
             else:
                 return (
