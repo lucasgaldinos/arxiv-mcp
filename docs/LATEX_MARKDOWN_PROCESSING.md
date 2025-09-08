@@ -3,12 +3,14 @@
 ## Current Capabilities & Planned Features
 
 ### ✅ Currently Available
+
 - **LaTeX Processing**: Extract and process LaTeX source files from ArXiv papers
-- **Text Extraction**: Basic text extraction from LaTeX files 
+- **Text Extraction**: Basic text extraction from LaTeX files
 - **PDF Compilation**: Compile LaTeX to PDF (optional)
 - **Configurable Output**: Output directory configuration (`./output` by default)
 
 ### ❌ Currently Missing (Will Implement)
+
 - **File Saving**: Papers are processed in memory but not saved to files
 - **LaTeX to Markdown Conversion**: No conversion capability exists
 - **YAML Frontmatter**: No metadata extraction to YAML headers
@@ -21,6 +23,7 @@
 **Current State**: LaTeX papers are **NOT currently saved to files**. They are only processed in memory and returned as results.
 
 **Configuration**: Output directory is configurable via:
+
 - Config file: `output_directory: "./output"`
 - Environment variable: `ARXIV_MCP_OUTPUT_DIRECTORY`
 - Default: `./output`
@@ -32,10 +35,12 @@
 **Current State**: **No LaTeX to Markdown conversion exists**.
 
 The current system only has:
+
 - Basic text extraction from LaTeX (removes commands, math environments)
 - Markdown generation for API documentation (not paper conversion)
 
-**Implementation Plan**: 
+**Implementation Plan**:
+
 - Create LaTeX to Markdown converter with pandoc integration
 - Provide fallback for when pandoc unavailable
 - Compare quality with pandoc as reference standard
@@ -45,6 +50,7 @@ The current system only has:
 **Current State**: **No YAML frontmatter generation**.
 
 **Implementation Plan**: Extract paper metadata and generate YAML frontmatter:
+
 ```yaml
 ---
 title: "Paper Title"
@@ -62,6 +68,7 @@ keywords: ["keyword1", "keyword2"]
 **Current State**: **No unified download+convert tool exists**.
 
 **Implementation Plan**: Create unified tool that:
+
 - Downloads ArXiv paper
 - Extracts LaTeX files → saves to `output/latex/{arxiv_id}/`
 - Converts to Markdown → saves to `output/markdown/{arxiv_id}/`
@@ -71,34 +78,40 @@ keywords: ["keyword1", "keyword2"]
 ## Implementation Roadmap
 
 ### Phase 1: File Saving Infrastructure
+
 - [ ] Implement file saving in pipeline
 - [ ] Create output directory structure
 - [ ] Save LaTeX files to `latex/` subdirectory
 
 ### Phase 2: Markdown Conversion
+
 - [ ] Create LaTeX to Markdown converter
 - [ ] Integrate pandoc (optional dependency)
 - [ ] Implement fallback conversion
 - [ ] Quality comparison with pandoc
 
 ### Phase 3: YAML Frontmatter
+
 - [ ] Extract paper metadata (title, authors, categories, etc.)
 - [ ] Generate YAML frontmatter
 - [ ] Integrate with markdown output
 
 ### Phase 4: Unified Download+Convert Tool
+
 - [ ] Create new MCP tool: `download_and_convert`
 - [ ] Implement dual output (latex + markdown folders)
 - [ ] Add configuration options
 - [ ] Comprehensive testing
 
 ### Phase 5: Documentation & Examples
+
 - [ ] Update main README.md
 - [ ] Create usage examples
 - [ ] Document configuration options
 - [ ] Add troubleshooting guide
 
 ## Future Enhancements
+
 - **Multiple Markdown Flavors**: GitHub, CommonMark, etc.
 - **Citation Processing**: Convert LaTeX citations to markdown format
 - **Math Rendering**: Handle LaTeX math in markdown (MathJax, KaTeX)

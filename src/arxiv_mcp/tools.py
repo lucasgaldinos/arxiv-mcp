@@ -2,7 +2,18 @@
 MCP tools for the ArXiv server.
 """
 
+import asyncio
 from typing import List, Dict, Any
+
+# MCP Server imports
+from mcp.server import Server
+from mcp.server.stdio import stdio_server
+from mcp.types import (
+    CallToolRequest,
+    CallToolResult,
+    ListToolsResult,
+    Tool,
+)
 
 # Import the real implementations
 from .utils.dependency_analysis import DependencyAnalyzer
@@ -23,34 +34,9 @@ from .clients.arxiv_api import ArxivAPIClient
 from .core.pipeline import ArxivPipeline
 
 
-# Mock MCP Tool class for testing purposes
-class Tool:
-    """Mock Tool class for MCP compatibility."""
-
-    def __init__(self, name: str, description: str, inputSchema: Dict[str, Any]):
-        self.name = name
-        self.description = description
-        self.inputSchema = inputSchema
 
 
-# Mock MCP Server class for testing purposes
-class MCPServer:
-    """Mock MCP Server class for compatibility."""
-
-    def __init__(self, name: str):
-        self.name = name
-        self.tools = None  # Will be set after get_tools is defined
-
-    def list_tools(self) -> List[Tool]:
-        """List available tools."""
-        if self.tools is None:
-            self.tools = get_tools()
-        return self.tools
-
-
-# Create a mock app instance for MCP compatibility
-app = MCPServer("arxiv-mcp-server")
-
+# Import the real implementations
 
 def get_tools() -> List[Tool]:
     """
@@ -271,6 +257,57 @@ async def handle_download_paper(paper_id: str) -> Dict[str, Any]:
             "status": "error",
             "paper_id": paper_id,
             "error": result.get("error", "Unknown error occurred"),
+        }
+
+
+async def handle_fetch_arxiv_paper_content(arxiv_id: str, include_pdf: bool = False) -> Dict[str, Any]:
+    """Handle fetch_arxiv_paper_content tool with real ArxivPipeline."""
+    from .core.config import PipelineConfig
+
+    # Create pipeline with default configuration
+    config = PipelineConfig()
+    pipeline = ArxivPipeline(config)
+    result = await pipeline.process_paper(arxiv_id, include_pdf=include_pdf)
+
+    if result.get("success"):
+        return {
+            "status": "success",
+            "arxiv_id": arxiv_id,
+            "content": result.get("extracted_text", ""),
+            "main_tex_file": result.get("main_tex_file"),
+            "file_count": result.get("file_count"),
+            "pdf_compiled": result.get("pdf_compiled", False),
+            "pdf_text": result.get("pdf_text"),
+            "processing_time": result.get("processing_time"),
+            "metadata": result.get("metadata", {})
+        }
+    else:
+        return {
+            "status": "error",
+            "arxiv_id": arxiv_id,
+            "error": result.get("error", "Unknown error occurred"),
+        }
+
+
+def handle_get_processing_metrics(time_range: str = "24h") -> Dict[str, Any]:
+    """Handle get_processing_metrics tool."""
+    try:
+        from .utils.metrics import PerformanceMetrics
+        
+        metrics = PerformanceMetrics()
+        performance_data = metrics.get_performance_summary(time_range)
+        
+        return {
+            "status": "success",
+            "tool": "get_processing_metrics",
+            "time_range": time_range,
+            "metrics": performance_data
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "tool": "get_processing_metrics",
+            "error": f"Failed to get metrics: {str(e)}"
         }
 
 
@@ -538,25 +575,21 @@ async def handle_download_and_convert_paper(
     """Handle unified download and convert for a single paper."""
     try:
         from .utils.unified_converter import download_and_convert_paper
-        
+
         result = await download_and_convert_paper(
             arxiv_id=arxiv_id,
             output_dir=output_dir,
             save_latex=save_latex,
-            save_markdown=save_markdown
+            save_markdown=save_markdown,
         )
-        
-        return {
-            "status": "success",
-            "tool": "download_and_convert_paper",
-            **result
-        }
-        
+
+        return {"status": "success", "tool": "download_and_convert_paper", **result}
+
     except Exception as e:
         return {
-            "status": "error", 
+            "status": "error",
             "tool": "download_and_convert_paper",
-            "error": f"Unified download and convert failed: {str(e)}"
+            "error": f"Unified download and convert failed: {str(e)}",
         }
 
 
@@ -572,29 +605,25 @@ async def handle_batch_download_and_convert(
     try:
         from .core.config import PipelineConfig
         from .utils.unified_converter import UnifiedDownloadConverter
-        
+
         config = PipelineConfig.from_dict({"output_directory": output_dir})
         converter = UnifiedDownloadConverter(config)
-        
+
         result = await converter.batch_download_and_convert(
             arxiv_ids=arxiv_ids,
             save_latex=save_latex,
             save_markdown=save_markdown,
             include_pdf=include_pdf,
-            max_concurrent=max_concurrent
+            max_concurrent=max_concurrent,
         )
-        
-        return {
-            "status": "success",
-            "tool": "batch_download_and_convert",
-            **result
-        }
-        
+
+        return {"status": "success", "tool": "batch_download_and_convert", **result}
+
     except Exception as e:
         return {
             "status": "error",
-            "tool": "batch_download_and_convert", 
-            "error": f"Batch download and convert failed: {str(e)}"
+            "tool": "batch_download_and_convert",
+            "error": f"Batch download and convert failed: {str(e)}",
         }
 
 
@@ -603,77 +632,339 @@ def handle_get_output_structure(output_dir: str = "./output") -> Dict[str, Any]:
     try:
         from .core.config import PipelineConfig
         from .utils.unified_converter import UnifiedDownloadConverter
-        
+
         config = PipelineConfig.from_dict({"output_directory": output_dir})
         converter = UnifiedDownloadConverter(config)
-        
+
         structure = converter.get_output_structure()
-        
-        return {
-            "status": "success",
-            "tool": "get_output_structure",
-            **structure
-        }
-        
+
+        return {"status": "success", "tool": "get_output_structure", **structure}
+
     except Exception as e:
         return {
             "status": "error",
             "tool": "get_output_structure",
-            "error": f"Getting output structure failed: {str(e)}"
+            "error": f"Getting output structure failed: {str(e)}",
         }
 
 
 def handle_validate_conversion_quality(
-    arxiv_id: str, 
-    output_dir: str = "./output"
+    arxiv_id: str, output_dir: str = "./output"
 ) -> Dict[str, Any]:
     """Handle conversion quality validation for a specific paper."""
     try:
         from .core.config import PipelineConfig
         from .utils.unified_converter import UnifiedDownloadConverter
-        
+
         config = PipelineConfig.from_dict({"output_directory": output_dir})
         converter = UnifiedDownloadConverter(config)
-        
+
         quality_result = converter.validate_conversion_quality(arxiv_id)
-        
+
         return {
             "status": "success",
             "tool": "validate_conversion_quality",
-            **quality_result
+            **quality_result,
         }
-        
+
     except Exception as e:
         return {
             "status": "error",
             "tool": "validate_conversion_quality",
-            "error": f"Quality validation failed: {str(e)}"
+            "error": f"Quality validation failed: {str(e)}",
         }
 
 
 def handle_cleanup_output(
-    output_dir: str = "./output",
-    days_old: int = 30
+    output_dir: str = "./output", days_old: int = 30
 ) -> Dict[str, Any]:
     """Handle cleanup of old output files."""
     try:
         from .core.config import PipelineConfig
         from .utils.unified_converter import UnifiedDownloadConverter
-        
+
         config = PipelineConfig.from_dict({"output_directory": output_dir})
         converter = UnifiedDownloadConverter(config)
-        
+
         cleanup_result = converter.cleanup_output(days_old)
-        
-        return {
-            "status": "success",
-            "tool": "cleanup_output",
-            **cleanup_result
-        }
-        
+
+        return {"status": "success", "tool": "cleanup_output", **cleanup_result}
+
     except Exception as e:
         return {
             "status": "error",
             "tool": "cleanup_output",
-            "error": f"Cleanup failed: {str(e)}"
+            "error": f"Cleanup failed: {str(e)}",
         }
+
+
+# MCP Server setup and main entry point
+
+# Create the server instance
+app = Server("arxiv-mcp-improved")
+
+
+@app.list_tools()
+async def handle_list_tools() -> ListToolsResult:
+    """List available tools."""
+    return ListToolsResult(
+        tools=[
+            Tool(
+                name="search_arxiv",
+                description="Search ArXiv papers with flexible criteria",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "query": {"type": "string", "description": "Search query"},
+                        "max_results": {
+                            "type": "integer", 
+                            "description": "Maximum number of results",
+                            "default": 10
+                        },
+                        "category": {
+                            "type": "string",
+                            "description": "ArXiv category filter",
+                            "default": None
+                        },
+                        "date_range": {
+                            "type": "object",
+                            "description": "Date range filter with 'start' and 'end' dates",
+                            "default": None
+                        }
+                    },
+                    "required": ["query"]
+                }
+            ),
+            Tool(
+                name="fetch_arxiv_paper_content",
+                description="Download and extract content from an ArXiv paper",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "arxiv_id": {"type": "string", "description": "ArXiv paper ID"},
+                        "include_pdf": {
+                            "type": "boolean",
+                            "description": "Whether to include PDF compilation",
+                            "default": False
+                        }
+                    },
+                    "required": ["arxiv_id"]
+                }
+            ),
+            Tool(
+                name="download_and_convert_paper",
+                description="Download and convert an ArXiv paper to multiple formats",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "arxiv_id": {"type": "string", "description": "ArXiv paper ID"},
+                        "output_dir": {
+                            "type": "string",
+                            "description": "Output directory path",
+                            "default": "./output"
+                        },
+                        "save_latex": {
+                            "type": "boolean",
+                            "description": "Whether to save LaTeX files",
+                            "default": True
+                        },
+                        "save_markdown": {
+                            "type": "boolean", 
+                            "description": "Whether to convert and save markdown",
+                            "default": True
+                        },
+                        "include_pdf": {
+                            "type": "boolean",
+                            "description": "Whether to include PDF compilation",
+                            "default": False
+                        }
+                    },
+                    "required": ["arxiv_id"]
+                }
+            ),
+            Tool(
+                name="batch_download_and_convert",
+                description="Batch download and convert multiple ArXiv papers",
+                inputSchema={
+                    "type": "object", 
+                    "properties": {
+                        "arxiv_ids": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "description": "List of ArXiv paper IDs"
+                        },
+                        "output_dir": {
+                            "type": "string",
+                            "description": "Output directory path",
+                            "default": "./output"
+                        },
+                        "save_latex": {
+                            "type": "boolean",
+                            "description": "Whether to save LaTeX files",
+                            "default": True
+                        },
+                        "save_markdown": {
+                            "type": "boolean",
+                            "description": "Whether to convert and save markdown", 
+                            "default": True
+                        },
+                        "include_pdf": {
+                            "type": "boolean",
+                            "description": "Whether to include PDF compilation",
+                            "default": False
+                        },
+                        "max_concurrent": {
+                            "type": "integer",
+                            "description": "Maximum concurrent downloads",
+                            "default": 3
+                        }
+                    },
+                    "required": ["arxiv_ids"]
+                }
+            ),
+            Tool(
+                name="get_output_structure", 
+                description="Get information about the output directory structure",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "output_dir": {
+                            "type": "string",
+                            "description": "Output directory path",
+                            "default": "./output"
+                        }
+                    }
+                }
+            ),
+            Tool(
+                name="validate_conversion_quality",
+                description="Validate the quality of LaTeX to Markdown conversion",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "arxiv_id": {"type": "string", "description": "ArXiv paper ID"},
+                        "output_dir": {
+                            "type": "string",
+                            "description": "Output directory path", 
+                            "default": "./output"
+                        }
+                    },
+                    "required": ["arxiv_id"]
+                }
+            ),
+            Tool(
+                name="cleanup_output",
+                description="Clean up old output files",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "output_dir": {
+                            "type": "string",
+                            "description": "Output directory path",
+                            "default": "./output"
+                        },
+                        "days_old": {
+                            "type": "integer",
+                            "description": "Number of days to keep files",
+                            "default": 30
+                        }
+                    }
+                }
+            ),
+            Tool(
+                name="extract_citations",
+                description="Extract citations from paper text",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "text": {"type": "string", "description": "Text to extract citations from"}
+                    },
+                    "required": ["text"]
+                }
+            ),
+            Tool(
+                name="analyze_citation_network",
+                description="Analyze citation networks and research connections",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "arxiv_ids": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "description": "List of ArXiv paper IDs"
+                        }
+                    },
+                    "required": ["arxiv_ids"]
+                }
+            ),
+            Tool(
+                name="get_processing_metrics",
+                description="Get processing performance metrics",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "time_range": {
+                            "type": "string",
+                            "description": "Time range for metrics (e.g., '24h', '7d')",
+                            "default": "24h"
+                        }
+                    }
+                }
+            )
+        ]
+    )
+
+
+@app.call_tool()
+async def handle_call_tool(request: CallToolRequest) -> CallToolResult:
+    """Handle tool calls."""
+    try:
+        if request.params.name == "search_arxiv":
+            result = await handle_search_arxiv(**request.params.arguments)
+        elif request.params.name == "fetch_arxiv_paper_content":
+            result = await handle_fetch_arxiv_paper_content(**request.params.arguments)
+        elif request.params.name == "download_and_convert_paper":
+            result = await handle_download_and_convert_paper(**request.params.arguments)
+        elif request.params.name == "batch_download_and_convert":
+            result = await handle_batch_download_and_convert(**request.params.arguments)
+        elif request.params.name == "get_output_structure":
+            result = handle_get_output_structure(**request.params.arguments)
+        elif request.params.name == "validate_conversion_quality":
+            result = handle_validate_conversion_quality(**request.params.arguments)
+        elif request.params.name == "cleanup_output":
+            result = handle_cleanup_output(**request.params.arguments)
+        elif request.params.name == "extract_citations":
+            result = handle_extract_citations(**request.params.arguments)
+        elif request.params.name == "analyze_citation_network":
+            result = handle_analyze_citation_network(**request.params.arguments)
+        elif request.params.name == "get_processing_metrics":
+            result = handle_get_processing_metrics(**request.params.arguments)
+        else:
+            raise ValueError(f"Unknown tool: {request.params.name}")
+        
+        return CallToolResult(content=[{"type": "text", "text": str(result)}])
+    
+    except Exception as e:
+        return CallToolResult(
+            content=[{"type": "text", "text": f"Error: {str(e)}"}],
+            isError=True
+        )
+
+
+async def async_main():
+    """Async main entry point for the MCP server."""
+    async with stdio_server() as (read_stream, write_stream):
+        await app.run(
+            read_stream, 
+            write_stream,
+            app.create_initialization_options()
+        )
+
+
+def main():
+    """Main entry point for the MCP server."""
+    asyncio.run(async_main())
+
+
+if __name__ == "__main__":
+    main()

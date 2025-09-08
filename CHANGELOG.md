@@ -52,46 +52,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 🚀 Major New Features
 
 #### File Organization & Output Management
+
 - **Organized Directory Structure**: Papers now saved in `latex/`, `markdown/`, `metadata/` subdirectories
 - **File Saving Infrastructure**: Complete `FileSaver` class with manifest generation and cleanup utilities
 - **Manifest Tracking**: JSON manifests track all files, metadata, and processing information per paper
 
 #### LaTeX to Markdown Conversion
+
 - **High-Quality Conversion**: Pandoc integration with intelligent fallback methods
 - **YAML Frontmatter**: Automatic extraction and generation of metadata headers
 - **Metadata Extraction**: Comprehensive title, author, abstract, and keyword extraction
 - **Quality Assessment**: Built-in validation and quality scoring for conversions
 
 #### Unified Download+Convert Workflow
+
 - **Single-Command Processing**: `download_and_convert_paper` tool for complete workflow
 - **Batch Processing**: `batch_download_and_convert` for multiple papers with concurrency control
 - **Output Structure Management**: `get_output_structure` tool for directory organization viewing
 - **Conversion Quality Validation**: `validate_conversion_quality` for assessing results
 
 #### Enhanced Tools & Features
+
 - **Cleanup Management**: `cleanup_output` tool for managing old files and storage
 - **Advanced Configuration**: Extended configuration options for conversion methods and quality settings
 - **Performance Optimization**: Improved concurrent processing and resource management
 - **Error Handling**: Comprehensive error tracking and graceful degradation
 
 ### 🔧 Technical Improvements
+
 - **Modular Architecture**: Enhanced separation of concerns with specialized utility modules
 - **Documentation**: Comprehensive documentation including implementation roadmaps and usage guides
 - **Type Safety**: Full type hints and validation throughout codebase
 - **Testing**: Expanded test coverage for new features and edge cases
 
 ### 📄 Documentation Updates
+
 - **README Enhancement**: Complete rewrite with comprehensive feature documentation
 - **Implementation Guides**: Detailed documentation for LaTeX/Markdown processing workflow
 - **Configuration Examples**: Production-ready configuration templates and examples
 - **Usage Examples**: Practical examples for all new features and tools
 
 ### 🐛 Bug Fixes
+
 - **Import Resolution**: Fixed all import and linting issues in new modules
 - **Path Handling**: Improved file path resolution and cross-platform compatibility
 - **Error Propagation**: Better error messages and failure handling throughout pipeline
 
 ### ⚡ Performance
+
 - **Concurrent Processing**: Configurable parallelism for batch operations
 - **Caching Improvements**: Enhanced caching strategy for repeated operations
 - **Resource Management**: Better memory and disk space management
