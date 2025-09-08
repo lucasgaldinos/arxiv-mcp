@@ -55,6 +55,5 @@ applyTo: '**'
 - When analyzing code, ALWAYS check for:
   - [MANDATORY-CHECK] If there are any `UPDATE.md`, `CHANGELOG.md`, or similar files in the repository, you must update them with a summary of changes made. If there aren't, create one. NEVER keep creating new changelogs.
   - If there is any `TODO.md`, `IMPROVEMENTS.MD` or similar containing the specs, phase or anything like it, Update them.If there aren't, create one. NEVER keep creating new changelogs.
-- [MANDATORY-CHECK] python should always be used with uv
 - [MANDATORY-CHECK] use typescript instead of javascript when possible
 - [MANDATORY-CHECK] use async/await (aiohttp/httpx in python) when possible

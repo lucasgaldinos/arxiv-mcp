@@ -293,10 +293,9 @@ class TestIntegrationWorkflow:
                 conversion_result["markdown"],
                 conversion_result["metadata"]
             )
-            
+
             # Verify the file exists and has content
-            assert markdown_path.exists()
-            
+            assert Path(markdown_path).exists()
             with open(markdown_path, 'r') as f:
                 content = f.read()
             
