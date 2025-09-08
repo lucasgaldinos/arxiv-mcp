@@ -5,7 +5,13 @@
 			"label": "Test: Run All Tests",
 			"type": "shell",
 			"command": "python",
-			"args": ["-m", "pytest", "tests/", "-v", "--tb=short"],
+			"args": [
+				"-m",
+				"pytest",
+				"tests/",
+				"-v",
+				"--tb=short"
+			],
 			"group": "test",
 			"presentation": {
 				"echo": true,
@@ -25,7 +31,15 @@
 			"label": "Test: Run with Coverage",
 			"type": "shell",
 			"command": "python",
-			"args": ["-m", "coverage", "run", "-m", "pytest", "tests/", "-v"],
+			"args": [
+				"-m",
+				"coverage",
+				"run",
+				"-m",
+				"pytest",
+				"tests/",
+				"-v"
+			],
 			"group": "test",
 			"presentation": {
 				"echo": true,
@@ -43,7 +57,12 @@
 			"label": "Test: Coverage Report",
 			"type": "shell",
 			"command": "python",
-			"args": ["-m", "coverage", "report", "--show-missing"],
+			"args": [
+				"-m",
+				"coverage",
+				"report",
+				"--show-missing"
+			],
 			"group": "test",
 			"dependsOn": "Test: Run with Coverage"
 		},
@@ -51,7 +70,11 @@
 			"label": "Test: Coverage HTML Report",
 			"type": "shell",
 			"command": "python",
-			"args": ["-m", "coverage", "html"],
+			"args": [
+				"-m",
+				"coverage",
+				"html"
+			],
 			"group": "test",
 			"dependsOn": "Test: Run with Coverage"
 		},
@@ -59,7 +82,14 @@
 			"label": "Test: Run Unit Tests",
 			"type": "shell",
 			"command": "python",
-			"args": ["-m", "pytest", "tests/", "-v", "-m", "unit"],
+			"args": [
+				"-m",
+				"pytest",
+				"tests/",
+				"-v",
+				"-m",
+				"unit"
+			],
 			"group": "test",
 			"options": {
 				"env": {
@@ -71,7 +101,14 @@
 			"label": "Test: Run Integration Tests",
 			"type": "shell",
 			"command": "python",
-			"args": ["-m", "pytest", "tests/", "-v", "-m", "integration"],
+			"args": [
+				"-m",
+				"pytest",
+				"tests/",
+				"-v",
+				"-m",
+				"integration"
+			],
 			"group": "test",
 			"options": {
 				"env": {
@@ -83,7 +120,14 @@
 			"label": "Test: Run Parallel Tests",
 			"type": "shell",
 			"command": "python",
-			"args": ["-m", "pytest", "tests/", "-v", "-n", "auto"],
+			"args": [
+				"-m",
+				"pytest",
+				"tests/",
+				"-v",
+				"-n",
+				"auto"
+			],
 			"group": "test",
 			"options": {
 				"env": {
@@ -95,7 +139,15 @@
 			"label": "Test: Quick Smoke Tests",
 			"type": "shell",
 			"command": "python",
-			"args": ["-m", "pytest", "tests/", "-v", "-m", "smoke", "--maxfail=1"],
+			"args": [
+				"-m",
+				"pytest",
+				"tests/",
+				"-v",
+				"-m",
+				"smoke",
+				"--maxfail=1"
+			],
 			"group": "test",
 			"options": {
 				"env": {
@@ -107,7 +159,12 @@
 			"label": "Quality: Lint All",
 			"type": "shell",
 			"command": "python",
-			"args": ["-m", "flake8", "src/", "tests/"],
+			"args": [
+				"-m",
+				"flake8",
+				"src/",
+				"tests/"
+			],
 			"group": "build",
 			"presentation": {
 				"echo": true,
@@ -120,14 +177,23 @@
 			"label": "Quality: Type Check",
 			"type": "shell",
 			"command": "python",
-			"args": ["-m", "mypy", "src/arxiv_mcp"],
+			"args": [
+				"-m",
+				"mypy",
+				"src/arxiv_mcp"
+			],
 			"group": "build"
 		},
 		{
 			"label": "Quality: Format Code",
 			"type": "shell",
 			"command": "python",
-			"args": ["-m", "black", "src/", "tests/"],
+			"args": [
+				"-m",
+				"black",
+				"src/",
+				"tests/"
+			],
 			"group": "build"
 		},
 		{

@@ -1,7 +1,32 @@
 # Changelog
+
+## [v2.1.0] - 2025-09-08
+
+### ✨ Enhanced Testing Infrastructure
+
+- **Comprehensive VS Code Testing Integration**: Native pytest discovery and execution in Testing UI
+- **Advanced Testing Dependencies**: coverage[toml], pytest-xdist, hypothesis, pytest-mock, freezegun, pytest-benchmark
+- **Professional Testing Workflow**: Debug configurations, recommended extensions, automated discovery
+- **Coverage Analysis**: Branch coverage tracking with detailed reporting (44.72% baseline established)
+- **Research-Based Implementation**: Based on deep analysis of Python testing best practices
+
+### 🔧 Testing Configuration Enhancements
+
+- **Enhanced pytest Configuration**: Strict markers, comprehensive warning filters, detailed test discovery patterns
+- **VS Code Settings**: Python testing integration, coverage display, type checking configuration
+- **Testing Tasks**: Various execution scenarios (unit, integration, parallel, coverage)
+- **Quality Assurance**: All 127 tests passing with professional testing infrastructure
+
+### 🐛 Fixes
+
+- **Batch Operations Tests**: Fixed method name assertions in test_smart_new_features.py
+- **Syntax Error**: Corrected malformed method definition in latex_fetcher.py
+- **Coverage Reporting**: Resolved data combination and report generation issues
+
 ## [v2.0.0] - 2025-01-XX
 
 ### ✨ Major Enhancements
+
 - **Smart New Features Suite**: 7 comprehensive modules implemented
   - Search Analytics with query tracking and trending analysis
   - Auto-Summarization with NLTK integration and fallbacks
@@ -12,6 +37,7 @@
   - Batch Operations with async processing
 
 ### 🔧 Infrastructure Improvements
+
 - **API Consistency**: Resolved all method signature mismatches
 - **Test Suite**: 127/127 tests passing (100% success rate)
 - **Code Quality**: Added 48+ missing docstrings systematically
@@ -19,23 +45,26 @@
 - **Documentation**: Comprehensive COMPLETION_SUMMARY.md created
 
 ### 🏗️ Architecture
+
 - **Modular Design**: Clean separation with core/, processors/, clients/, utils/
 - **Error Handling**: Comprehensive exception hierarchy
 - **Configuration**: Enhanced PipelineConfig with environment management
 - **Testing**: Advanced framework with custom pytest markers
 
 ### 🐛 Bug Fixes
+
 - **TrendingAnalyzer**: Fixed datetime handling in trend calculations
 - **Database Managers**: Enhanced constructors with db_path parameter support
 - **BatchProcessor**: Added submit_batch() alias for backward compatibility
 - **SearchAnalytics**: Corrected SearchQuery field name inconsistencies
 
 ### 📋 Technical Debt Resolution
+
 - **Import Organization**: Cleaned up unused imports across modules
 - **Type Hints**: Enhanced type safety throughout codebase
 - **Docstrings**: Systematic addition of missing documentation
 - **Line Lengths**: Automated fixes for readability compliance
- - ArXiv MCP Improved
+- ArXiv MCP Improved
 
 All notable changes to this project will be documented in this file.
 
