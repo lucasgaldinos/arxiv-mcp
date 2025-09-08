@@ -1,4 +1,26 @@
 {
     "markdown.extension.print.theme": "dark",
-    "markdown.extension.print.pureHtml": true
+    "markdown.extension.print.pureHtml": true,
+    "python.defaultInterpreterPath": "./venv/bin/python",
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestArgs": [
+        "-v",
+        "--tb=short",
+        "--maxfail=5",
+        "--strict-markers"
+    ],
+    "python.analysis.typeCheckingMode": "strict",
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.linting.flake8Enabled": true,
+    "python.formatting.provider": "black",
+    "python.testing.autoTestDiscoverOnSaveEnabled": true,
+    "testing.automaticallyOpenPeekView": "failureInVisibleDocument",
+    "testing.followRunningTest": true,
+    "coverage-gutters.coverageFileNames": [
+        "coverage.xml",
+        "coverage.lcov",
+        "coverage/lcov.info"
+    ]
 }

@@ -2,6 +2,7 @@
 Comprehensive input validation and sanitization.
 Extracted from the main __init__.py for better modularity.
 """
+
 import re
 from pathlib import Path
 
@@ -12,7 +13,8 @@ class ArxivValidator:
     @staticmethod
     def validate_arxiv_id(arxiv_id: str) -> bool:
         """Validate arXiv ID format"""
-        pattern = r"^(\d{4}\.\d{4,5}(v\d+)?|\w+-?\w+/\d{7}(v\d+)?)$"
+        # Support both new format (YYMM.NNNN) and old format (subject-class/YYMMnnn)
+        pattern = r"^(\d{4}\.\d{4,5}(v\d+)?|\w+[-.]?\w+/\d{7}(v\d+)?)$"
         return bool(re.match(pattern, arxiv_id.strip()))
 
     @staticmethod

@@ -1,0 +1,2283 @@
+{
+  "title": "ArXiv MCP Server API",
+  "version": "0.2.0",
+  "description": "Comprehensive API documentation for the ArXiv MCP server",
+  "modules": [
+    {
+      "name": "tools",
+      "description": "MCP tools for the ArXiv serve        Tool(\n            name=\"search_arxiv\",\n            description=\"Search ArXiv papers with advanced filters\",\n            inputSchema={\n                \"type\": \"object\",\n                \"properties\": {\n                    \"query\": {\n                        \"type\": \"string\",\n                        \"description\": \"Search query for ArXiv papers\"\n                    },\n                    \"max_results\": {\n                        \"type\": \"integer\",\n                        \"description\": \"Maximum number of results to return\",\n                        \"default\": 10\n                    },\n                    \"categories\": {\n                        \"type\": \"array\",\n                        \"items\": {\"type\": \"string\"},\n                        \"description\": \"ArXiv categories to filter by (e.g., ['cs.AI', 'stat.ML'])\"\n                    },\n                    \"authors\": {\n                        \"type\": \"array\",\n                        \"items\": {\"type\": \"string\"},\n                        \"description\": \"Author names to filter by\"\n                    },\n                    \"date_from\": {\n                        \"type\": \"string\",\n                        \"description\": \"Start date for filtering (YYYY-MM-DD format)\"\n                    },\n                    \"date_to\": {\n                        \"type\": \"string\",\n                        \"description\": \"End date for filtering (YYYY-MM-DD format)\"\n                    },\n                    \"sort_by\": {\n                        \"type\": \"string\",\n                        \"enum\": [\"relevance\", \"lastUpdatedDate\", \"submittedDate\"],\n                        \"description\": \"Sort results by\",\n                        \"default\": \"relevance\"\n                    }\n                },\n                \"required\": [\"query\"]\n            }\n        ),he main __init__.py for better modularity.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "list_tools",
+          "description": "List available MCP tools.",
+          "parameters": [],
+          "is_async": true
+        },
+        {
+          "name": "call_tool",
+          "description": "Handle MCP tool calls.",
+          "parameters": [
+            {
+              "name": "name",
+              "type": "str"
+            },
+            {
+              "name": "arguments",
+              "type": "Any"
+            }
+          ],
+          "is_async": true
+        },
+        {
+          "name": "main",
+          "description": "Main entry point for the MCP server.",
+          "parameters": [],
+          "is_async": true
+        }
+      ],
+      "tools": [
+        {
+          "name": "search_arxiv",
+          "description": "Search ArXiv papers by query terms",
+          "parameters": [],
+          "examples": [],
+          "returns": "TextContent with tool output",
+          "errors": [
+            "Tool execution errors",
+            "Invalid arguments"
+          ]
+        },
+        {
+          "name": "get_paper_details",
+          "description": "Get detailed information about a specific ArXiv paper",
+          "parameters": [],
+          "examples": [],
+          "returns": "TextContent with tool output",
+          "errors": [
+            "Tool execution errors",
+            "Invalid arguments"
+          ]
+        },
+        {
+          "name": "process_multiple_papers",
+          "description": "Process multiple ArXiv papers concurrently",
+          "parameters": [],
+          "examples": [],
+          "returns": "TextContent with tool output",
+          "errors": [
+            "Tool execution errors",
+            "Invalid arguments"
+          ]
+        },
+        {
+          "name": "get_pipeline_status",
+          "description": "Get current pipeline status and metrics",
+          "parameters": [],
+          "examples": [],
+          "returns": "TextContent with tool output",
+          "errors": [
+            "Tool execution errors",
+            "Invalid arguments"
+          ]
+        },
+        {
+          "name": "health_check",
+          "description": "Check system health and status",
+          "parameters": [],
+          "examples": [],
+          "returns": "TextContent with tool output",
+          "errors": [
+            "Tool execution errors",
+            "Invalid arguments"
+          ]
+        },
+        {
+          "name": "export_search_results",
+          "description": "Export search results to various formats",
+          "parameters": [],
+          "examples": [],
+          "returns": "TextContent with tool output",
+          "errors": [
+            "Tool execution errors",
+            "Invalid arguments"
+          ]
+        },
+        {
+          "name": "extract_citations",
+          "description": "Extract and parse citations from paper text",
+          "parameters": [],
+          "examples": [],
+          "returns": "TextContent with tool output",
+          "errors": [
+            "Tool execution errors",
+            "Invalid arguments"
+          ]
+        },
+        {
+          "name": "parse_citations_from_arxiv",
+          "description": "Extract citations from a specific ArXiv paper",
+          "parameters": [],
+          "examples": [],
+          "returns": "TextContent with tool output",
+          "errors": [
+            "Tool execution errors",
+            "Invalid arguments"
+          ]
+        },
+        {
+          "name": "generate_api_docs",
+          "description": "Generate API documentation from code annotations",
+          "parameters": [],
+          "examples": [],
+          "returns": "TextContent with tool output",
+          "errors": [
+            "Tool execution errors",
+            "Invalid arguments"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "exceptions",
+      "description": "Custom exception classes for the ArXiv MCP server.\nExtracted from the main __init__.py for better modularity.",
+      "classes": [
+        {
+          "name": "ArxivError",
+          "description": "Base exception for the ArXiv MCP server.",
+          "methods": []
+        },
+        {
+          "name": "ProcessingError",
+          "description": "Exception raised for general processing errors.",
+          "methods": []
+        },
+        {
+          "name": "DownloadError",
+          "description": "Exception raised for errors during file download.",
+          "methods": []
+        },
+        {
+          "name": "ExtractionError",
+          "description": "Exception raised for errors during archive extraction.",
+          "methods": []
+        },
+        {
+          "name": "CompilationError",
+          "description": "Exception raised for errors during LaTeX compilation.",
+          "methods": []
+        },
+        {
+          "name": "ValidationError",
+          "description": "Exception raised for input validation errors.",
+          "methods": []
+        }
+      ],
+      "functions": [],
+      "tools": null
+    },
+    {
+      "name": "__init__",
+      "description": "",
+      "classes": [],
+      "functions": [],
+      "tools": null
+    },
+    {
+      "name": "config",
+      "description": "Configuration management for the ArXiv MCP server.\nProvides centralized configuration for all processing components.\nThis module provides backward compatibility while the enhanced_config module\nprovides the full-featured configuration management.",
+      "classes": [
+        {
+          "name": "PipelineConfig",
+          "description": "Legacy configuration class for backward compatibility.",
+          "methods": [
+            {
+              "name": "__init__",
+              "description": "Initialize with enhanced config backend.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "max_downloads",
+              "description": "",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "max_extractions",
+              "description": "",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "max_compilations",
+              "description": "",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "requests_per_second",
+              "description": "",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "burst_size",
+              "description": "",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "download_timeout",
+              "description": "",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "extraction_timeout",
+              "description": "",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "compilation_timeout",
+              "description": "",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "cache_ttl",
+              "description": "",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "enable_sandboxing",
+              "description": "",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "generate_tex_files",
+              "description": "",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "output_directory",
+              "description": "",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "preserve_intermediates",
+              "description": "",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "max_files_per_archive",
+              "description": "",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "from_dict",
+              "description": "Create PipelineConfig from dictionary.",
+              "parameters": [
+                {
+                  "name": "cls",
+                  "type": "Any"
+                },
+                {
+                  "name": "config_dict",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "load_config",
+          "description": "Load configuration from file or use defaults.\nThis function provides backward compatibility while using the enhanced configuration system.",
+          "parameters": [
+            {
+              "name": "config_path",
+              "type": "Any"
+            }
+          ],
+          "is_async": false
+        }
+      ],
+      "tools": null
+    },
+    {
+      "name": "pipeline",
+      "description": "Core pipeline orchestration for the ArXiv MCP server.\nExtracted from the main __init__.py for better modularity.",
+      "classes": [
+        {
+          "name": "ArxivPipeline",
+          "description": "Enhanced ArXiv processing pipeline with async support and comprehensive error handling.",
+          "methods": [
+            {
+              "name": "__init__",
+              "description": "",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "config",
+                  "type": "PipelineConfig"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "process_paper",
+              "description": "Process a single ArXiv paper through the complete pipeline.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "arxiv_id",
+                  "type": "str"
+                },
+                {
+                  "name": "include_pdf",
+                  "type": "bool"
+                }
+              ],
+              "is_async": true
+            },
+            {
+              "name": "process_multiple_papers",
+              "description": "Process multiple ArXiv papers concurrently.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "arxiv_ids",
+                  "type": "Any"
+                },
+                {
+                  "name": "include_pdf",
+                  "type": "bool"
+                }
+              ],
+              "is_async": true
+            },
+            {
+              "name": "get_pipeline_status",
+              "description": "Get current pipeline status and metrics.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            }
+          ]
+        }
+      ],
+      "functions": [],
+      "tools": null
+    },
+    {
+      "name": "__init__",
+      "description": "",
+      "classes": [],
+      "functions": [],
+      "tools": null
+    },
+    {
+      "name": "enhanced_config",
+      "description": "Enhanced configuration management with YAML, JSON, and environment variable support.\nAddresses the critic's recommendation for moving beyond hardcoded configuration.",
+      "classes": [
+        {
+          "name": "PipelineConfig",
+          "description": "Enhanced configuration for the ArXiv processing pipeline with validation.",
+          "methods": [
+            {
+              "name": "__post_init__",
+              "description": "Validate configuration after initialization.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "validate",
+              "description": "Validate configuration parameters.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "from_dict",
+              "description": "Create a PipelineConfig instance from a dictionary with validation.",
+              "parameters": [
+                {
+                  "name": "cls",
+                  "type": "Any"
+                },
+                {
+                  "name": "config_dict",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "to_dict",
+              "description": "Convert configuration to dictionary.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "merge_with",
+              "description": "Create a new config by merging with another config dictionary.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "other_config",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            }
+          ]
+        },
+        {
+          "name": "ConfigurationManager",
+          "description": "Enhanced configuration manager supporting multiple sources and formats.",
+          "methods": [
+            {
+              "name": "load_config",
+              "description": "Load configuration from multiple sources with priority order:\n1. Explicit config file path\n2. Environment variables\n3. Default config file locations\n4. Default values",
+              "parameters": [
+                {
+                  "name": "cls",
+                  "type": "Any"
+                },
+                {
+                  "name": "config_path",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_get_default_config",
+              "description": "Get default configuration values.",
+              "parameters": [
+                {
+                  "name": "cls",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_load_from_file",
+              "description": "Load configuration from YAML or JSON file.",
+              "parameters": [
+                {
+                  "name": "cls",
+                  "type": "Any"
+                },
+                {
+                  "name": "config_path",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_parse_config_file",
+              "description": "Parse YAML or JSON configuration file.",
+              "parameters": [
+                {
+                  "name": "cls",
+                  "type": "Any"
+                },
+                {
+                  "name": "path",
+                  "type": "Path"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_load_from_environment",
+              "description": "Load configuration from environment variables.",
+              "parameters": [
+                {
+                  "name": "cls",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_parse_bool",
+              "description": "Parse boolean from string.",
+              "parameters": [
+                {
+                  "name": "value",
+                  "type": "str"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "save_config",
+              "description": "Save configuration to file.",
+              "parameters": [
+                {
+                  "name": "cls",
+                  "type": "Any"
+                },
+                {
+                  "name": "config",
+                  "type": "PipelineConfig"
+                },
+                {
+                  "name": "path",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "load_config",
+          "description": "Legacy function for backward compatibility.",
+          "parameters": [
+            {
+              "name": "config_path",
+              "type": "Any"
+            }
+          ],
+          "is_async": false
+        },
+        {
+          "name": "get_pipeline_config",
+          "description": "Get typed pipeline configuration.",
+          "parameters": [
+            {
+              "name": "config_path",
+              "type": "Any"
+            }
+          ],
+          "is_async": false
+        }
+      ],
+      "tools": null
+    },
+    {
+      "name": "arxiv_api",
+      "description": "ArXiv API client for searching and retrieving paper metadata.\nImplements the missing search functionality identified in TODO.md.",
+      "classes": [
+        {
+          "name": "ArxivAPIClient",
+          "description": "Client for ArXiv API search and metadata retrieval.",
+          "methods": [
+            {
+              "name": "__init__",
+              "description": "",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "requests_per_second",
+                  "type": "float"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_rate_limit",
+              "description": "Enforce rate limiting between requests.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": true
+            },
+            {
+              "name": "search",
+              "description": "Search ArXiv papers using the API.\n\nArgs:\n    query: Search query string\n    max_results: Maximum number of results to return\n    start: Starting index for pagination\n    sort_by: Sort by 'relevance', 'lastUpdatedDate', or 'submittedDate'\n    sort_order: 'ascending' or 'descending'\n    categories: List of arXiv categories to filter by\n    authors: List of author names to search for\n    date_range: Dict with 'from' and 'to' dates (YYYY-MM-DD format)\n\nReturns:\n    Dictionary with search results and metadata",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "query",
+                  "type": "str"
+                },
+                {
+                  "name": "max_results",
+                  "type": "int"
+                },
+                {
+                  "name": "start",
+                  "type": "int"
+                },
+                {
+                  "name": "categories",
+                  "type": "Any"
+                },
+                {
+                  "name": "authors",
+                  "type": "Any"
+                },
+                {
+                  "name": "date_from",
+                  "type": "str"
+                },
+                {
+                  "name": "date_to",
+                  "type": "str"
+                },
+                {
+                  "name": "sort_by",
+                  "type": "str"
+                },
+                {
+                  "name": "sort_order",
+                  "type": "str"
+                }
+              ],
+              "is_async": true
+            },
+            {
+              "name": "_build_search_query",
+              "description": "Build ArXiv API search query string.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "query",
+                  "type": "str"
+                },
+                {
+                  "name": "categories",
+                  "type": "Any"
+                },
+                {
+                  "name": "authors",
+                  "type": "Any"
+                },
+                {
+                  "name": "date_range",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_parse_response",
+              "description": "Parse ArXiv API XML response.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "xml_content",
+                  "type": "str"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_parse_paper_entry",
+              "description": "Parse individual paper entry from XML.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "entry",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "get_paper_metadata",
+              "description": "Get metadata for a specific ArXiv paper.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "arxiv_id",
+                  "type": "str"
+                }
+              ],
+              "is_async": true
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "search_by_title",
+          "description": "Search papers by title.",
+          "parameters": [
+            {
+              "name": "title",
+              "type": "str"
+            },
+            {
+              "name": "max_results",
+              "type": "int"
+            }
+          ],
+          "is_async": true
+        },
+        {
+          "name": "search_by_author",
+          "description": "Search papers by author.",
+          "parameters": [
+            {
+              "name": "author",
+              "type": "str"
+            },
+            {
+              "name": "max_results",
+              "type": "int"
+            }
+          ],
+          "is_async": true
+        },
+        {
+          "name": "search_recent_papers",
+          "description": "Search recent papers in a category.",
+          "parameters": [
+            {
+              "name": "category",
+              "type": "str"
+            },
+            {
+              "name": "days",
+              "type": "int"
+            },
+            {
+              "name": "max_results",
+              "type": "int"
+            }
+          ],
+          "is_async": true
+        }
+      ],
+      "tools": null
+    },
+    {
+      "name": "__init__",
+      "description": "Clients module for external service interactions.\nExtracted from the main __init__.py for better modularity.",
+      "classes": [
+        {
+          "name": "AsyncArxivDownloader",
+          "description": "Asynchronous ArXiv paper downloader with rate limiting and error handling.",
+          "methods": [
+            {
+              "name": "__init__",
+              "description": "",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "requests_per_second",
+                  "type": "float"
+                },
+                {
+                  "name": "burst_size",
+                  "type": "int"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_rate_limit",
+              "description": "Implement rate limiting based on requests per second.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": true
+            },
+            {
+              "name": "download",
+              "description": "Download a paper from ArXiv.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "arxiv_id",
+                  "type": "str"
+                },
+                {
+                  "name": "timeout",
+                  "type": "int"
+                }
+              ],
+              "is_async": true
+            },
+            {
+              "name": "get_metadata",
+              "description": "Get metadata for an ArXiv paper.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "arxiv_id",
+                  "type": "str"
+                }
+              ],
+              "is_async": true
+            }
+          ]
+        }
+      ],
+      "functions": [],
+      "tools": null
+    },
+    {
+      "name": "__init__",
+      "description": "Processors module for document processing functionality.\nExtracted from the main __init__.py for better modularity.",
+      "classes": [
+        {
+          "name": "LaTeXProcessor",
+          "description": "Enhanced LaTeX processor with compilation and parsing capabilities.",
+          "methods": [
+            {
+              "name": "__init__",
+              "description": "",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "compilation_timeout",
+                  "type": "int"
+                },
+                {
+                  "name": "enable_sandboxing",
+                  "type": "bool"
+                },
+                {
+                  "name": "generate_tex_files",
+                  "type": "bool"
+                },
+                {
+                  "name": "output_directory",
+                  "type": "str"
+                },
+                {
+                  "name": "preserve_intermediates",
+                  "type": "bool"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "extract_archive",
+              "description": "Extract files from compressed archive.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "content",
+                  "type": "BytesIO"
+                },
+                {
+                  "name": "max_files",
+                  "type": "int"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "find_main_tex_file",
+              "description": "Find the main TeX file in the extracted files.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "files",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "compile_latex",
+              "description": "Compile LaTeX files to PDF.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "files",
+                  "type": "Any"
+                },
+                {
+                  "name": "main_file",
+                  "type": "str"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "extract_text_from_tex",
+              "description": "Extract readable text from LaTeX source.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "tex_content",
+                  "type": "str"
+                }
+              ],
+              "is_async": false
+            }
+          ]
+        },
+        {
+          "name": "PDFProcessor",
+          "description": "Enhanced PDF processor with text extraction and analysis.",
+          "methods": [
+            {
+              "name": "__init__",
+              "description": "",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "extract_text_from_pdf",
+              "description": "Extract text from PDF content.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "pdf_content",
+                  "type": "bytes"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "get_pdf_metadata",
+              "description": "Extract metadata from PDF.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "pdf_content",
+                  "type": "bytes"
+                }
+              ],
+              "is_async": false
+            }
+          ]
+        }
+      ],
+      "functions": [],
+      "tools": null
+    },
+    {
+      "name": "metrics",
+      "description": "Comprehensive metrics collection for observability.\nExtracted from the main __init__.py for better modularity.",
+      "classes": [
+        {
+          "name": "MetricsCollector",
+          "description": "Comprehensive metrics collection for observability",
+          "methods": [
+            {
+              "name": "__init__",
+              "description": "",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "start_timer",
+              "description": "Start timing an operation",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "operation",
+                  "type": "str"
+                },
+                {
+                  "name": "identifier",
+                  "type": "str"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "end_timer",
+              "description": "End timing and record the duration",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "timer_key",
+                  "type": "str"
+                },
+                {
+                  "name": "success",
+                  "type": "bool"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "increment_counter",
+              "description": "Increment a counter metric.\n\nArgs:\n    name: Counter name\n    value: Either an integer increment value, or tags dict (for backward compatibility)\n    tags: Optional tags/metadata (when value is int)",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "name",
+                  "type": "str"
+                },
+                {
+                  "name": "value",
+                  "type": "Any"
+                },
+                {
+                  "name": "tags",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "set_gauge",
+              "description": "Set a gauge metric",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "name",
+                  "type": "str"
+                },
+                {
+                  "name": "value",
+                  "type": "float"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "get_metrics",
+              "description": "Get current metrics summary",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "get_all_metrics",
+              "description": "Alias for get_metrics for backward compatibility",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            }
+          ]
+        }
+      ],
+      "functions": [],
+      "tools": null
+    },
+    {
+      "name": "docs_generator",
+      "description": "API documentation generator for the ArXiv MCP server.\n\nThis module generates comprehensive API documentation from code annotations,\ndocstrings, and type hints, providing both Markdown and HTML output formats.",
+      "classes": [
+        {
+          "name": "ParameterDoc",
+          "description": "Documentation for a function/method parameter.",
+          "methods": []
+        },
+        {
+          "name": "ToolDoc",
+          "description": "Documentation for an MCP tool.",
+          "methods": []
+        },
+        {
+          "name": "ModuleDoc",
+          "description": "Documentation for a module.",
+          "methods": []
+        },
+        {
+          "name": "APIDocumentation",
+          "description": "Complete API documentation.",
+          "methods": []
+        },
+        {
+          "name": "DocGenerator",
+          "description": "Generates API documentation from code annotations.",
+          "methods": [
+            {
+              "name": "__init__",
+              "description": "",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "source_path",
+                  "type": "Path"
+                },
+                {
+                  "name": "output_path",
+                  "type": "Path"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "extract_mcp_tools",
+              "description": "Extract MCP tool documentation from tools.py.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "tools_file",
+                  "type": "Path"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_parse_tool_ast",
+              "description": "Parse a Tool() call from AST.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "tool_node",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_parse_input_schema",
+              "description": "Parse the inputSchema dictionary from AST.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "schema_node",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "extract_module_doc",
+              "description": "Extract documentation from a Python module.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "module_path",
+                  "type": "Path"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_extract_class_doc",
+              "description": "Extract documentation from a class definition.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "class_node",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_extract_function_doc",
+              "description": "Extract documentation from a function definition.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "func_node",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "generate_documentation",
+              "description": "Generate complete API documentation.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "export_markdown",
+              "description": "Export documentation as Markdown.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "documentation",
+                  "type": "APIDocumentation"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "export_json",
+              "description": "Export documentation as JSON.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "documentation",
+                  "type": "APIDocumentation"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "save_documentation",
+              "description": "Save documentation in specified formats.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "documentation",
+                  "type": "APIDocumentation"
+                },
+                {
+                  "name": "formats",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "generate_and_save",
+              "description": "Generate and save documentation in one step.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "formats",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "generate_api_docs",
+          "description": "Convenience function to generate API documentation.\n\nArgs:\n    source_path: Path to the source code directory\n    output_path: Path to save documentation\n    formats: List of output formats ('markdown', 'json')\n\nReturns:\n    APIDocumentation object",
+          "parameters": [
+            {
+              "name": "source_path",
+              "type": "str"
+            },
+            {
+              "name": "output_path",
+              "type": "str"
+            },
+            {
+              "name": "formats",
+              "type": "Any"
+            }
+          ],
+          "is_async": false
+        }
+      ],
+      "tools": null
+    },
+    {
+      "name": "validation",
+      "description": "Comprehensive input validation and sanitization.\nExtracted from the main __init__.py for better modularity.",
+      "classes": [
+        {
+          "name": "ArxivValidator",
+          "description": "Comprehensive input validation and sanitization",
+          "methods": [
+            {
+              "name": "validate_arxiv_id",
+              "description": "Validate arXiv ID format",
+              "parameters": [
+                {
+                  "name": "arxiv_id",
+                  "type": "str"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "sanitize_file_path",
+              "description": "Sanitize file paths to prevent traversal",
+              "parameters": [
+                {
+                  "name": "path",
+                  "type": "str"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "validate_archive_member",
+              "description": "Validate archive member path for safety",
+              "parameters": [
+                {
+                  "name": "base_path",
+                  "type": "Path"
+                },
+                {
+                  "name": "member_name",
+                  "type": "str"
+                }
+              ],
+              "is_async": false
+            }
+          ]
+        }
+      ],
+      "functions": [],
+      "tools": null
+    },
+    {
+      "name": "optional_deps",
+      "description": "Optional dependencies management with graceful fallbacks.\n\nThis module provides utilities for handling optional dependencies and implementing\ngraceful fallbacks when dependencies are not available.",
+      "classes": [
+        {
+          "name": "OptionalDependency",
+          "description": "Manages optional dependencies with graceful fallbacks.",
+          "methods": [
+            {
+              "name": "__init__",
+              "description": "",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "name",
+                  "type": "str"
+                },
+                {
+                  "name": "package",
+                  "type": "str"
+                },
+                {
+                  "name": "feature",
+                  "type": "str"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "available",
+              "description": "Check if the optional dependency is available.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "module",
+              "description": "Get the imported module if available.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "require",
+              "description": "Require the dependency, raising ImportError if not available.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "warn_if_missing",
+              "description": "Warn if the dependency is missing.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "message",
+                  "type": "str"
+                }
+              ],
+              "is_async": false
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "optional_import",
+          "description": "Get an optional dependency manager.",
+          "parameters": [
+            {
+              "name": "dep_name",
+              "type": "str"
+            }
+          ],
+          "is_async": false
+        },
+        {
+          "name": "requires_optional_dep",
+          "description": "Decorator that requires an optional dependency.",
+          "parameters": [
+            {
+              "name": "dep_name",
+              "type": "str"
+            },
+            {
+              "name": "fallback_return",
+              "type": "Any"
+            }
+          ],
+          "is_async": false
+        },
+        {
+          "name": "get_available_features",
+          "description": "Get a dictionary of available optional features.",
+          "parameters": [],
+          "is_async": false
+        },
+        {
+          "name": "check_optional_dependencies",
+          "description": "Check all optional dependencies and return status information.",
+          "parameters": [],
+          "is_async": false
+        },
+        {
+          "name": "warn_missing_dependencies",
+          "description": "Warn about any missing optional dependencies.",
+          "parameters": [],
+          "is_async": false
+        },
+        {
+          "name": "safe_import_nltk",
+          "description": "Safely import NLTK with fallback.",
+          "parameters": [],
+          "is_async": false
+        },
+        {
+          "name": "safe_import_matplotlib",
+          "description": "Safely import matplotlib with fallback.",
+          "parameters": [],
+          "is_async": false
+        },
+        {
+          "name": "safe_import_pandas",
+          "description": "Safely import pandas with fallback.",
+          "parameters": [],
+          "is_async": false
+        },
+        {
+          "name": "safe_import_numpy",
+          "description": "Safely import numpy with fallback.",
+          "parameters": [],
+          "is_async": false
+        },
+        {
+          "name": "_init_warnings",
+          "description": "Initialize warnings for missing dependencies.",
+          "parameters": [],
+          "is_async": false
+        }
+      ],
+      "tools": null
+    },
+    {
+      "name": "__init__",
+      "description": "",
+      "classes": [],
+      "functions": [],
+      "tools": null
+    },
+    {
+      "name": "retry",
+      "description": "Retry utilities for error recovery.\nSimple, low-effort retry mechanisms for failed operations.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "async_retry",
+          "description": "Async retry decorator with exponential backoff.\n\nArgs:\n    retries: Maximum number of retry attempts\n    delay: Initial delay between retries in seconds\n    backoff: Multiplier for delay between retries\n    exceptions: Exception type(s) to catch and retry on",
+          "parameters": [
+            {
+              "name": "retries",
+              "type": "int"
+            },
+            {
+              "name": "delay",
+              "type": "float"
+            },
+            {
+              "name": "backoff",
+              "type": "float"
+            },
+            {
+              "name": "exceptions",
+              "type": "Any"
+            }
+          ],
+          "is_async": false
+        },
+        {
+          "name": "sync_retry",
+          "description": "Synchronous retry decorator with exponential backoff.",
+          "parameters": [
+            {
+              "name": "retries",
+              "type": "int"
+            },
+            {
+              "name": "delay",
+              "type": "float"
+            },
+            {
+              "name": "backoff",
+              "type": "float"
+            },
+            {
+              "name": "exceptions",
+              "type": "Any"
+            }
+          ],
+          "is_async": false
+        }
+      ],
+      "tools": null
+    },
+    {
+      "name": "citations",
+      "description": "Citation parsing and reference extraction for academic papers.\n\nThis module provides comprehensive citation parsing capabilities with support\nfor multiple citation formats (APA, MLA, IEEE, BibTeX) and reference extraction\nfrom academic papers.",
+      "classes": [
+        {
+          "name": "CitationFormat",
+          "description": "Supported citation formats.",
+          "methods": []
+        },
+        {
+          "name": "Citation",
+          "description": "Represents a parsed citation.",
+          "methods": []
+        },
+        {
+          "name": "CitationParser",
+          "description": "Intelligent citation parser with multiple format support.",
+          "methods": [
+            {
+              "name": "__init__",
+              "description": "",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "extract_citations_from_text",
+              "description": "Extract citations from academic paper text.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "text",
+                  "type": "str"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_extract_references_section",
+              "description": "Extract the references/bibliography section from paper text.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "text",
+                  "type": "str"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_split_citations",
+              "description": "Split reference text into individual citations.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "text",
+                  "type": "str"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_looks_like_citation_start",
+              "description": "Check if sentence looks like the start of a citation.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "sentence",
+                  "type": "str"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_parse_single_citation",
+              "description": "Parse a single citation string.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "citation_str",
+                  "type": "str"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_extract_authors",
+              "description": "Extract author names from citation text.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "text",
+                  "type": "str"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_extract_title",
+              "description": "Extract paper title from citation text.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "text",
+                  "type": "str"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_extract_year",
+              "description": "Extract publication year.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "text",
+                  "type": "str"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_extract_journal",
+              "description": "Extract journal name.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "text",
+                  "type": "str"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_extract_doi",
+              "description": "Extract DOI.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "text",
+                  "type": "str"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_extract_arxiv_id",
+              "description": "Extract ArXiv ID.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "text",
+                  "type": "str"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_extract_url",
+              "description": "Extract URL.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "text",
+                  "type": "str"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_extract_pages",
+              "description": "Extract page numbers.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "text",
+                  "type": "str"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_extract_volume",
+              "description": "Extract volume number.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "text",
+                  "type": "str"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_extract_issue",
+              "description": "Extract issue number.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "text",
+                  "type": "str"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_calculate_confidence",
+              "description": "Calculate confidence score for parsed citation.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "citation",
+                  "type": "Citation"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "format_citation",
+              "description": "Format citation in specified style.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "citation",
+                  "type": "Citation"
+                },
+                {
+                  "name": "format_type",
+                  "type": "CitationFormat"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_format_bibtex",
+              "description": "Format as BibTeX entry.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "citation",
+                  "type": "Citation"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_format_apa",
+              "description": "Format in APA style.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "citation",
+                  "type": "Citation"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_format_mla",
+              "description": "Format in MLA style.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "citation",
+                  "type": "Citation"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_format_ieee",
+              "description": "Format in IEEE style.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "citation",
+                  "type": "Citation"
+                }
+              ],
+              "is_async": false
+            },
+            {
+              "name": "_generate_bibtex_key",
+              "description": "Generate BibTeX key from citation data.",
+              "parameters": [
+                {
+                  "name": "self",
+                  "type": "Any"
+                },
+                {
+                  "name": "citation",
+                  "type": "Citation"
+                }
+              ],
+              "is_async": false
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "extract_citations_from_pdf_text",
+          "description": "Convenience function to extract citations from PDF text.",
+          "parameters": [
+            {
+              "name": "pdf_text",
+              "type": "str"
+            }
+          ],
+          "is_async": false
+        },
+        {
+          "name": "format_citations_as_bibliography",
+          "description": "Format multiple citations as a bibliography.",
+          "parameters": [
+            {
+              "name": "citations",
+              "type": "Any"
+            },
+            {
+              "name": "format_type",
+              "type": "CitationFormat"
+            }
+          ],
+          "is_async": false
+        }
+      ],
+      "tools": null
+    },
+    {
+      "name": "logging",
+      "description": "Enhanced logging configuration with structured JSON output.\nExtracted from the main __init__.py for better modularity.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "setup_logging",
+          "description": "Configures structured JSON logging.",
+          "parameters": [],
+          "is_async": false
+        },
+        {
+          "name": "structured_logger",
+          "description": "Get a structured logger instance.",
+          "parameters": [],
+          "is_async": false
+        }
+      ],
+      "tools": null
+    }
+  ],
+  "generated_at": "2025-09-08T02:19:05.489047",
+  "tools_summary": [
+    {
+      "name": "search_arxiv",
+      "description": "Search ArXiv papers by query terms",
+      "parameters": [],
+      "examples": [],
+      "returns": "TextContent with tool output",
+      "errors": [
+        "Tool execution errors",
+        "Invalid arguments"
+      ]
+    },
+    {
+      "name": "get_paper_details",
+      "description": "Get detailed information about a specific ArXiv paper",
+      "parameters": [],
+      "examples": [],
+      "returns": "TextContent with tool output",
+      "errors": [
+        "Tool execution errors",
+        "Invalid arguments"
+      ]
+    },
+    {
+      "name": "process_multiple_papers",
+      "description": "Process multiple ArXiv papers concurrently",
+      "parameters": [],
+      "examples": [],
+      "returns": "TextContent with tool output",
+      "errors": [
+        "Tool execution errors",
+        "Invalid arguments"
+      ]
+    },
+    {
+      "name": "get_pipeline_status",
+      "description": "Get current pipeline status and metrics",
+      "parameters": [],
+      "examples": [],
+      "returns": "TextContent with tool output",
+      "errors": [
+        "Tool execution errors",
+        "Invalid arguments"
+      ]
+    },
+    {
+      "name": "health_check",
+      "description": "Check system health and status",
+      "parameters": [],
+      "examples": [],
+      "returns": "TextContent with tool output",
+      "errors": [
+        "Tool execution errors",
+        "Invalid arguments"
+      ]
+    },
+    {
+      "name": "export_search_results",
+      "description": "Export search results to various formats",
+      "parameters": [],
+      "examples": [],
+      "returns": "TextContent with tool output",
+      "errors": [
+        "Tool execution errors",
+        "Invalid arguments"
+      ]
+    },
+    {
+      "name": "extract_citations",
+      "description": "Extract and parse citations from paper text",
+      "parameters": [],
+      "examples": [],
+      "returns": "TextContent with tool output",
+      "errors": [
+        "Tool execution errors",
+        "Invalid arguments"
+      ]
+    },
+    {
+      "name": "parse_citations_from_arxiv",
+      "description": "Extract citations from a specific ArXiv paper",
+      "parameters": [],
+      "examples": [],
+      "returns": "TextContent with tool output",
+      "errors": [
+        "Tool execution errors",
+        "Invalid arguments"
+      ]
+    },
+    {
+      "name": "generate_api_docs",
+      "description": "Generate API documentation from code annotations",
+      "parameters": [],
+      "examples": [],
+      "returns": "TextContent with tool output",
+      "errors": [
+        "Tool execution errors",
+        "Invalid arguments"
+      ]
+    }
+  ]
+}

@@ -2,6 +2,7 @@
 Enhanced configuration management with YAML, JSON, and environment variable support.
 Addresses the critic's recommendation for moving beyond hardcoded configuration.
 """
+
 import os
 import yaml
 import json
@@ -20,35 +21,35 @@ class PipelineConfig:
     max_downloads: int = 5
     max_extractions: int = 3
     max_compilations: int = 2
-    
+
     # Rate limiting
     requests_per_second: float = 2.0
     burst_size: int = 5
-    
+
     # Timeouts (seconds)
     download_timeout: int = 60
     extraction_timeout: int = 30
     compilation_timeout: int = 300
-    
+
     # Caching
     cache_ttl: int = 3600
-    
+
     # Validation and security
     enable_http_validation: bool = True
     max_file_size: int = 200 * 1024 * 1024  # 200MB
     max_files_per_archive: int = 1000
     enable_sandboxing: bool = True
-    
+
     # Output configuration
     generate_tex_files: bool = True
     output_directory: str = "./output"
     preserve_intermediates: bool = False
-    
+
     # Logging configuration
     log_level: str = "INFO"
     log_format: str = "json"
     log_file: Optional[str] = None
-    
+
     # External service configuration
     openai_api_key: Optional[str] = None
     anthropic_api_key: Optional[str] = None
@@ -62,19 +63,19 @@ class PipelineConfig:
         """Validate configuration parameters."""
         if self.max_downloads < 1:
             raise ArxivMCPError("max_downloads must be at least 1")
-        
+
         if self.requests_per_second <= 0:
             raise ArxivMCPError("requests_per_second must be positive")
-        
+
         if self.download_timeout < 1:
             raise ArxivMCPError("download_timeout must be at least 1 second")
-        
+
         if self.max_file_size < 1024:  # At least 1KB
             raise ArxivMCPError("max_file_size must be at least 1024 bytes")
-        
+
         if self.log_level not in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
             raise ArxivMCPError(f"Invalid log_level: {self.log_level}")
-        
+
         if self.log_format not in ["json", "text"]:
             raise ArxivMCPError(f"Invalid log_format: {self.log_format}")
 
@@ -84,7 +85,7 @@ class PipelineConfig:
         # Filter only known fields to avoid TypeError
         known_fields = {field.name for field in cls.__dataclass_fields__.values()}
         filtered_dict = {k: v for k, v in config_dict.items() if k in known_fields}
-        
+
         return cls(**filtered_dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -100,21 +101,21 @@ class PipelineConfig:
 
 class ConfigurationManager:
     """Enhanced configuration manager supporting multiple sources and formats."""
-    
+
     DEFAULT_CONFIG_PATHS = [
         "arxiv_mcp_config.yaml",
         "arxiv_mcp_config.yml",
         "arxiv_mcp_config.json",
         "config/arxiv_mcp.yaml",
-        "config/arxiv_mcp.yml", 
+        "config/arxiv_mcp.yml",
         "config/arxiv_mcp.json",
         ".arxiv_mcp.yaml",
         ".arxiv_mcp.yml",
-        ".arxiv_mcp.json"
+        ".arxiv_mcp.json",
     ]
-    
+
     ENV_PREFIX = "ARXIV_MCP_"
-    
+
     @classmethod
     def load_config(cls, config_path: Optional[Union[str, Path]] = None) -> PipelineConfig:
         """
@@ -126,18 +127,18 @@ class ConfigurationManager:
         """
         # Start with default configuration
         config_dict = cls._get_default_config()
-        
+
         # Load from config file (explicit path or search default locations)
         file_config = cls._load_from_file(config_path)
         if file_config:
             config_dict.update(file_config)
-        
+
         # Override with environment variables
         env_config = cls._load_from_environment()
         config_dict.update(env_config)
-        
+
         return PipelineConfig.from_dict(config_dict)
-    
+
     @classmethod
     def _get_default_config(cls) -> Dict[str, Any]:
         """Get default configuration values."""
@@ -163,11 +164,13 @@ class ConfigurationManager:
             "log_file": None,
             "openai_api_key": None,
             "anthropic_api_key": None,
-            "firecrawl_api_key": None
+            "firecrawl_api_key": None,
         }
-    
+
     @classmethod
-    def _load_from_file(cls, config_path: Optional[Union[str, Path]] = None) -> Optional[Dict[str, Any]]:
+    def _load_from_file(
+        cls, config_path: Optional[Union[str, Path]] = None
+    ) -> Optional[Dict[str, Any]]:
         """Load configuration from YAML or JSON file."""
         if config_path:
             # Use explicit path
@@ -175,7 +178,7 @@ class ConfigurationManager:
         else:
             # Search default locations
             paths_to_try = [Path(p) for p in cls.DEFAULT_CONFIG_PATHS]
-        
+
         for path in paths_to_try:
             if path.exists() and path.is_file():
                 try:
@@ -184,36 +187,36 @@ class ConfigurationManager:
                     # Log warning but continue searching
                     print(f"Warning: Failed to parse config file {path}: {e}")
                     continue
-        
+
         return None
-    
+
     @classmethod
     def _parse_config_file(cls, path: Path) -> Dict[str, Any]:
         """Parse YAML or JSON configuration file."""
-        with open(path, 'r', encoding='utf-8') as f:
+        with open(path, "r", encoding="utf-8") as f:
             content = f.read()
-        
+
         # Determine file format from extension
-        if path.suffix.lower() in ['.yaml', '.yml']:
+        if path.suffix.lower() in [".yaml", ".yml"]:
             try:
                 return yaml.safe_load(content) or {}
             except yaml.YAMLError as e:
                 raise ArxivMCPError(f"Invalid YAML in config file {path}: {e}")
-        
-        elif path.suffix.lower() == '.json':
+
+        elif path.suffix.lower() == ".json":
             try:
                 return json.loads(content)
             except json.JSONDecodeError as e:
                 raise ArxivMCPError(f"Invalid JSON in config file {path}: {e}")
-        
+
         else:
             raise ArxivMCPError(f"Unsupported config file format: {path.suffix}")
-    
+
     @classmethod
     def _load_from_environment(cls) -> Dict[str, Any]:
         """Load configuration from environment variables."""
         config = {}
-        
+
         # Define environment variable mappings
         env_mappings = {
             f"{cls.ENV_PREFIX}MAX_DOWNLOADS": ("max_downloads", int),
@@ -239,7 +242,7 @@ class ConfigurationManager:
             f"{cls.ENV_PREFIX}ANTHROPIC_API_KEY": ("anthropic_api_key", str),
             f"{cls.ENV_PREFIX}FIRECRAWL_API_KEY": ("firecrawl_api_key", str),
         }
-        
+
         for env_var, (config_key, converter) in env_mappings.items():
             value = os.getenv(env_var)
             if value is not None:
@@ -247,40 +250,40 @@ class ConfigurationManager:
                     config[config_key] = converter(value)
                 except (ValueError, TypeError) as e:
                     raise ArxivMCPError(f"Invalid value for {env_var}: {value} ({e})")
-        
+
         return config
-    
+
     @staticmethod
     def _parse_bool(value: str) -> bool:
         """Parse boolean from string."""
         if isinstance(value, bool):
             return value
-        
+
         lower_value = value.lower().strip()
-        if lower_value in ('true', '1', 'yes', 'on', 'enable', 'enabled'):
+        if lower_value in ("true", "1", "yes", "on", "enable", "enabled"):
             return True
-        elif lower_value in ('false', '0', 'no', 'off', 'disable', 'disabled'):
+        elif lower_value in ("false", "0", "no", "off", "disable", "disabled"):
             return False
         else:
             raise ValueError(f"Cannot parse '{value}' as boolean")
-    
+
     @classmethod
     def save_config(cls, config: PipelineConfig, path: Union[str, Path]) -> None:
         """Save configuration to file."""
         path = Path(path)
         config_dict = config.to_dict()
-        
+
         # Ensure directory exists
         path.parent.mkdir(parents=True, exist_ok=True)
-        
-        if path.suffix.lower() in ['.yaml', '.yml']:
-            with open(path, 'w', encoding='utf-8') as f:
+
+        if path.suffix.lower() in [".yaml", ".yml"]:
+            with open(path, "w", encoding="utf-8") as f:
                 yaml.safe_dump(config_dict, f, default_flow_style=False, indent=2)
-        
-        elif path.suffix.lower() == '.json':
-            with open(path, 'w', encoding='utf-8') as f:
+
+        elif path.suffix.lower() == ".json":
+            with open(path, "w", encoding="utf-8") as f:
                 json.dump(config_dict, f, indent=2, ensure_ascii=False)
-        
+
         else:
             raise ArxivMCPError(f"Unsupported config file format: {path.suffix}")
 
