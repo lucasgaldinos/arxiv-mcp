@@ -525,3 +525,155 @@ def handle_generate_api_docs() -> Dict[str, Any]:
         "api_documentation": "Enhanced API documentation generated",
         "implementation_status": "ready",
     }
+
+
+# New unified download and convert tools
+async def handle_download_and_convert_paper(
+    arxiv_id: str,
+    output_dir: str = "./output",
+    save_latex: bool = True,
+    save_markdown: bool = True,
+    include_pdf: bool = False,
+) -> Dict[str, Any]:
+    """Handle unified download and convert for a single paper."""
+    try:
+        from .utils.unified_converter import download_and_convert_paper
+        
+        result = await download_and_convert_paper(
+            arxiv_id=arxiv_id,
+            output_dir=output_dir,
+            save_latex=save_latex,
+            save_markdown=save_markdown
+        )
+        
+        return {
+            "status": "success",
+            "tool": "download_and_convert_paper",
+            **result
+        }
+        
+    except Exception as e:
+        return {
+            "status": "error", 
+            "tool": "download_and_convert_paper",
+            "error": f"Unified download and convert failed: {str(e)}"
+        }
+
+
+async def handle_batch_download_and_convert(
+    arxiv_ids: List[str],
+    output_dir: str = "./output",
+    save_latex: bool = True,
+    save_markdown: bool = True,
+    include_pdf: bool = False,
+    max_concurrent: int = 3,
+) -> Dict[str, Any]:
+    """Handle batch unified download and convert for multiple papers."""
+    try:
+        from .core.config import PipelineConfig
+        from .utils.unified_converter import UnifiedDownloadConverter
+        
+        config = PipelineConfig.from_dict({"output_directory": output_dir})
+        converter = UnifiedDownloadConverter(config)
+        
+        result = await converter.batch_download_and_convert(
+            arxiv_ids=arxiv_ids,
+            save_latex=save_latex,
+            save_markdown=save_markdown,
+            include_pdf=include_pdf,
+            max_concurrent=max_concurrent
+        )
+        
+        return {
+            "status": "success",
+            "tool": "batch_download_and_convert",
+            **result
+        }
+        
+    except Exception as e:
+        return {
+            "status": "error",
+            "tool": "batch_download_and_convert", 
+            "error": f"Batch download and convert failed: {str(e)}"
+        }
+
+
+def handle_get_output_structure(output_dir: str = "./output") -> Dict[str, Any]:
+    """Handle get output structure for saved papers."""
+    try:
+        from .core.config import PipelineConfig
+        from .utils.unified_converter import UnifiedDownloadConverter
+        
+        config = PipelineConfig.from_dict({"output_directory": output_dir})
+        converter = UnifiedDownloadConverter(config)
+        
+        structure = converter.get_output_structure()
+        
+        return {
+            "status": "success",
+            "tool": "get_output_structure",
+            **structure
+        }
+        
+    except Exception as e:
+        return {
+            "status": "error",
+            "tool": "get_output_structure",
+            "error": f"Getting output structure failed: {str(e)}"
+        }
+
+
+def handle_validate_conversion_quality(
+    arxiv_id: str, 
+    output_dir: str = "./output"
+) -> Dict[str, Any]:
+    """Handle conversion quality validation for a specific paper."""
+    try:
+        from .core.config import PipelineConfig
+        from .utils.unified_converter import UnifiedDownloadConverter
+        
+        config = PipelineConfig.from_dict({"output_directory": output_dir})
+        converter = UnifiedDownloadConverter(config)
+        
+        quality_result = converter.validate_conversion_quality(arxiv_id)
+        
+        return {
+            "status": "success",
+            "tool": "validate_conversion_quality",
+            **quality_result
+        }
+        
+    except Exception as e:
+        return {
+            "status": "error",
+            "tool": "validate_conversion_quality",
+            "error": f"Quality validation failed: {str(e)}"
+        }
+
+
+def handle_cleanup_output(
+    output_dir: str = "./output",
+    days_old: int = 30
+) -> Dict[str, Any]:
+    """Handle cleanup of old output files."""
+    try:
+        from .core.config import PipelineConfig
+        from .utils.unified_converter import UnifiedDownloadConverter
+        
+        config = PipelineConfig.from_dict({"output_directory": output_dir})
+        converter = UnifiedDownloadConverter(config)
+        
+        cleanup_result = converter.cleanup_output(days_old)
+        
+        return {
+            "status": "success",
+            "tool": "cleanup_output",
+            **cleanup_result
+        }
+        
+    except Exception as e:
+        return {
+            "status": "error",
+            "tool": "cleanup_output",
+            "error": f"Cleanup failed: {str(e)}"
+        }
