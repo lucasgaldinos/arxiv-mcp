@@ -9,12 +9,19 @@ from typing import Dict, Any, Optional, List
 from datetime import datetime
 
 from ..utils.logging import structured_logger
-from ..utils.optional_deps import OptionalDependency
 
 logger = structured_logger()
 
-# Optional pandoc dependency
-pandoc_dep = OptionalDependency("pandoc", import_name=None, pip_name="pandoc")
+# Check if pandoc is available
+def check_pandoc_available() -> bool:
+    """Check if pandoc is available on the system."""
+    try:
+        subprocess.run(["pandoc", "--version"], capture_output=True, check=True)
+        return True
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return False
+
+PANDOC_AVAILABLE = check_pandoc_available()
 
 
 class LaTeXToMarkdownConverter:
