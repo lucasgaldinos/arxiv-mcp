@@ -6,11 +6,12 @@ Implements the missing search functionality identified in TODO.md.
 import asyncio
 import aiohttp
 import xml.etree.ElementTree as ET
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Tuple
 from urllib.parse import urlencode, quote
 from datetime import datetime
 
 from ..utils.logging import structured_logger
+from ..utils.retry import async_retry
 from ..exceptions import ArxivError
 
 
@@ -39,16 +40,20 @@ class ArxivAPIClient:
 
         self.last_request_time = asyncio.get_event_loop().time()
 
+    @async_retry(
+        retries=3, delay=1.0, exceptions=[aiohttp.ClientError, asyncio.TimeoutError]
+    )
     async def search(
         self,
         query: str,
         max_results: int = 10,
         start: int = 0,
+        categories: List[str] = None,
+        authors: List[str] = None,
+        date_from: str = None,
+        date_to: str = None,
         sort_by: str = "relevance",
         sort_order: str = "descending",
-        categories: Optional[List[str]] = None,
-        authors: Optional[List[str]] = None,
-        date_range: Optional[Dict[str, str]] = None,
     ) -> Dict[str, Any]:
         """
         Search ArXiv papers using the API.
@@ -70,6 +75,7 @@ class ArxivAPIClient:
             await self._rate_limit()
 
             # Build search query
+            date_range = (date_from, date_to) if date_from or date_to else None
             search_query = self._build_search_query(
                 query, categories, authors, date_range
             )
@@ -103,7 +109,7 @@ class ArxivAPIClient:
         query: str,
         categories: Optional[List[str]] = None,
         authors: Optional[List[str]] = None,
-        date_range: Optional[Dict[str, str]] = None,
+        date_range: Optional[Tuple[Optional[str], Optional[str]]] = None,
     ) -> str:
         """Build ArXiv API search query string."""
         query_parts = []
@@ -126,10 +132,11 @@ class ArxivAPIClient:
 
         # Date range filters
         if date_range:
-            if "from" in date_range:
-                query_parts.append(f"submittedDate:[{date_range['from']}* TO *]")
-            if "to" in date_range:
-                query_parts.append(f"submittedDate:[* TO {date_range['to']}*]")
+            date_from, date_to = date_range
+            if date_from:
+                query_parts.append(f"submittedDate:[{date_from}* TO *]")
+            if date_to:
+                query_parts.append(f"submittedDate:[* TO {date_to}*]")
 
         # Combine with AND
         final_query = " AND ".join(query_parts) if query_parts else "all"
