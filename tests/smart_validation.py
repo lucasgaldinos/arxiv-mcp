@@ -19,12 +19,12 @@ def test_citation_extraction_real():
     # Real academic text with clear citations
     academic_text = """
     References
-    
+
     [1] Smith, J., & Johnson, A. (2023). Machine Learning Fundamentals. Journal of AI Research, 45(2), 123-145.
-    
-    [2] Brown, M. et al. (2022). "Deep Learning Applications in Natural Language Processing." 
+
+    [2] Brown, M. et al. (2022). "Deep Learning Applications in Natural Language Processing."
         Proceedings of ICML 2022, pp. 67-89.
-    
+
     [3] Wilson, K. (2021). Statistical Methods for Data Science. MIT Press, Cambridge, MA.
     """
 

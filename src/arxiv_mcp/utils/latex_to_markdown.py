@@ -29,10 +29,14 @@ PANDOC_AVAILABLE = check_pandoc_available()
 class LaTeXToMarkdownConverter:
     """Converts LaTeX content to Markdown with multiple conversion strategies."""
 
-    def __init__(self, use_pandoc: bool = True, pandoc_extra_args: Optional[List[str]] = None):
+    def __init__(
+        self, use_pandoc: bool = True, pandoc_extra_args: Optional[List[str]] = None
+    ):
         self.use_pandoc = use_pandoc and self._check_pandoc_available()
         self.pandoc_extra_args = pandoc_extra_args or []
-        logger.info(f"LaTeX to Markdown converter initialized (pandoc: {self.use_pandoc})")
+        logger.info(
+            f"LaTeX to Markdown converter initialized (pandoc: {self.use_pandoc})"
+        )
 
     def _check_pandoc_available(self) -> bool:
         """Check if pandoc is available on the system."""
@@ -146,7 +150,9 @@ class LaTeXToMarkdownConverter:
         content = re.sub(r"%.*$", "", content, flags=re.MULTILINE)
 
         # Extract document content (between \\begin{document} and \\end{document})
-        doc_match = re.search(r"\\begin{document}(.*?)\\end{document}", content, re.DOTALL)
+        doc_match = re.search(
+            r"\\begin{document}(.*?)\\end{document}", content, re.DOTALL
+        )
         if doc_match:
             content = doc_match.group(1)
 
@@ -228,7 +234,9 @@ class LaTeXToMarkdownConverter:
             figure_content = match.group(1)
 
             # Extract includegraphics
-            img_match = re.search(r"\\includegraphics(?:\\[.*?\\])?\{([^}]+)\}", figure_content)
+            img_match = re.search(
+                r"\\includegraphics(?:\\[.*?\\])?\{([^}]+)\}", figure_content
+            )
             if img_match:
                 img_path = img_match.group(1)
 

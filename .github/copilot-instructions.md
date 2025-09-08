@@ -26,6 +26,7 @@ applyTo: '**'
 - [MANDATORY] You shall update or create `CHANGELOG.md` or `UPDATE.md` files with a summary of changes made.
 - [MANDATORY] You shall update or create `TODO.md` or `IMPROVEMENTS.md` files with a summary of planned improvements.
 - [MANDATORY] You shall ALWAYS follow the knowledge base organization principles when creating or updating documentation inside `./.github/.knowledge_base/`.
+- [MANDATORY] 
 - **[MANDATORY-CHECK] WHEN necessary, recall your prompts, summarize conversations.**
 - **[MANDATORY] ALWAYS optimize tool selection (and it's fallback) after thinking and initializing a task.**
 - **[MANDATORY] ALWAYS update docs over changes made.**

@@ -110,12 +110,25 @@ class PaperNotificationSystem:
     PRIORITY_LEVELS = ["low", "normal", "high", "urgent"]
     FREQUENCY_OPTIONS = ["immediate", "daily", "weekly"]
 
-    def __init__(self, cache_dir: Optional[str] = None):
-        """Initialize the notification system."""
-        self.cache_dir = Path(cache_dir) if cache_dir else Path.cwd() / "notification_cache"
-        self.cache_dir.mkdir(exist_ok=True)
+    def __init__(self, cache_dir: Optional[str] = None, db_path: Optional[str] = None):
+        """Initialize the notification system.
 
-        self.db_path = self.cache_dir / "notifications.db"
+        Args:
+            cache_dir: Directory for cache files (legacy parameter)
+            db_path: Direct path to database file (preferred)
+        """
+        if db_path:
+            # If db_path is provided, use it directly
+            self.db_path = Path(db_path)
+            self.cache_dir = self.db_path.parent
+        else:
+            # Use cache_dir approach (legacy)
+            self.cache_dir = (
+                Path(cache_dir) if cache_dir else Path.cwd() / "notification_cache"
+            )
+            self.db_path = self.cache_dir / "notifications.db"
+
+        self.cache_dir.mkdir(exist_ok=True)
         self._init_database()
 
         # Notification handlers
@@ -239,7 +252,9 @@ class PaperNotificationSystem:
         logger.info(f"Created notification rule: {name} ({rule_id})")
         return rule
 
-    def get_notification_rules(self, active_only: bool = True) -> List[NotificationRule]:
+    def get_notification_rules(
+        self, active_only: bool = True
+    ) -> List[NotificationRule]:
         """Get all notification rules."""
         with sqlite3.connect(self.db_path) as conn:
             query = "SELECT * FROM notification_rules"
@@ -258,8 +273,12 @@ class PaperNotificationSystem:
                     conditions=json.loads(result[3]),
                     is_active=bool(result[4]),
                     frequency=result[5],
-                    last_triggered=datetime.fromisoformat(result[6]) if result[6] else None,
-                    created_date=datetime.fromisoformat(result[7]) if result[7] else datetime.now(),
+                    last_triggered=datetime.fromisoformat(result[6])
+                    if result[6]
+                    else None,
+                    created_date=datetime.fromisoformat(result[7])
+                    if result[7]
+                    else datetime.now(),
                     metadata=json.loads(result[8]) if result[8] else {},
                 )
                 rules.append(rule)
@@ -280,7 +299,9 @@ class PaperNotificationSystem:
 
         # Calculate initial hashes
         content_hash = hashlib.md5(f"{title}{authors}{version}".encode()).hexdigest()
-        metadata_hash = hashlib.md5(f"{title}{json.dumps(authors)}".encode()).hexdigest()
+        metadata_hash = hashlib.md5(
+            f"{title}{json.dumps(authors)}".encode()
+        ).hexdigest()
 
         monitor = PaperMonitor(
             paper_id=paper_id,
@@ -339,7 +360,9 @@ class PaperNotificationSystem:
                 stored_content_hash,
                 stored_metadata_hash,
             ) = monitor_result
-            stored_authors = json.loads(stored_authors_json) if stored_authors_json else []
+            stored_authors = (
+                json.loads(stored_authors_json) if stored_authors_json else []
+            )
 
             # Check for version changes
             current_version = current_data.get("version", "1")
@@ -368,7 +391,9 @@ class PaperNotificationSystem:
             if current_metadata_hash != stored_metadata_hash:
                 changes = []
                 if current_title != stored_title:
-                    changes.append(f"Title changed: '{stored_title}' → '{current_title}'")
+                    changes.append(
+                        f"Title changed: '{stored_title}' → '{current_title}'"
+                    )
                 if current_authors != stored_authors:
                     changes.append("Authors updated")
 
@@ -469,7 +494,9 @@ class PaperNotificationSystem:
 
         return notification
 
-    def create_keyword_alert(self, keywords: List[str], name: str = None) -> NotificationRule:
+    def create_keyword_alert(
+        self, keywords: List[str], name: str = None
+    ) -> NotificationRule:
         """Create a keyword-based alert rule."""
         name = name or f"Keyword Alert: {', '.join(keywords[:3])}"
 
@@ -487,7 +514,9 @@ class PaperNotificationSystem:
             frequency="daily",
         )
 
-    def create_author_alert(self, authors: List[str], name: str = None) -> NotificationRule:
+    def create_author_alert(
+        self, authors: List[str], name: str = None
+    ) -> NotificationRule:
         """Create an author-based alert rule."""
         name = name or f"Author Alert: {', '.join(authors[:2])}"
 
@@ -504,7 +533,9 @@ class PaperNotificationSystem:
             frequency="immediate",
         )
 
-    def create_category_alert(self, categories: List[str], name: str = None) -> NotificationRule:
+    def create_category_alert(
+        self, categories: List[str], name: str = None
+    ) -> NotificationRule:
         """Create a category-based alert rule."""
         name = name or f"Category Alert: {', '.join(categories)}"
 
@@ -612,7 +643,9 @@ class PaperNotificationSystem:
                 (datetime.now().isoformat(), rule_id),
             )
 
-    def get_notifications(self, unread_only: bool = False, limit: int = 50) -> List[Notification]:
+    def get_notifications(
+        self, unread_only: bool = False, limit: int = 50
+    ) -> List[Notification]:
         """Get notifications."""
         with sqlite3.connect(self.db_path) as conn:
             query = "SELECT * FROM notifications"
@@ -633,7 +666,9 @@ class PaperNotificationSystem:
                     notification_type=NotificationType(result[5]),
                     priority=result[6],
                     is_read=bool(result[7]),
-                    created_date=datetime.fromisoformat(result[8]) if result[8] else datetime.now(),
+                    created_date=datetime.fromisoformat(result[8])
+                    if result[8]
+                    else datetime.now(),
                     data=json.loads(result[9]) if result[9] else {},
                 )
                 notifications.append(notification)
@@ -660,7 +695,9 @@ class PaperNotificationSystem:
     def mark_all_read(self) -> int:
         """Mark all notifications as read."""
         with sqlite3.connect(self.db_path) as conn:
-            cursor = conn.execute("UPDATE notifications SET is_read = 1 WHERE is_read = 0")
+            cursor = conn.execute(
+                "UPDATE notifications SET is_read = 1 WHERE is_read = 0"
+            )
             count = cursor.rowcount
 
         logger.info(f"Marked {count} notifications as read")
@@ -709,7 +746,9 @@ class PaperNotificationSystem:
             last_check_result = conn.execute(
                 "SELECT MAX(last_check) FROM paper_monitors"
             ).fetchone()[0]
-            last_check = datetime.fromisoformat(last_check_result) if last_check_result else None
+            last_check = (
+                datetime.fromisoformat(last_check_result) if last_check_result else None
+            )
 
             return NotificationStats(
                 total_notifications=total,
@@ -737,7 +776,9 @@ class PaperNotificationSystem:
             try:
                 handler(notification)
             except Exception as e:
-                logger.error(f"Handler error for {notification.notification_type.value}: {e}")
+                logger.error(
+                    f"Handler error for {notification.notification_type.value}: {e}"
+                )
 
     async def run_monitoring_cycle(self) -> int:
         """Run a complete monitoring cycle for all active monitors."""
@@ -755,7 +796,9 @@ class PaperNotificationSystem:
             for monitor in monitors:
                 paper_id, title, check_frequency_seconds, last_check_str = monitor
                 last_check = (
-                    datetime.fromisoformat(last_check_str) if last_check_str else datetime.now()
+                    datetime.fromisoformat(last_check_str)
+                    if last_check_str
+                    else datetime.now()
                 )
                 check_frequency = timedelta(seconds=check_frequency_seconds)
 
@@ -773,7 +816,9 @@ class PaperNotificationSystem:
                     notifications = self.check_paper_updates(paper_id, current_data)
                     notifications_created += len(notifications)
 
-        logger.info(f"Monitoring cycle completed: {notifications_created} notifications created")
+        logger.info(
+            f"Monitoring cycle completed: {notifications_created} notifications created"
+        )
         return notifications_created
 
     def cleanup_old_notifications(self, days: int = 30) -> int:

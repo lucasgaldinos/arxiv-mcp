@@ -176,7 +176,9 @@ def get_tools() -> List[Tool]:
             description="Download a paper PDF from ArXiv",
             inputSchema={
                 "type": "object",
-                "properties": {"paper_id": {"type": "string", "description": "ArXiv paper ID"}},
+                "properties": {
+                    "paper_id": {"type": "string", "description": "ArXiv paper ID"}
+                },
                 "required": ["paper_id"],
             },
         ),
@@ -472,7 +474,9 @@ def handle_analyze_citation_network(
         paper_id = paper.get("id", paper.get("arxiv_id"))
         citations = paper.get("citations", [])
         for cited_id in citations:
-            edge = NetworkEdge(source=paper_id, target=cited_id, weight=1.0, edge_type="citation")
+            edge = NetworkEdge(
+                source=paper_id, target=cited_id, weight=1.0, edge_type="citation"
+            )
             edges.append(edge)
 
     # Analyze the network
@@ -676,7 +680,9 @@ def handle_validate_conversion_quality(
         }
 
 
-def handle_cleanup_output(output_dir: str = "./output", days_old: int = 30) -> Dict[str, Any]:
+def handle_cleanup_output(
+    output_dir: str = "./output", days_old: int = 30
+) -> Dict[str, Any]:
     """Handle cleanup of old output files."""
     try:
         from .core.config import PipelineConfig
@@ -876,7 +882,10 @@ async def handle_list_tools() -> ListToolsResult:
                 inputSchema={
                     "type": "object",
                     "properties": {
-                        "text": {"type": "string", "description": "Text to extract citations from"}
+                        "text": {
+                            "type": "string",
+                            "description": "Text to extract citations from",
+                        }
                     },
                     "required": ["text"],
                 },
@@ -944,7 +953,9 @@ async def handle_call_tool(request: CallToolRequest) -> CallToolResult:
         return CallToolResult(content=[{"type": "text", "text": str(result)}])
 
     except Exception as e:
-        return CallToolResult(content=[{"type": "text", "text": f"Error: {str(e)}"}], isError=True)
+        return CallToolResult(
+            content=[{"type": "text", "text": f"Error: {str(e)}"}], isError=True
+        )
 
 
 async def async_main():

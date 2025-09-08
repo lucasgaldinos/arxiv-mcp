@@ -1,0 +1,78 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Current Test File",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "${file}",
+                "-v",
+                "--tb=short"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            }
+        },
+        {
+            "name": "Debug All Tests",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "tests/",
+                "-v",
+                "--tb=short",
+                "--maxfail=5"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            }
+        },
+        {
+            "name": "Debug Integration Tests",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "tests/",
+                "-v",
+                "-m",
+                "integration",
+                "--tb=short"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            }
+        },
+        {
+            "name": "Debug with Coverage",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "coverage",
+            "args": [
+                "run",
+                "-m",
+                "pytest",
+                "tests/",
+                "-v"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            }
+        }
+    ]
+}

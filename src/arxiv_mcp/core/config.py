@@ -28,46 +28,57 @@ class PipelineConfig:
 
     @property
     def max_extractions(self) -> int:
+        """Max downloads implementation."""
         return self._enhanced_config.max_extractions
 
     @property
     def max_compilations(self) -> int:
+        """Max extractions implementation."""
         return self._enhanced_config.max_compilations
 
     @property
     def requests_per_second(self) -> float:
+        """Requests per second implementation."""
         return self._enhanced_config.requests_per_second
 
     @property
     def burst_size(self) -> int:
+        """Burst size implementation."""
         return self._enhanced_config.burst_size
 
     @property
     def download_timeout(self) -> int:
+        """Download timeout implementation."""
         return self._enhanced_config.download_timeout
 
     @property
     def extraction_timeout(self) -> int:
+        """Extraction timeout implementation."""
         return self._enhanced_config.extraction_timeout
 
     @property
     def compilation_timeout(self) -> int:
+        """Cache ttl implementation."""
         return self._enhanced_config.compilation_timeout
 
     @property
     def cache_ttl(self) -> int:
+        """Enable sandboxing implementation."""
         return self._enhanced_config.cache_ttl
 
     @property
     def enable_sandboxing(self) -> bool:
+        """Generate tex files implementation."""
         return self._enhanced_config.enable_sandboxing
 
     @property
     def generate_tex_files(self) -> bool:
+        """Output directory implementation."""
         return self._enhanced_config.generate_tex_files
 
     @property
     def output_directory(self) -> str:
+        """Max files per archive implementation."""
         return self._enhanced_config.output_directory
 
     @property

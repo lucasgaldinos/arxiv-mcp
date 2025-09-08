@@ -24,7 +24,10 @@ class ArxivLatexFetcher:
         self.validator = ArxivValidator()
 
     async def fetch_arxiv_paper_content(
-        self, arxiv_id: str, save_to_disk: bool = True, output_dir: str = "./arxiv_papers"
+        self,
+        arxiv_id: str,
+        save_to_disk: bool = True,
+        output_dir: str = "./arxiv_papers",
     ) -> Dict[str, Any]:
         """
         Fetch and extract LaTeX source files from ArXiv.
@@ -118,7 +121,10 @@ class ArxivLatexFetcher:
             }
 
     async def batch_fetch_papers(
-        self, arxiv_ids: List[str], save_to_disk: bool = True, output_dir: str = "./arxiv_papers"
+        self,
+        arxiv_ids: List[str],
+        save_to_disk: bool = True,
+        output_dir: str = "./arxiv_papers",
     ) -> List[Dict[str, Any]]:
         """
         Fetch multiple papers concurrently.
@@ -173,7 +179,9 @@ class ArxivLatexFetcher:
                 with gzip.GzipFile(fileobj=io.BytesIO(content)) as gz_file:
                     decompressed = gz_file.read()
                     # Check if it's a tar file
-                    with tarfile.open(fileobj=io.BytesIO(decompressed), mode="r") as tar:
+                    with tarfile.open(
+                        fileobj=io.BytesIO(decompressed), mode="r"
+                    ) as tar:
                         files = self._extract_tar_files(tar)
                         if files:
                             return files
@@ -193,7 +201,10 @@ class ArxivLatexFetcher:
             try:
                 # Check if content looks like LaTeX
                 text_content = content.decode("utf-8", errors="ignore")
-                if "\\documentclass" in text_content or "\\begin{document}" in text_content:
+                if (
+                    "\\documentclass" in text_content
+                    or "\\begin{document}" in text_content
+                ):
                     files[f"{arxiv_id}.tex"] = content
                     return files
             except Exception:

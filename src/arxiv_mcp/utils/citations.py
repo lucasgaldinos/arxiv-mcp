@@ -155,7 +155,8 @@ class CitationParser:
         # Pattern for inline citations: (Author et al., Year) or (Author & Author, Year)
         inline_patterns = [
             r"\(([A-Z][a-zA-Z\s]+(?:\s+et\s+al\.?)?),?\s*(\d{4})\)",  # (LeCun et al., 2015)
-            r"\(([A-Z][a-zA-Z\s]+)\s*&\s*([A-Z][a-zA-Z\s]+),?\s*(\d{4})\)",  # (Author & Author, 2015)
+            # (Author & Author, 2015)
+            r"\(([A-Z][a-zA-Z\s]+)\s*&\s*([A-Z][a-zA-Z\s]+),?\s*(\d{4})\)",
             r"([A-Z][a-zA-Z\s]+(?:\s+et\s+al\.?)?)\s*\((\d{4})\)",  # Author et al. (2015)
         ]
 
@@ -293,7 +294,9 @@ class CitationParser:
         authors = []
 
         # Pattern for "LastName, FirstName" format
-        author_pattern = r"([A-Z][a-z]+(?:\s+[A-Z]\.?)*),?\s+([A-Z]\.?(?:\s+[A-Z]\.?)*|[A-Z][a-z]+)"
+        author_pattern = (
+            r"([A-Z][a-z]+(?:\s+[A-Z]\.?)*),?\s+([A-Z]\.?(?:\s+[A-Z]\.?)*|[A-Z][a-z]+)"
+        )
         matches = re.findall(author_pattern, text)
 
         for last, first in matches:
@@ -304,9 +307,7 @@ class CitationParser:
         # If no structured authors found, try simple pattern
         if not authors:
             # Look for "and" separated names
-            and_pattern = (
-                r"([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+and\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)"
-            )
+            and_pattern = r"([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+and\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)"
             and_matches = re.findall(and_pattern, text)
             authors.extend([match[0] for match in and_matches])
             authors.extend([match[1] for match in and_matches])
@@ -322,9 +323,7 @@ class CitationParser:
             return quote_match.group(1).strip()
 
         # Title often follows year in parentheses
-        year_title_pattern = (
-            r"\((?:19|20)\d{2}\)\.?\s*([^.]+?)\.?\s*(?:In\s|[A-Z][a-z]+\s+Journal|Nature|Science)"
-        )
+        year_title_pattern = r"\((?:19|20)\d{2}\)\.?\s*([^.]+?)\.?\s*(?:In\s|[A-Z][a-z]+\s+Journal|Nature|Science)"
         year_match = re.search(year_title_pattern, text, re.IGNORECASE)
         if year_match:
             return year_match.group(1).strip()
@@ -569,7 +568,9 @@ class CitationParser:
             # Take first significant word from title
             title_words = citation.title.lower().split()
             significant_words = [
-                w for w in title_words if len(w) > 3 and w not in ["the", "and", "for", "with"]
+                w
+                for w in title_words
+                if len(w) > 3 and w not in ["the", "and", "for", "with"]
             ]
             if significant_words:
                 key_parts.append(significant_words[0])

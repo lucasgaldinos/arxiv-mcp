@@ -2,6 +2,13 @@
 Test suite for the new priority features: citation parsing, optional dependencies, and docs generation.
 """
 
+from arxiv_mcp.utils.docs_generator import DocGenerator, generate_api_docs
+from arxiv_mcp.utils.optional_deps import (
+    OptionalDependency,
+    optional_import,
+    get_available_features,
+)
+from arxiv_mcp.utils.citations import CitationParser, Citation, CitationFormat
 import os
 import sys
 import pytest
@@ -9,14 +16,6 @@ from unittest.mock import patch, MagicMock
 
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
-
-from arxiv_mcp.utils.citations import CitationParser, Citation, CitationFormat
-from arxiv_mcp.utils.optional_deps import (
-    OptionalDependency,
-    optional_import,
-    get_available_features,
-)
-from arxiv_mcp.utils.docs_generator import DocGenerator, generate_api_docs
 
 
 class TestCitationParser:
@@ -179,7 +178,7 @@ def test_function():
 
 class TestClass:
     """This is a test class."""
-    
+
     def test_method(self):
         """This is a test method."""
         pass
