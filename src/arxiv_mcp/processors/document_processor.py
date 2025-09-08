@@ -108,9 +108,7 @@ class DocumentProcessor:
         # Default to plain text
         return DocumentFormat.TXT
 
-    def process_document(
-        self, content: bytes, filename: Optional[str] = None
-    ) -> ProcessingResult:
+    def process_document(self, content: bytes, filename: Optional[str] = None) -> ProcessingResult:
         """Process document and extract text and metadata."""
 
         format_type = self.detect_format(content, filename)
@@ -134,9 +132,7 @@ class DocumentProcessor:
                 )
 
         except Exception as e:
-            self.logger.error(
-                f"Document processing failed for {format_type.value}: {str(e)}"
-            )
+            self.logger.error(f"Document processing failed for {format_type.value}: {str(e)}")
             return ProcessingResult(
                 success=False,
                 extracted_text="",
@@ -226,12 +222,12 @@ class DocumentProcessor:
                     title=doc.core_properties.title,
                     author=doc.core_properties.author,
                     subject=doc.core_properties.subject,
-                    created_date=str(doc.core_properties.created)
-                    if doc.core_properties.created
-                    else None,
-                    modified_date=str(doc.core_properties.modified)
-                    if doc.core_properties.modified
-                    else None,
+                    created_date=(
+                        str(doc.core_properties.created) if doc.core_properties.created else None
+                    ),
+                    modified_date=(
+                        str(doc.core_properties.modified) if doc.core_properties.modified else None
+                    ),
                 )
 
                 return ProcessingResult(
@@ -263,9 +259,7 @@ class DocumentProcessor:
                 text = content.decode("utf-8", errors="ignore")
 
             # Basic metadata
-            metadata = DocumentMetadata(
-                format=DocumentFormat.TXT, word_count=len(text.split())
-            )
+            metadata = DocumentMetadata(format=DocumentFormat.TXT, word_count=len(text.split()))
 
             return ProcessingResult(
                 success=True,
@@ -346,9 +340,7 @@ class DocumentProcessor:
             with zipfile.ZipFile(BytesIO(content), "r") as zf:
                 # Extract document.xml which contains the text
                 if "word/document.xml" not in zf.namelist():
-                    raise ProcessingError(
-                        "Invalid DOCX file: word/document.xml not found"
-                    )
+                    raise ProcessingError("Invalid DOCX file: word/document.xml not found")
 
                 document_xml = zf.read("word/document.xml").decode("utf-8")
 
@@ -364,9 +356,7 @@ class DocumentProcessor:
                     extracted_text=text,
                     metadata=metadata,
                     format=DocumentFormat.DOCX,
-                    warnings=[
-                        "Used manual parsing: install python-docx for better support"
-                    ],
+                    warnings=["Used manual parsing: install python-docx for better support"],
                 )
 
         except zipfile.BadZipFile:

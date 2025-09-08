@@ -40,9 +40,7 @@ def setup_logging():
         logger.handlers.clear()
 
     # Create a rotating file handler
-    file_handler = RotatingFileHandler(
-        log_file, maxBytes=10 * 1024 * 1024, backupCount=5
-    )
+    file_handler = RotatingFileHandler(log_file, maxBytes=10 * 1024 * 1024, backupCount=5)
     file_handler.setFormatter(JsonFormatter())
     logger.addHandler(file_handler)
 

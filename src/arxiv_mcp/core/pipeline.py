@@ -31,9 +31,7 @@ class ArxivPipeline:
             preserve_intermediates=config.preserve_intermediates,
         )
         self.pdf_processor = PDFProcessor()
-        self.document_processor = (
-            DocumentProcessor()
-        )  # NEW: Multi-format document processor
+        self.document_processor = DocumentProcessor()  # NEW: Multi-format document processor
         self.validator = ArxivValidator()
         self.logger = structured_logger()
         self.metrics = MetricsCollector()
@@ -43,9 +41,7 @@ class ArxivPipeline:
         self.extraction_semaphore = asyncio.Semaphore(config.max_extractions)
         self.compilation_semaphore = asyncio.Semaphore(config.max_compilations)
 
-    async def process_paper(
-        self, arxiv_id: str, include_pdf: bool = True
-    ) -> Dict[str, Any]:
+    async def process_paper(self, arxiv_id: str, include_pdf: bool = True) -> Dict[str, Any]:
         """Process a single ArXiv paper through the complete pipeline."""
         self.logger.info(f"Starting pipeline processing for {arxiv_id}")
 
@@ -111,15 +107,11 @@ class ArxivPipeline:
                     )
 
                 except Exception as e:
-                    self.logger.warning(
-                        f"PDF compilation failed for {arxiv_id}: {str(e)}"
-                    )
+                    self.logger.warning(f"PDF compilation failed for {arxiv_id}: {str(e)}")
                     result.update({"pdf_compiled": False, "pdf_error": str(e)})
 
             self.metrics.increment_counter("pipeline_success", {"arxiv_id": arxiv_id})
-            self.logger.info(
-                f"Pipeline processing completed successfully for {arxiv_id}"
-            )
+            self.logger.info(f"Pipeline processing completed successfully for {arxiv_id}")
             return result
 
         except Exception as e:
@@ -169,13 +161,9 @@ class ArxivPipeline:
             "metrics": self.metrics.get_all_metrics(),
         }
 
-    async def process_document(
-        self, content: bytes, filename: str = None
-    ) -> Dict[str, Any]:
+    async def process_document(self, content: bytes, filename: str = None) -> Dict[str, Any]:
         """Process a document in various formats (ODT, RTF, DOCX, etc.)."""
-        self.logger.info(
-            f"Starting document processing for {filename or 'unnamed file'}"
-        )
+        self.logger.info(f"Starting document processing for {filename or 'unnamed file'}")
 
         try:
             # Use the document processor

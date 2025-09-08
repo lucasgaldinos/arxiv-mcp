@@ -75,9 +75,7 @@ OPTIONAL_DEPS = {
     # Document format dependencies (NEW - Phase 4A)
     "odfpy": OptionalDependency("odfpy", feature="OpenDocument (ODT) processing"),
     "striprtf": OptionalDependency("striprtf", feature="RTF document processing"),
-    "docx2txt": OptionalDependency(
-        "docx2txt", feature="alternative DOCX text extraction"
-    ),
+    "docx2txt": OptionalDependency("docx2txt", feature="alternative DOCX text extraction"),
     # ML dependencies
     "sklearn": OptionalDependency("scikit-learn", "sklearn", "machine learning"),
     "pandas": OptionalDependency("pandas", feature="data analysis"),
@@ -101,9 +99,7 @@ def requires_optional_dep(dep_name: str, fallback_return=None):
             dep = optional_import(dep_name)
             if not dep.available:
                 if fallback_return is not None:
-                    dep.warn_if_missing(
-                        f"Function '{func.__name__}' requires {dep.name}"
-                    )
+                    dep.warn_if_missing(f"Function '{func.__name__}' requires {dep.name}")
                     return fallback_return
                 else:
                     dep.require()  # This will raise ImportError

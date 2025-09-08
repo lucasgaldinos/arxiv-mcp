@@ -188,9 +188,7 @@ class FileSaver:
 
         markdown_papers = []
         if self.markdown_dir.exists():
-            markdown_papers = [
-                d.name for d in self.markdown_dir.iterdir() if d.is_dir()
-            ]
+            markdown_papers = [d.name for d in self.markdown_dir.iterdir() if d.is_dir()]
 
         return {
             "latex": latex_papers,
@@ -231,10 +229,7 @@ class FileSaver:
 
         # Clean markdown files
         for paper_dir in self.markdown_dir.iterdir():
-            if (
-                paper_dir.is_dir()
-                and paper_dir.stat().st_mtime < cutoff_date.timestamp()
-            ):
+            if paper_dir.is_dir() and paper_dir.stat().st_mtime < cutoff_date.timestamp():
                 import shutil
 
                 shutil.rmtree(paper_dir)

@@ -113,13 +113,9 @@ class DocGenerator:
             for keyword in tool_node.keywords:
                 if keyword.arg == "name" and isinstance(keyword.value, ast.Constant):
                     name = keyword.value.value
-                elif keyword.arg == "description" and isinstance(
-                    keyword.value, ast.Constant
-                ):
+                elif keyword.arg == "description" and isinstance(keyword.value, ast.Constant):
                     description = keyword.value.value
-                elif keyword.arg == "inputSchema" and isinstance(
-                    keyword.value, ast.Dict
-                ):
+                elif keyword.arg == "inputSchema" and isinstance(keyword.value, ast.Dict):
                     parameters = self._parse_input_schema(keyword.value)
 
             if name and description:
@@ -174,9 +170,7 @@ class DocGenerator:
                 if isinstance(node, ast.ClassDef):
                     class_doc = self._extract_class_doc(node)
                     classes.append(class_doc)
-                elif isinstance(node, ast.FunctionDef) or isinstance(
-                    node, ast.AsyncFunctionDef
-                ):
+                elif isinstance(node, ast.FunctionDef) or isinstance(node, ast.AsyncFunctionDef):
                     func_doc = self._extract_function_doc(node)
                     functions.append(func_doc)
 
@@ -188,9 +182,7 @@ class DocGenerator:
             )
         except Exception as e:
             logger.error(f"Error extracting module doc: {e}")
-            return ModuleDoc(
-                name=module_path.stem, description="", classes=[], functions=[]
-            )
+            return ModuleDoc(name=module_path.stem, description="", classes=[], functions=[])
 
     def _extract_class_doc(self, class_node: ast.ClassDef) -> Dict[str, Any]:
         """Extract documentation from a class definition."""
@@ -198,9 +190,7 @@ class DocGenerator:
         methods = []
 
         for node in class_node.body:
-            if isinstance(node, ast.FunctionDef) or isinstance(
-                node, ast.AsyncFunctionDef
-            ):
+            if isinstance(node, ast.FunctionDef) or isinstance(node, ast.AsyncFunctionDef):
                 method_doc = self._extract_function_doc(node)
                 methods.append(method_doc)
 
@@ -217,9 +207,7 @@ class DocGenerator:
         for arg in func_node.args.args:
             param_info = {
                 "name": arg.arg,
-                "type": getattr(arg.annotation, "id", "Any")
-                if arg.annotation
-                else "Any",
+                "type": getattr(arg.annotation, "id", "Any") if arg.annotation else "Any",
             }
             parameters.append(param_info)
 
@@ -265,8 +253,8 @@ class DocGenerator:
         logger.info("Exporting documentation as Markdown")
 
         md_content = f"""# {documentation.title}
-        
-**Version:** {documentation.version}  
+
+**Version:** {documentation.version}
 **Generated:** {documentation.generated_at}
 
 {documentation.description}
@@ -287,7 +275,9 @@ The ArXiv MCP server provides the following tools:
 """
             for param in tool.parameters:
                 required = " (required)" if param.required else " (optional)"
-                md_content += f"- `{param.name}` ({param.type_hint}){required}: {param.description}\n"
+                md_content += (
+                    f"- `{param.name}` ({param.type_hint}){required}: {param.description}\n"
+                )
 
             md_content += f"\n**Returns:** {tool.returns}\n\n"
 
@@ -300,15 +290,15 @@ The ArXiv MCP server provides the following tools:
             if module.classes:
                 md_content += "#### Classes\n\n"
                 for class_doc in module.classes:
-                    md_content += (
-                        f"##### {class_doc['name']}\n\n{class_doc['description']}\n\n"
-                    )
+                    md_content += f"##### {class_doc['name']}\n\n{class_doc['description']}\n\n"
 
             if module.functions:
                 md_content += "#### Functions\n\n"
                 for func_doc in module.functions:
                     async_marker = "(async) " if func_doc.get("is_async") else ""
-                    md_content += f"##### {async_marker}{func_doc['name']}\n\n{func_doc['description']}\n\n"
+                    md_content += (
+                        f"##### {async_marker}{func_doc['name']}\n\n{func_doc['description']}\n\n"
+                    )
 
         return md_content
 
@@ -317,9 +307,7 @@ The ArXiv MCP server provides the following tools:
         logger.info("Exporting documentation as JSON")
         return json.dumps(asdict(documentation), indent=2, default=str)
 
-    def save_documentation(
-        self, documentation: APIDocumentation, formats: List[str] = None
-    ):
+    def save_documentation(self, documentation: APIDocumentation, formats: List[str] = None):
         """Save documentation in specified formats."""
         if formats is None:
             formats = ["markdown", "json"]

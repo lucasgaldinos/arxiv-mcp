@@ -56,7 +56,8 @@ class SearchAnalytics:
         """Initialize SQLite database for persistent analytics storage."""
         try:
             with sqlite3.connect(self.db_path) as conn:
-                conn.execute("""
+                conn.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS search_queries (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         query TEXT NOT NULL,
@@ -69,23 +70,30 @@ class SearchAnalytics:
                         user_id TEXT,
                         success BOOLEAN DEFAULT TRUE
                     )
-                """)
+                """
+                )
 
-                conn.execute("""
+                conn.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS popular_terms (
                         term TEXT PRIMARY KEY,
                         count INTEGER DEFAULT 1,
                         last_seen TEXT
                     )
-                """)
+                """
+                )
 
-                conn.execute("""
+                conn.execute(
+                    """
                     CREATE INDEX IF NOT EXISTS idx_timestamp ON search_queries(timestamp)
-                """)
+                """
+                )
 
-                conn.execute("""
+                conn.execute(
+                    """
                     CREATE INDEX IF NOT EXISTS idx_query ON search_queries(query)
-                """)
+                """
+                )
 
             self.logger.info(f"Search analytics database initialized at {self.db_path}")
 
@@ -100,23 +108,17 @@ class SearchAnalytics:
             with sqlite3.connect(self.db_path) as conn:
                 conn.execute(
                     """
-                    INSERT INTO search_queries 
-                    (query, timestamp, categories, authors, date_range, results_count, 
+                    INSERT INTO search_queries
+                    (query, timestamp, categories, authors, date_range, results_count,
                      response_time, user_id, success)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                     (
                         search_query.query,
                         search_query.timestamp.isoformat(),
-                        json.dumps(search_query.categories)
-                        if search_query.categories
-                        else None,
-                        json.dumps(search_query.authors)
-                        if search_query.authors
-                        else None,
-                        json.dumps(search_query.date_range)
-                        if search_query.date_range
-                        else None,
+                        json.dumps(search_query.categories) if search_query.categories else None,
+                        json.dumps(search_query.authors) if search_query.authors else None,
+                        json.dumps(search_query.date_range) if search_query.date_range else None,
                         search_query.results_count,
                         search_query.response_time,
                         search_query.user_id,
@@ -179,7 +181,7 @@ class SearchAnalytics:
                 queries = conn.execute(
                     """
                     SELECT DATE(timestamp) as date, COUNT(*) as count
-                    FROM search_queries 
+                    FROM search_queries
                     WHERE timestamp >= ?
                     GROUP BY DATE(timestamp)
                     ORDER BY date
@@ -191,7 +193,7 @@ class SearchAnalytics:
                 common_queries = conn.execute(
                     """
                     SELECT query, COUNT(*) as count
-                    FROM search_queries 
+                    FROM search_queries
                     WHERE timestamp >= ?
                     GROUP BY query
                     ORDER BY count DESC
@@ -204,7 +206,7 @@ class SearchAnalytics:
                 success_stats = conn.execute(
                     """
                     SELECT success, COUNT(*) as count
-                    FROM search_queries 
+                    FROM search_queries
                     WHERE timestamp >= ?
                     GROUP BY success
                 """,
@@ -215,26 +217,20 @@ class SearchAnalytics:
                 avg_response = conn.execute(
                     """
                     SELECT AVG(response_time) as avg_time
-                    FROM search_queries 
+                    FROM search_queries
                     WHERE timestamp >= ? AND response_time > 0
                 """,
                     (cutoff_date.isoformat(),),
                 ).fetchone()
 
             return {
-                "query_frequency": [
-                    {"date": row[0], "count": row[1]} for row in queries
-                ],
-                "common_queries": [
-                    {"query": row[0], "count": row[1]} for row in common_queries
-                ],
+                "query_frequency": [{"date": row[0], "count": row[1]} for row in queries],
+                "common_queries": [{"query": row[0], "count": row[1]} for row in common_queries],
                 "success_rate": {
                     "successful": next((row[1] for row in success_stats if row[0]), 0),
                     "failed": next((row[1] for row in success_stats if not row[0]), 0),
                 },
-                "avg_response_time": avg_response[0]
-                if avg_response and avg_response[0]
-                else 0.0,
+                "avg_response_time": avg_response[0] if avg_response and avg_response[0] else 0.0,
                 "analysis_period_days": days,
             }
 
@@ -256,10 +252,7 @@ class SearchAnalytics:
                     (limit,),
                 ).fetchall()
 
-                return [
-                    {"term": row[0], "count": row[1], "last_seen": row[2]}
-                    for row in results
-                ]
+                return [{"term": row[0], "count": row[1], "last_seen": row[2]} for row in results]
 
         except Exception as e:
             self.logger.error(f"Failed to get popular searches: {e}")
@@ -291,7 +284,7 @@ class SearchAnalytics:
                 hourly_stats = conn.execute(
                     """
                     SELECT strftime('%H', timestamp) as hour, COUNT(*) as count
-                    FROM search_queries 
+                    FROM search_queries
                     WHERE timestamp >= ?
                     GROUP BY hour
                     ORDER BY count DESC
@@ -303,7 +296,7 @@ class SearchAnalytics:
                 category_usage = defaultdict(int)
                 category_queries = conn.execute(
                     """
-                    SELECT categories FROM search_queries 
+                    SELECT categories FROM search_queries
                     WHERE timestamp >= ? AND categories IS NOT NULL
                 """,
                     (cutoff_date.isoformat(),),
@@ -320,12 +313,10 @@ class SearchAnalytics:
             return {
                 "total_queries": total_queries,
                 "unique_queries": unique_queries,
-                "repeat_rate": (total_queries - unique_queries) / total_queries
-                if total_queries > 0
-                else 0,
-                "peak_hours": [
-                    {"hour": row[0], "count": row[1]} for row in hourly_stats[:5]
-                ],
+                "repeat_rate": (
+                    (total_queries - unique_queries) / total_queries if total_queries > 0 else 0
+                ),
+                "peak_hours": [{"hour": row[0], "count": row[1]} for row in hourly_stats[:5]],
                 "category_usage": dict(category_usage),
                 "analysis_period_days": days,
             }
@@ -345,7 +336,7 @@ class SearchAnalytics:
                     SELECT query, COUNT(*) as recent_count,
                            AVG(results_count) as avg_results,
                            AVG(response_time) as avg_time
-                    FROM search_queries 
+                    FROM search_queries
                     WHERE timestamp >= ?
                     GROUP BY query
                     HAVING recent_count >= 2

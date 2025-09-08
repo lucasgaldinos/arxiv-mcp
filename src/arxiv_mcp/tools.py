@@ -34,9 +34,8 @@ from .clients.arxiv_api import ArxivAPIClient
 from .core.pipeline import ArxivPipeline
 
 
-
-
 # Import the real implementations
+
 
 def get_tools() -> List[Tool]:
     """
@@ -177,9 +176,7 @@ def get_tools() -> List[Tool]:
             description="Download a paper PDF from ArXiv",
             inputSchema={
                 "type": "object",
-                "properties": {
-                    "paper_id": {"type": "string", "description": "ArXiv paper ID"}
-                },
+                "properties": {"paper_id": {"type": "string", "description": "ArXiv paper ID"}},
                 "required": ["paper_id"],
             },
         ),
@@ -260,7 +257,9 @@ async def handle_download_paper(paper_id: str) -> Dict[str, Any]:
         }
 
 
-async def handle_fetch_arxiv_paper_content(arxiv_id: str, include_pdf: bool = False) -> Dict[str, Any]:
+async def handle_fetch_arxiv_paper_content(
+    arxiv_id: str, include_pdf: bool = False
+) -> Dict[str, Any]:
     """Handle fetch_arxiv_paper_content tool with real ArxivPipeline."""
     from .core.config import PipelineConfig
 
@@ -279,7 +278,7 @@ async def handle_fetch_arxiv_paper_content(arxiv_id: str, include_pdf: bool = Fa
             "pdf_compiled": result.get("pdf_compiled", False),
             "pdf_text": result.get("pdf_text"),
             "processing_time": result.get("processing_time"),
-            "metadata": result.get("metadata", {})
+            "metadata": result.get("metadata", {}),
         }
     else:
         return {
@@ -293,21 +292,21 @@ def handle_get_processing_metrics(time_range: str = "24h") -> Dict[str, Any]:
     """Handle get_processing_metrics tool."""
     try:
         from .utils.metrics import PerformanceMetrics
-        
+
         metrics = PerformanceMetrics()
         performance_data = metrics.get_performance_summary(time_range)
-        
+
         return {
             "status": "success",
             "tool": "get_processing_metrics",
             "time_range": time_range,
-            "metrics": performance_data
+            "metrics": performance_data,
         }
     except Exception as e:
         return {
             "status": "error",
             "tool": "get_processing_metrics",
-            "error": f"Failed to get metrics: {str(e)}"
+            "error": f"Failed to get metrics: {str(e)}",
         }
 
 
@@ -381,12 +380,16 @@ def handle_process_document_formats(
                 "pages": result.metadata.pages,
                 "word_count": result.metadata.word_count,
                 "language": result.metadata.language,
-                "created_date": result.metadata.created_date.isoformat()
-                if result.metadata.created_date
-                else None,
-                "modified_date": result.metadata.modified_date.isoformat()
-                if result.metadata.modified_date
-                else None,
+                "created_date": (
+                    result.metadata.created_date.isoformat()
+                    if result.metadata.created_date
+                    else None
+                ),
+                "modified_date": (
+                    result.metadata.modified_date.isoformat()
+                    if result.metadata.modified_date
+                    else None
+                ),
             }
 
         return response
@@ -469,9 +472,7 @@ def handle_analyze_citation_network(
         paper_id = paper.get("id", paper.get("arxiv_id"))
         citations = paper.get("citations", [])
         for cited_id in citations:
-            edge = NetworkEdge(
-                source=paper_id, target=cited_id, weight=1.0, edge_type="citation"
-            )
+            edge = NetworkEdge(source=paper_id, target=cited_id, weight=1.0, edge_type="citation")
             edges.append(edge)
 
     # Analyze the network
@@ -675,9 +676,7 @@ def handle_validate_conversion_quality(
         }
 
 
-def handle_cleanup_output(
-    output_dir: str = "./output", days_old: int = 30
-) -> Dict[str, Any]:
+def handle_cleanup_output(output_dir: str = "./output", days_old: int = 30) -> Dict[str, Any]:
     """Handle cleanup of old output files."""
     try:
         from .core.config import PipelineConfig
@@ -717,23 +716,23 @@ async def handle_list_tools() -> ListToolsResult:
                     "properties": {
                         "query": {"type": "string", "description": "Search query"},
                         "max_results": {
-                            "type": "integer", 
+                            "type": "integer",
                             "description": "Maximum number of results",
-                            "default": 10
+                            "default": 10,
                         },
                         "category": {
                             "type": "string",
                             "description": "ArXiv category filter",
-                            "default": None
+                            "default": None,
                         },
                         "date_range": {
                             "type": "object",
                             "description": "Date range filter with 'start' and 'end' dates",
-                            "default": None
-                        }
+                            "default": None,
+                        },
                     },
-                    "required": ["query"]
-                }
+                    "required": ["query"],
+                },
             ),
             Tool(
                 name="fetch_arxiv_paper_content",
@@ -745,11 +744,11 @@ async def handle_list_tools() -> ListToolsResult:
                         "include_pdf": {
                             "type": "boolean",
                             "description": "Whether to include PDF compilation",
-                            "default": False
-                        }
+                            "default": False,
+                        },
                     },
-                    "required": ["arxiv_id"]
-                }
+                    "required": ["arxiv_id"],
+                },
             ),
             Tool(
                 name="download_and_convert_paper",
@@ -761,69 +760,69 @@ async def handle_list_tools() -> ListToolsResult:
                         "output_dir": {
                             "type": "string",
                             "description": "Output directory path",
-                            "default": "./output"
+                            "default": "./output",
                         },
                         "save_latex": {
                             "type": "boolean",
                             "description": "Whether to save LaTeX files",
-                            "default": True
+                            "default": True,
                         },
                         "save_markdown": {
-                            "type": "boolean", 
+                            "type": "boolean",
                             "description": "Whether to convert and save markdown",
-                            "default": True
+                            "default": True,
                         },
                         "include_pdf": {
                             "type": "boolean",
                             "description": "Whether to include PDF compilation",
-                            "default": False
-                        }
+                            "default": False,
+                        },
                     },
-                    "required": ["arxiv_id"]
-                }
+                    "required": ["arxiv_id"],
+                },
             ),
             Tool(
                 name="batch_download_and_convert",
                 description="Batch download and convert multiple ArXiv papers",
                 inputSchema={
-                    "type": "object", 
+                    "type": "object",
                     "properties": {
                         "arxiv_ids": {
                             "type": "array",
                             "items": {"type": "string"},
-                            "description": "List of ArXiv paper IDs"
+                            "description": "List of ArXiv paper IDs",
                         },
                         "output_dir": {
                             "type": "string",
                             "description": "Output directory path",
-                            "default": "./output"
+                            "default": "./output",
                         },
                         "save_latex": {
                             "type": "boolean",
                             "description": "Whether to save LaTeX files",
-                            "default": True
+                            "default": True,
                         },
                         "save_markdown": {
                             "type": "boolean",
-                            "description": "Whether to convert and save markdown", 
-                            "default": True
+                            "description": "Whether to convert and save markdown",
+                            "default": True,
                         },
                         "include_pdf": {
                             "type": "boolean",
                             "description": "Whether to include PDF compilation",
-                            "default": False
+                            "default": False,
                         },
                         "max_concurrent": {
                             "type": "integer",
                             "description": "Maximum concurrent downloads",
-                            "default": 3
-                        }
+                            "default": 3,
+                        },
                     },
-                    "required": ["arxiv_ids"]
-                }
+                    "required": ["arxiv_ids"],
+                },
             ),
             Tool(
-                name="get_output_structure", 
+                name="get_output_structure",
                 description="Get information about the output directory structure",
                 inputSchema={
                     "type": "object",
@@ -831,10 +830,10 @@ async def handle_list_tools() -> ListToolsResult:
                         "output_dir": {
                             "type": "string",
                             "description": "Output directory path",
-                            "default": "./output"
+                            "default": "./output",
                         }
-                    }
-                }
+                    },
+                },
             ),
             Tool(
                 name="validate_conversion_quality",
@@ -845,12 +844,12 @@ async def handle_list_tools() -> ListToolsResult:
                         "arxiv_id": {"type": "string", "description": "ArXiv paper ID"},
                         "output_dir": {
                             "type": "string",
-                            "description": "Output directory path", 
-                            "default": "./output"
-                        }
+                            "description": "Output directory path",
+                            "default": "./output",
+                        },
                     },
-                    "required": ["arxiv_id"]
-                }
+                    "required": ["arxiv_id"],
+                },
             ),
             Tool(
                 name="cleanup_output",
@@ -861,15 +860,15 @@ async def handle_list_tools() -> ListToolsResult:
                         "output_dir": {
                             "type": "string",
                             "description": "Output directory path",
-                            "default": "./output"
+                            "default": "./output",
                         },
                         "days_old": {
                             "type": "integer",
                             "description": "Number of days to keep files",
-                            "default": 30
-                        }
-                    }
-                }
+                            "default": 30,
+                        },
+                    },
+                },
             ),
             Tool(
                 name="extract_citations",
@@ -879,8 +878,8 @@ async def handle_list_tools() -> ListToolsResult:
                     "properties": {
                         "text": {"type": "string", "description": "Text to extract citations from"}
                     },
-                    "required": ["text"]
-                }
+                    "required": ["text"],
+                },
             ),
             Tool(
                 name="analyze_citation_network",
@@ -891,11 +890,11 @@ async def handle_list_tools() -> ListToolsResult:
                         "arxiv_ids": {
                             "type": "array",
                             "items": {"type": "string"},
-                            "description": "List of ArXiv paper IDs"
+                            "description": "List of ArXiv paper IDs",
                         }
                     },
-                    "required": ["arxiv_ids"]
-                }
+                    "required": ["arxiv_ids"],
+                },
             ),
             Tool(
                 name="get_processing_metrics",
@@ -906,11 +905,11 @@ async def handle_list_tools() -> ListToolsResult:
                         "time_range": {
                             "type": "string",
                             "description": "Time range for metrics (e.g., '24h', '7d')",
-                            "default": "24h"
+                            "default": "24h",
                         }
-                    }
-                }
-            )
+                    },
+                },
+            ),
         ]
     )
 
@@ -941,24 +940,17 @@ async def handle_call_tool(request: CallToolRequest) -> CallToolResult:
             result = handle_get_processing_metrics(**request.params.arguments)
         else:
             raise ValueError(f"Unknown tool: {request.params.name}")
-        
+
         return CallToolResult(content=[{"type": "text", "text": str(result)}])
-    
+
     except Exception as e:
-        return CallToolResult(
-            content=[{"type": "text", "text": f"Error: {str(e)}"}],
-            isError=True
-        )
+        return CallToolResult(content=[{"type": "text", "text": f"Error: {str(e)}"}], isError=True)
 
 
 async def async_main():
     """Async main entry point for the MCP server."""
     async with stdio_server() as (read_stream, write_stream):
-        await app.run(
-            read_stream, 
-            write_stream,
-            app.create_initialization_options()
-        )
+        await app.run(read_stream, write_stream, app.create_initialization_options())
 
 
 def main():

@@ -6,7 +6,6 @@ Downloads papers and converts them to both LaTeX and Markdown formats with organ
 import asyncio
 import re
 from typing import Dict, Any, List, Optional
-from pathlib import Path
 
 from ..core.pipeline import ArxivPipeline
 from ..core.config import PipelineConfig
@@ -51,9 +50,7 @@ class UnifiedDownloadConverter:
 
         try:
             # Download and process the paper
-            result = await self.pipeline.process_paper(
-                arxiv_id, include_pdf=include_pdf
-            )
+            result = await self.pipeline.process_paper(arxiv_id, include_pdf=include_pdf)
 
             if not result.get("success"):
                 return {
@@ -85,9 +82,7 @@ class UnifiedDownloadConverter:
 
             # Save LaTeX files if requested
             if save_latex:
-                latex_result = self.file_saver.save_latex_files(
-                    arxiv_id, files, main_tex_file
-                )
+                latex_result = self.file_saver.save_latex_files(arxiv_id, files, main_tex_file)
                 response["formats"].append("latex")
                 response["files"]["latex"] = latex_result
                 logger.info(f"Saved LaTeX files for {arxiv_id}")
@@ -143,9 +138,7 @@ class UnifiedDownloadConverter:
                 "pdf_compiled": result.get("pdf_compiled", False),
             }
 
-            logger.info(
-                f"Completed unified processing for {arxiv_id}: {response['formats']}"
-            )
+            logger.info(f"Completed unified processing for {arxiv_id}: {response['formats']}")
             return response
 
         except Exception as e:
@@ -209,9 +202,7 @@ class UnifiedDownloadConverter:
             "output_directory": str(self.file_saver.output_directory),
         }
 
-        logger.info(
-            f"Batch processing completed: {len(successful)}/{len(arxiv_ids)} successful"
-        )
+        logger.info(f"Batch processing completed: {len(successful)}/{len(arxiv_ids)} successful")
         return batch_result
 
     def get_output_structure(self) -> Dict[str, Any]:
@@ -250,9 +241,9 @@ class UnifiedDownloadConverter:
                 {
                     "arxiv_id": d.name,
                     "path": str(d),
-                    "markdown_file": str(d / f"{d.name}.md")
-                    if (d / f"{d.name}.md").exists()
-                    else None,
+                    "markdown_file": (
+                        str(d / f"{d.name}.md") if (d / f"{d.name}.md").exists() else None
+                    ),
                 }
                 for d in self.file_saver.markdown_dir.iterdir()
                 if d.is_dir()
@@ -323,13 +314,11 @@ class UnifiedDownloadConverter:
                 "arxiv_id": arxiv_id,
                 "latex_length": len(latex_content),
                 "markdown_length": len(markdown_content),
-                "compression_ratio": len(markdown_content) / len(latex_content)
-                if latex_content
-                else 0,
-                "has_yaml_frontmatter": markdown_content.startswith("---"),
-                "sections_preserved": len(
-                    re.findall(r"^#+ ", markdown_content, re.MULTILINE)
+                "compression_ratio": (
+                    len(markdown_content) / len(latex_content) if latex_content else 0
                 ),
+                "has_yaml_frontmatter": markdown_content.startswith("---"),
+                "sections_preserved": len(re.findall(r"^#+ ", markdown_content, re.MULTILINE)),
                 "math_expressions": len(re.findall(r"\$.*?\$", markdown_content)),
                 "conversion_date": manifest.get("saved_at"),
             }

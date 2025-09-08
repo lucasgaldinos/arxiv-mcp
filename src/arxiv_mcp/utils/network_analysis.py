@@ -136,7 +136,8 @@ class NetworkAnalyzer:
         """Initialize SQLite database for network data."""
         with sqlite3.connect(self.db_path) as conn:
             # Networks table
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS networks (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     network_type TEXT NOT NULL,
@@ -144,10 +145,12 @@ class NetworkAnalyzer:
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     metadata TEXT
                 )
-            """)
+            """
+            )
 
             # Nodes table
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS network_nodes (
                     network_id INTEGER,
                     node_id TEXT,
@@ -158,10 +161,12 @@ class NetworkAnalyzer:
                     PRIMARY KEY (network_id, node_id),
                     FOREIGN KEY (network_id) REFERENCES networks (id)
                 )
-            """)
+            """
+            )
 
             # Edges table
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS network_edges (
                     network_id INTEGER,
                     source TEXT,
@@ -172,10 +177,12 @@ class NetworkAnalyzer:
                     PRIMARY KEY (network_id, source, target),
                     FOREIGN KEY (network_id) REFERENCES networks (id)
                 )
-            """)
+            """
+            )
 
             # Analysis results table
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS network_analysis_results (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     network_id INTEGER,
@@ -184,7 +191,8 @@ class NetworkAnalyzer:
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (network_id) REFERENCES networks (id)
                 )
-            """)
+            """
+            )
 
             conn.commit()
 
@@ -203,9 +211,7 @@ class NetworkAnalyzer:
                     (
                         NetworkType.CITATION.value,
                         f"citation_network_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
-                        json.dumps(
-                            {"paper_count": len(papers), "created_from": "paper_data"}
-                        ),
+                        json.dumps({"paper_count": len(papers), "created_from": "paper_data"}),
                     ),
                 )
                 network_id = cursor.lastrowid
@@ -257,9 +263,11 @@ class NetworkAnalyzer:
                             nodes[citation_id] = NetworkNode(
                                 node_id=citation_id,
                                 node_type="paper",
-                                label=citation.get("title", citation_id)
-                                if isinstance(citation, dict)
-                                else citation_id,
+                                label=(
+                                    citation.get("title", citation_id)
+                                    if isinstance(citation, dict)
+                                    else citation_id
+                                ),
                                 attributes={"is_external": True},
                             )
 
@@ -290,9 +298,7 @@ class NetworkAnalyzer:
                     (
                         NetworkType.COLLABORATION.value,
                         f"collaboration_network_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
-                        json.dumps(
-                            {"paper_count": len(papers), "created_from": "paper_data"}
-                        ),
+                        json.dumps({"paper_count": len(papers), "created_from": "paper_data"}),
                     ),
                 )
                 network_id = cursor.lastrowid
@@ -316,9 +322,7 @@ class NetworkAnalyzer:
                     for author2 in authors[i + 1 :]:
                         # Ensure consistent ordering
                         pair = tuple(sorted([author1, author2]))
-                        collaboration_counts[pair] = (
-                            collaboration_counts.get(pair, 0) + 1
-                        )
+                        collaboration_counts[pair] = collaboration_counts.get(pair, 0) + 1
 
             # Create nodes (authors)
             nodes = {}
@@ -377,9 +381,7 @@ class NetworkAnalyzer:
 
             # Add edges
             for edge in edges:
-                G.add_edge(
-                    edge.source, edge.target, weight=edge.weight, **edge.attributes
-                )
+                G.add_edge(edge.source, edge.target, weight=edge.weight, **edge.attributes)
 
             # Calculate basic metrics
             total_nodes = G.number_of_nodes()
@@ -401,9 +403,7 @@ class NetworkAnalyzer:
                 largest_subgraph = G.subgraph(largest_cc)
 
                 if len(largest_cc) > 1:
-                    average_path_length = networkx.average_shortest_path_length(
-                        largest_subgraph
-                    )
+                    average_path_length = networkx.average_shortest_path_length(largest_subgraph)
                     diameter = networkx.diameter(largest_subgraph)
                 else:
                     average_path_length = 0
@@ -421,18 +421,14 @@ class NetworkAnalyzer:
             pagerank = networkx.pagerank(G)
 
             # Find top nodes by different centrality measures
-            top_degree = sorted(
-                degree_centrality.items(), key=lambda x: x[1], reverse=True
-            )[:10]
+            top_degree = sorted(degree_centrality.items(), key=lambda x: x[1], reverse=True)[:10]
             top_betweenness = sorted(
                 betweenness_centrality.items(), key=lambda x: x[1], reverse=True
             )[:10]
-            top_closeness = sorted(
-                closeness_centrality.items(), key=lambda x: x[1], reverse=True
-            )[:10]
-            top_pagerank = sorted(pagerank.items(), key=lambda x: x[1], reverse=True)[
+            top_closeness = sorted(closeness_centrality.items(), key=lambda x: x[1], reverse=True)[
                 :10
             ]
+            top_pagerank = sorted(pagerank.items(), key=lambda x: x[1], reverse=True)[:10]
 
             # Community detection (if possible)
             communities = []
@@ -440,9 +436,7 @@ class NetworkAnalyzer:
                 if hasattr(networkx, "community") and hasattr(
                     networkx.community, "greedy_modularity_communities"
                 ):
-                    communities = list(
-                        networkx.community.greedy_modularity_communities(G)
-                    )
+                    communities = list(networkx.community.greedy_modularity_communities(G))
                     communities = [list(community) for community in communities]
             except Exception:
                 logger.warning("Community detection failed")
@@ -468,9 +462,7 @@ class NetworkAnalyzer:
                         "node_id": node_id,
                         "label": node_data.label if node_data else node_id,
                         "degree_centrality": degree_centrality.get(node_id, 0),
-                        "betweenness_centrality": betweenness_centrality.get(
-                            node_id, 0
-                        ),
+                        "betweenness_centrality": betweenness_centrality.get(node_id, 0),
                         "closeness_centrality": closeness_centrality.get(node_id, 0),
                         "pagerank": pagerank.get(node_id, 0),
                     }
@@ -483,19 +475,12 @@ class NetworkAnalyzer:
                 top_nodes=top_nodes,
                 communities=communities,
                 central_nodes={
-                    "degree": [
-                        {"node_id": nid, "score": score} for nid, score in top_degree
-                    ],
+                    "degree": [{"node_id": nid, "score": score} for nid, score in top_degree],
                     "betweenness": [
-                        {"node_id": nid, "score": score}
-                        for nid, score in top_betweenness
+                        {"node_id": nid, "score": score} for nid, score in top_betweenness
                     ],
-                    "closeness": [
-                        {"node_id": nid, "score": score} for nid, score in top_closeness
-                    ],
-                    "pagerank": [
-                        {"node_id": nid, "score": score} for nid, score in top_pagerank
-                    ],
+                    "closeness": [{"node_id": nid, "score": score} for nid, score in top_closeness],
+                    "pagerank": [{"node_id": nid, "score": score} for nid, score in top_pagerank],
                 },
             )
 
@@ -532,9 +517,7 @@ class NetworkAnalyzer:
             total_nodes = len(nodes)
             total_edges = len(edges)
             density = (
-                (2 * total_edges) / (total_nodes * (total_nodes - 1))
-                if total_nodes > 1
-                else 0
+                (2 * total_edges) / (total_nodes * (total_nodes - 1)) if total_nodes > 1 else 0
             )
 
             # Basic degree calculation
@@ -544,9 +527,7 @@ class NetworkAnalyzer:
                 degree_count[edge.target] = degree_count.get(edge.target, 0) + 1
 
             # Find top nodes by degree
-            top_by_degree = sorted(
-                degree_count.items(), key=lambda x: x[1], reverse=True
-            )[:10]
+            top_by_degree = sorted(degree_count.items(), key=lambda x: x[1], reverse=True)[:10]
 
             top_nodes = []
             for node_id, degree in top_by_degree[:5]:
@@ -556,9 +537,7 @@ class NetworkAnalyzer:
                         "node_id": node_id,
                         "label": node_data.label if node_data else node_id,
                         "degree": degree,
-                        "degree_centrality": degree / (total_nodes - 1)
-                        if total_nodes > 1
-                        else 0,
+                        "degree_centrality": degree / (total_nodes - 1) if total_nodes > 1 else 0,
                     }
                 )
 
@@ -579,9 +558,7 @@ class NetworkAnalyzer:
                 top_nodes=top_nodes,
                 communities=[],
                 central_nodes={
-                    "degree": [
-                        {"node_id": nid, "score": score} for nid, score in top_by_degree
-                    ]
+                    "degree": [{"node_id": nid, "score": score} for nid, score in top_by_degree]
                 },
             )
 
@@ -605,9 +582,7 @@ class NetworkAnalyzer:
     def get_shortest_path(self, network_id: int, source: str, target: str) -> List[str]:
         """Find shortest path between two nodes."""
         if not NETWORKX_AVAILABLE:
-            logger.warning(
-                "NetworkX not available. Shortest path calculation not supported."
-            )
+            logger.warning("NetworkX not available. Shortest path calculation not supported.")
             return []
 
         try:
@@ -661,7 +636,7 @@ class NetworkAnalyzer:
                 for node in nodes.values():
                     conn.execute(
                         """
-                        INSERT OR REPLACE INTO network_nodes 
+                        INSERT OR REPLACE INTO network_nodes
                         (network_id, node_id, node_type, label, attributes, centrality_scores)
                         VALUES (?, ?, ?, ?, ?, ?)
                     """,
@@ -679,7 +654,7 @@ class NetworkAnalyzer:
                 for edge in edges:
                     conn.execute(
                         """
-                        INSERT OR REPLACE INTO network_edges 
+                        INSERT OR REPLACE INTO network_edges
                         (network_id, source, target, weight, edge_type, attributes)
                         VALUES (?, ?, ?, ?, ?, ?)
                     """,
@@ -731,9 +706,7 @@ class NetworkAnalyzer:
                     centrality_str,
                 ) in cursor.fetchall():
                     attributes = json.loads(attributes_str) if attributes_str else {}
-                    centrality_scores = (
-                        json.loads(centrality_str) if centrality_str else {}
-                    )
+                    centrality_scores = json.loads(centrality_str) if centrality_str else {}
 
                     nodes[node_id] = NetworkNode(
                         node_id=node_id,
@@ -818,10 +791,12 @@ class NetworkAnalyzer:
         """Get list of all networks in the database."""
         try:
             with sqlite3.connect(self.db_path) as conn:
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT id, network_type, network_name, created_at, metadata
                     FROM networks ORDER BY created_at DESC
-                """)
+                """
+                )
 
                 networks = []
                 for (
@@ -867,9 +842,7 @@ class NetworkAnalyzer:
             Network object (NetworkX graph if available, else simple dict)
         """
         if not NETWORKX_AVAILABLE:
-            logger.warning(
-                "NetworkX not available. Returning simplified network representation."
-            )
+            logger.warning("NetworkX not available. Returning simplified network representation.")
             return {
                 "nodes": {node.node_id: node for node in nodes},
                 "edges": edges,
@@ -886,9 +859,7 @@ class NetworkAnalyzer:
 
             # Create NetworkX graph
             if network_type in [NetworkType.CITATION, NetworkType.TOPIC]:
-                graph = (
-                    import_result.DiGraph()
-                )  # Directed graph for citations and topics
+                graph = import_result.DiGraph()  # Directed graph for citations and topics
             else:
                 graph = import_result.Graph()  # Undirected graph for collaborations
 
@@ -957,12 +928,14 @@ class NetworkAnalyzer:
                         analysis_result.update(
                             {
                                 "density": nx.density(network),
-                                "is_connected": nx.is_connected(network)
-                                if not network.is_directed()
-                                else nx.is_strongly_connected(network),
-                                "average_clustering": nx.average_clustering(network)
-                                if len(nodes) > 0
-                                else 0,
+                                "is_connected": (
+                                    nx.is_connected(network)
+                                    if not network.is_directed()
+                                    else nx.is_strongly_connected(network)
+                                ),
+                                "average_clustering": (
+                                    nx.average_clustering(network) if len(nodes) > 0 else 0
+                                ),
                             }
                         )
                 except Exception as e:

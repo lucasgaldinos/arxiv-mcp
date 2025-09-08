@@ -101,9 +101,7 @@ class DependencyAnalyzer:
 
     def __init__(self, cache_dir: Optional[str] = None):
         """Initialize the dependency analyzer."""
-        self.cache_dir = (
-            Path(cache_dir) if cache_dir else Path.cwd() / "dependency_cache"
-        )
+        self.cache_dir = Path(cache_dir) if cache_dir else Path.cwd() / "dependency_cache"
         self.cache_dir.mkdir(exist_ok=True)
 
         self.db_path = self.cache_dir / "dependencies.db"
@@ -115,7 +113,8 @@ class DependencyAnalyzer:
         """Initialize SQLite database for dependency tracking."""
         with sqlite3.connect(self.db_path) as conn:
             # Dependencies table
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS dependencies (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     source TEXT NOT NULL,
@@ -126,10 +125,12 @@ class DependencyAnalyzer:
                     discovered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     UNIQUE(source, target, dependency_type)
                 )
-            """)
+            """
+            )
 
             # Nodes table
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS dependency_nodes (
                     node_id TEXT PRIMARY KEY,
                     node_type TEXT NOT NULL,
@@ -139,10 +140,12 @@ class DependencyAnalyzer:
                     metadata TEXT,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
-            """)
+            """
+            )
 
             # Analysis results table
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS analysis_results (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     analysis_type TEXT NOT NULL,
@@ -150,15 +153,14 @@ class DependencyAnalyzer:
                     results TEXT NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
-            """)
+            """
+            )
 
             conn.commit()
 
     def analyze_package_dependencies(self, package_name: str = None) -> Dict[str, Any]:
         """Analyze package dependencies using the optional dependencies system."""
-        logger.info(
-            f"Analyzing package dependencies for: {package_name or 'all packages'}"
-        )
+        logger.info(f"Analyzing package dependencies for: {package_name or 'all packages'}")
 
         try:
             # Analyze optional dependencies
@@ -192,10 +194,11 @@ class DependencyAnalyzer:
                 "missing_dependencies": missing_deps,
                 "circular_dependencies": circular_deps,
                 "total_analyzed": len(available_deps) + len(missing_deps),
-                "availability_ratio": len(available_deps)
-                / (len(available_deps) + len(missing_deps))
-                if available_deps or missing_deps
-                else 0,
+                "availability_ratio": (
+                    len(available_deps) / (len(available_deps) + len(missing_deps))
+                    if available_deps or missing_deps
+                    else 0
+                ),
                 "analysis_timestamp": datetime.now().isoformat(),
             }
 
@@ -266,9 +269,7 @@ class DependencyAnalyzer:
                 "analysis_timestamp": datetime.now().isoformat(),
             }
 
-            self._store_analysis_result(
-                "paper_dependencies", paper_id, analysis_results
-            )
+            self._store_analysis_result("paper_dependencies", paper_id, analysis_results)
 
             logger.info(
                 f"Paper dependency analysis complete: {len(dependencies)} dependencies found"
@@ -279,20 +280,16 @@ class DependencyAnalyzer:
             logger.error(f"Failed to analyze paper dependencies: {e}")
             return {"error": str(e), "paper_id": paper_id, "direct_dependencies": 0}
 
-    def detect_circular_dependencies(
-        self, dependency_type: DependencyType
-    ) -> List[List[str]]:
+    def detect_circular_dependencies(self, dependency_type: DependencyType) -> List[List[str]]:
         """Detect circular dependencies in the dependency graph."""
-        logger.info(
-            f"Detecting circular dependencies for type: {dependency_type.value}"
-        )
+        logger.info(f"Detecting circular dependencies for type: {dependency_type.value}")
 
         try:
             with sqlite3.connect(self.db_path) as conn:
                 # Get all dependencies of the specified type
                 cursor = conn.execute(
                     """
-                    SELECT source, target FROM dependencies 
+                    SELECT source, target FROM dependencies
                     WHERE dependency_type = ?
                 """,
                     (dependency_type.value,),
@@ -338,9 +335,7 @@ class DependencyAnalyzer:
                     if node not in visited:
                         dfs(node, [])
 
-                logger.info(
-                    f"Circular dependency detection complete: {len(cycles)} cycles found"
-                )
+                logger.info(f"Circular dependency detection complete: {len(cycles)} cycles found")
                 return cycles
 
         except Exception as e:
@@ -356,7 +351,7 @@ class DependencyAnalyzer:
                 # Get direct dependencies (things this node depends on)
                 cursor = conn.execute(
                     """
-                    SELECT target, dependency_type, strength FROM dependencies 
+                    SELECT target, dependency_type, strength FROM dependencies
                     WHERE source = ?
                 """,
                     (node_id,),
@@ -366,7 +361,7 @@ class DependencyAnalyzer:
                 # Get direct dependents (things that depend on this node)
                 cursor = conn.execute(
                     """
-                    SELECT source, dependency_type, strength FROM dependencies 
+                    SELECT source, dependency_type, strength FROM dependencies
                     WHERE target = ?
                 """,
                     (node_id,),
@@ -393,9 +388,7 @@ class DependencyAnalyzer:
 
                     for (target,) in cursor.fetchall():
                         deps.append(target)
-                        deps.extend(
-                            get_transitive_deps(target, depth - 1, visited.copy())
-                        )
+                        deps.extend(get_transitive_deps(target, depth - 1, visited.copy()))
 
                     return deps
 
@@ -420,22 +413,16 @@ class DependencyAnalyzer:
                     "analysis_timestamp": datetime.now().isoformat(),
                 }
 
-                self._store_analysis_result(
-                    "dependency_impact", node_id, impact_analysis
-                )
+                self._store_analysis_result("dependency_impact", node_id, impact_analysis)
 
-                logger.info(
-                    f"Dependency impact analysis complete: impact score {impact_score}"
-                )
+                logger.info(f"Dependency impact analysis complete: impact score {impact_score}")
                 return impact_analysis
 
         except Exception as e:
             logger.error(f"Failed to analyze dependency impact: {e}")
             return {"error": str(e), "node_id": node_id, "impact_score": 0}
 
-    def build_dependency_graph(
-        self, dependency_type: DependencyType = None
-    ) -> DependencyGraph:
+    def build_dependency_graph(self, dependency_type: DependencyType = None) -> DependencyGraph:
         """Build a complete dependency graph."""
         logger.info(
             f"Building dependency graph for type: {dependency_type.value if dependency_type else 'all'}"
@@ -454,11 +441,13 @@ class DependencyAnalyzer:
                         (dependency_type.value, dependency_type.value),
                     )
                 else:
-                    cursor = conn.execute("""
+                    cursor = conn.execute(
+                        """
                         SELECT DISTINCT source FROM dependencies
                         UNION
                         SELECT DISTINCT target FROM dependencies
-                    """)
+                    """
+                    )
 
                 node_ids = [row[0] for row in cursor.fetchall()]
 
@@ -468,7 +457,7 @@ class DependencyAnalyzer:
                     # Try to get node details
                     cursor = conn.execute(
                         """
-                        SELECT node_type, name, version, description, metadata 
+                        SELECT node_type, name, version, description, metadata
                         FROM dependency_nodes WHERE node_id = ?
                     """,
                         (node_id,),
@@ -505,10 +494,12 @@ class DependencyAnalyzer:
                         (dependency_type.value,),
                     )
                 else:
-                    cursor = conn.execute("""
+                    cursor = conn.execute(
+                        """
                         SELECT source, target, dependency_type, strength, metadata, discovered_at
                         FROM dependencies
-                    """)
+                    """
+                    )
 
                 edges = []
                 for (
@@ -528,9 +519,9 @@ class DependencyAnalyzer:
                             dependency_type=DependencyType(dep_type),
                             strength=strength,
                             metadata=metadata,
-                            discovered_at=datetime.fromisoformat(discovered_at)
-                            if discovered_at
-                            else None,
+                            discovered_at=(
+                                datetime.fromisoformat(discovered_at) if discovered_at else None
+                            ),
                         )
                     )
 
@@ -542,9 +533,7 @@ class DependencyAnalyzer:
                     metadata={"total_nodes": len(nodes), "total_edges": len(edges)},
                 )
 
-                logger.info(
-                    f"Dependency graph built: {len(nodes)} nodes, {len(edges)} edges"
-                )
+                logger.info(f"Dependency graph built: {len(nodes)} nodes, {len(edges)} edges")
                 return graph
 
         except Exception as e:
@@ -563,7 +552,7 @@ class DependencyAnalyzer:
             with sqlite3.connect(self.db_path) as conn:
                 conn.execute(
                     """
-                    INSERT OR REPLACE INTO dependencies 
+                    INSERT OR REPLACE INTO dependencies
                     (source, target, dependency_type, strength, metadata, discovered_at)
                     VALUES (?, ?, ?, ?, ?, ?)
                 """,
@@ -597,15 +586,13 @@ class DependencyAnalyzer:
         except Exception as e:
             logger.error(f"Failed to store analysis result: {e}")
 
-    def _get_stored_analysis(
-        self, analysis_type: str, target_id: str
-    ) -> Optional[Dict[str, Any]]:
+    def _get_stored_analysis(self, analysis_type: str, target_id: str) -> Optional[Dict[str, Any]]:
         """Get the most recent stored analysis result for a specific type and target."""
         try:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.execute(
                     """
-                    SELECT results FROM analysis_results 
+                    SELECT results FROM analysis_results
                     WHERE analysis_type = ? AND target_id = ?
                     ORDER BY created_at DESC
                     LIMIT 1
@@ -632,7 +619,7 @@ class DependencyAnalyzer:
                     cursor = conn.execute(
                         """
                         SELECT analysis_type, target_id, results, created_at
-                        FROM analysis_results 
+                        FROM analysis_results
                         WHERE analysis_type = ? AND target_id = ?
                         ORDER BY created_at DESC
                     """,
@@ -642,18 +629,20 @@ class DependencyAnalyzer:
                     cursor = conn.execute(
                         """
                         SELECT analysis_type, target_id, results, created_at
-                        FROM analysis_results 
+                        FROM analysis_results
                         WHERE analysis_type = ?
                         ORDER BY created_at DESC
                     """,
                         (analysis_type,),
                     )
                 else:
-                    cursor = conn.execute("""
+                    cursor = conn.execute(
+                        """
                         SELECT analysis_type, target_id, results, created_at
-                        FROM analysis_results 
+                        FROM analysis_results
                         ORDER BY created_at DESC
-                    """)
+                    """
+                    )
 
                 results = []
                 for (

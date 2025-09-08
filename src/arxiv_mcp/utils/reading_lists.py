@@ -63,9 +63,7 @@ class ReadingProgress:
     list_id: str
     progress_percentage: float = 0.0
     time_spent: timedelta = field(default_factory=timedelta)
-    bookmarks: List[Dict[str, Any]] = field(
-        default_factory=list
-    )  # page/section bookmarks
+    bookmarks: List[Dict[str, Any]] = field(default_factory=list)  # page/section bookmarks
     highlights: List[Dict[str, Any]] = field(default_factory=list)  # text highlights
     session_count: int = 0
     last_session: Optional[datetime] = None
@@ -118,7 +116,8 @@ class ReadingListManager:
         """Initialize SQLite database for persistent storage."""
         with sqlite3.connect(self.db_path) as conn:
             # Reading lists table
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS reading_lists (
                     id TEXT PRIMARY KEY,
                     name TEXT NOT NULL,
@@ -129,10 +128,12 @@ class ReadingListManager:
                     is_public BOOLEAN DEFAULT 0,
                     metadata TEXT
                 )
-            """)
+            """
+            )
 
             # Papers table
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS papers (
                     arxiv_id TEXT PRIMARY KEY,
                     title TEXT NOT NULL,
@@ -149,10 +150,12 @@ class ReadingListManager:
                     added_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     last_accessed TIMESTAMP
                 )
-            """)
+            """
+            )
 
             # List-paper associations
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS list_papers (
                     list_id TEXT,
                     arxiv_id TEXT,
@@ -162,10 +165,12 @@ class ReadingListManager:
                     FOREIGN KEY (list_id) REFERENCES reading_lists (id),
                     FOREIGN KEY (arxiv_id) REFERENCES papers (arxiv_id)
                 )
-            """)
+            """
+            )
 
             # Reading progress table
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS reading_progress (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     paper_id TEXT,
@@ -180,18 +185,13 @@ class ReadingListManager:
                     FOREIGN KEY (paper_id) REFERENCES papers (arxiv_id),
                     FOREIGN KEY (list_id) REFERENCES reading_lists (id)
                 )
-            """)
+            """
+            )
 
             # Create indexes
-            conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_papers_status ON papers(read_status)"
-            )
-            conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_papers_rating ON papers(rating)"
-            )
-            conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_list_papers_list ON list_papers(list_id)"
-            )
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_papers_status ON papers(read_status)")
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_papers_rating ON papers(rating)")
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_list_papers_list ON list_papers(list_id)")
             conn.execute(
                 "CREATE INDEX IF NOT EXISTS idx_progress_paper ON reading_progress(paper_id)"
             )
@@ -203,9 +203,7 @@ class ReadingListManager:
         list_id = str(uuid.uuid4())
         tags = tags or []
 
-        reading_list = ReadingList(
-            id=list_id, name=name, description=description, tags=tags
-        )
+        reading_list = ReadingList(id=list_id, name=name, description=description, tags=tags)
 
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
@@ -242,12 +240,8 @@ class ReadingListManager:
                 description=result[2] or "",
                 papers=papers,
                 tags=json.loads(result[3]) if result[3] else [],
-                created_date=datetime.fromisoformat(result[4])
-                if result[4]
-                else datetime.now(),
-                modified_date=datetime.fromisoformat(result[5])
-                if result[5]
-                else datetime.now(),
+                created_date=datetime.fromisoformat(result[4]) if result[4] else datetime.now(),
+                modified_date=datetime.fromisoformat(result[5]) if result[5] else datetime.now(),
                 is_public=bool(result[6]),
                 metadata=json.loads(result[7]) if result[7] else {},
             )
@@ -257,10 +251,12 @@ class ReadingListManager:
     def list_reading_lists(self) -> List[ReadingList]:
         """Get all reading lists."""
         with sqlite3.connect(self.db_path) as conn:
-            results = conn.execute("""
+            results = conn.execute(
+                """
                 SELECT id, name, description, tags, created_date, modified_date, is_public, metadata
                 FROM reading_lists ORDER BY modified_date DESC
-            """).fetchall()
+            """
+            ).fetchall()
 
             lists = []
             for result in results:
@@ -272,12 +268,10 @@ class ReadingListManager:
                     description=result[2] or "",
                     papers=papers,
                     tags=json.loads(result[3]) if result[3] else [],
-                    created_date=datetime.fromisoformat(result[4])
-                    if result[4]
-                    else datetime.now(),
-                    modified_date=datetime.fromisoformat(result[5])
-                    if result[5]
-                    else datetime.now(),
+                    created_date=datetime.fromisoformat(result[4]) if result[4] else datetime.now(),
+                    modified_date=(
+                        datetime.fromisoformat(result[5]) if result[5] else datetime.now()
+                    ),
                     is_public=bool(result[6]),
                     metadata=json.loads(result[7]) if result[7] else {},
                 )
@@ -309,36 +303,28 @@ class ReadingListManager:
                     authors=json.loads(result[2]) if result[2] else [],
                     abstract=result[3] or "",
                     categories=json.loads(result[4]) if result[4] else [],
-                    submitted_date=datetime.fromisoformat(result[5])
-                    if result[5]
-                    else None,
+                    submitted_date=datetime.fromisoformat(result[5]) if result[5] else None,
                     url=result[6] or "",
                     pdf_url=result[7] or "",
                     tags=json.loads(result[8]) if result[8] else [],
                     notes=result[9] or "",
                     rating=result[10],
                     read_status=result[11] or "unread",
-                    added_date=datetime.fromisoformat(result[12])
-                    if result[12]
-                    else datetime.now(),
-                    last_accessed=datetime.fromisoformat(result[13])
-                    if result[13]
-                    else None,
+                    added_date=datetime.fromisoformat(result[12]) if result[12] else datetime.now(),
+                    last_accessed=datetime.fromisoformat(result[13]) if result[13] else None,
                 )
                 papers.append(paper)
 
             return papers
 
-    def add_paper_to_list(
-        self, list_id: str, paper: Paper, position: Optional[int] = None
-    ) -> bool:
+    def add_paper_to_list(self, list_id: str, paper: Paper, position: Optional[int] = None) -> bool:
         """Add a paper to a reading list."""
         try:
             with sqlite3.connect(self.db_path) as conn:
                 # Insert or update paper
                 conn.execute(
                     """
-                    INSERT OR REPLACE INTO papers 
+                    INSERT OR REPLACE INTO papers
                     (arxiv_id, title, authors, abstract, categories, submitted_date,
                      url, pdf_url, tags, notes, rating, read_status, last_accessed)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -349,18 +335,14 @@ class ReadingListManager:
                         json.dumps(paper.authors),
                         paper.abstract,
                         json.dumps(paper.categories),
-                        paper.submitted_date.isoformat()
-                        if paper.submitted_date
-                        else None,
+                        paper.submitted_date.isoformat() if paper.submitted_date else None,
                         paper.url,
                         paper.pdf_url,
                         json.dumps(paper.tags),
                         paper.notes,
                         paper.rating,
                         paper.read_status,
-                        paper.last_accessed.isoformat()
-                        if paper.last_accessed
-                        else None,
+                        paper.last_accessed.isoformat() if paper.last_accessed else None,
                     ),
                 )
 
@@ -427,9 +409,7 @@ class ReadingListManager:
     ) -> bool:
         """Update a paper's reading status and metadata."""
         if status not in self.READ_STATUSES:
-            raise ValueError(
-                f"Invalid status: {status}. Must be one of {self.READ_STATUSES}"
-            )
+            raise ValueError(f"Invalid status: {status}. Must be one of {self.READ_STATUSES}")
 
         try:
             with sqlite3.connect(self.db_path) as conn:
@@ -487,9 +467,7 @@ class ReadingListManager:
                 values.append(list_id)
 
             if query:
-                conditions.append(
-                    "(p.title LIKE ? OR p.abstract LIKE ? OR p.notes LIKE ?)"
-                )
+                conditions.append("(p.title LIKE ? OR p.abstract LIKE ? OR p.notes LIKE ?)")
                 search_term = f"%{query}%"
                 values.extend([search_term, search_term, search_term])
 
@@ -522,21 +500,15 @@ class ReadingListManager:
                     authors=json.loads(result[2]) if result[2] else [],
                     abstract=result[3] or "",
                     categories=json.loads(result[4]) if result[4] else [],
-                    submitted_date=datetime.fromisoformat(result[5])
-                    if result[5]
-                    else None,
+                    submitted_date=datetime.fromisoformat(result[5]) if result[5] else None,
                     url=result[6] or "",
                     pdf_url=result[7] or "",
                     tags=json.loads(result[8]) if result[8] else [],
                     notes=result[9] or "",
                     rating=result[10],
                     read_status=result[11] or "unread",
-                    added_date=datetime.fromisoformat(result[12])
-                    if result[12]
-                    else datetime.now(),
-                    last_accessed=datetime.fromisoformat(result[13])
-                    if result[13]
-                    else None,
+                    added_date=datetime.fromisoformat(result[12]) if result[12] else datetime.now(),
+                    last_accessed=datetime.fromisoformat(result[13]) if result[13] else None,
                 )
                 papers.append(paper)
 
@@ -571,9 +543,7 @@ class ReadingListManager:
             total_papers = sum(status_counts.values())
 
             # Calculate time spent (mock calculation - would need actual tracking)
-            total_time = timedelta(
-                hours=status_counts["read"] * 2
-            )  # Assume 2 hours per paper
+            total_time = timedelta(hours=status_counts["read"] * 2)  # Assume 2 hours per paper
             avg_time = total_time / max(status_counts["read"], 1)
 
             # Get favorite categories
@@ -656,9 +626,7 @@ class ReadingListManager:
                 top_authors=top_authors,
             )
 
-    def export_reading_list(
-        self, list_id: str, output_path: str, format: str = "json"
-    ) -> bool:
+    def export_reading_list(self, list_id: str, output_path: str, format: str = "json") -> bool:
         """Export a reading list to file."""
         try:
             reading_list = self.get_reading_list(list_id)
@@ -711,9 +679,7 @@ class ReadingListManager:
                             "rating": paper.rating,
                             "notes": paper.notes,
                             "tags": ", ".join(paper.tags),
-                            "added_date": paper.added_date.isoformat()
-                            if paper.added_date
-                            else "",
+                            "added_date": paper.added_date.isoformat() if paper.added_date else "",
                         }
                         writer.writerow(row)
             else:
@@ -774,9 +740,7 @@ class ReadingListManager:
         try:
             with sqlite3.connect(self.db_path) as conn:
                 conn.execute("DELETE FROM list_papers WHERE list_id = ?", (list_id,))
-                conn.execute(
-                    "DELETE FROM reading_progress WHERE list_id = ?", (list_id,)
-                )
+                conn.execute("DELETE FROM reading_progress WHERE list_id = ?", (list_id,))
                 conn.execute("DELETE FROM reading_lists WHERE id = ?", (list_id,))
 
             logger.info(f"Deleted reading list {list_id}")

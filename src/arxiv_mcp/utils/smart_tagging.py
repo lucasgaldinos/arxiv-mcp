@@ -274,7 +274,8 @@ class SmartTagger:
     def _init_database(self) -> None:
         """Initialize SQLite database for tag persistence."""
         with sqlite3.connect(self.db_path) as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS tags (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     term TEXT NOT NULL,
@@ -287,9 +288,11 @@ class SmartTagger:
                     last_used TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     UNIQUE(term, category)
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS paper_tags (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     paper_id TEXT NOT NULL,
@@ -299,14 +302,19 @@ class SmartTagger:
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (tag_id) REFERENCES tags (id)
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_tags_term ON tags(term)
-            """)
-            conn.execute("""
+            """
+            )
+            conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_paper_tags_paper ON paper_tags(paper_id)
-            """)
+            """
+            )
 
     def _ensure_nltk_data(self) -> None:
         """Ensure required NLTK data is downloaded."""
@@ -546,9 +554,7 @@ class SmartTagger:
 
         # Context boost (if term appears in title/abstract context)
         context_boost = (
-            0.2
-            if any("title" in ctx or "abstract" in ctx for ctx in tag.contexts)
-            else 0
+            0.2 if any("title" in ctx or "abstract" in ctx for ctx in tag.contexts) else 0
         )
 
         final_confidence = min(
@@ -604,18 +610,16 @@ class SmartTagger:
             metadata={
                 "total_tags": len(tags),
                 "categories_found": len(categories),
-                "top_category": max(categories.keys(), key=lambda k: len(categories[k]))
-                if categories
-                else None,
+                "top_category": (
+                    max(categories.keys(), key=lambda k: len(categories[k])) if categories else None
+                ),
                 "text_length": len(text),
                 "has_title": bool(title),
                 "has_abstract": bool(abstract),
             },
         )
 
-        logger.info(
-            f"Tagged paper {paper_id}: {len(tags)} tags, {confidence_score:.2f} confidence"
-        )
+        logger.info(f"Tagged paper {paper_id}: {len(tags)} tags, {confidence_score:.2f} confidence")
         return result
 
     def _store_paper_tags(self, paper_id: str, tags: List[Tag]) -> None:
@@ -625,7 +629,7 @@ class SmartTagger:
                 # Insert or update tag
                 conn.execute(
                     """
-                    INSERT OR REPLACE INTO tags 
+                    INSERT OR REPLACE INTO tags
                     (term, category, confidence, frequency, contexts, related_terms, last_used)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
@@ -649,7 +653,7 @@ class SmartTagger:
                 # Link to paper
                 conn.execute(
                     """
-                    INSERT OR REPLACE INTO paper_tags 
+                    INSERT OR REPLACE INTO paper_tags
                     (paper_id, tag_id, confidence, context)
                     VALUES (?, ?, ?, ?)
                 """,
@@ -666,7 +670,7 @@ class SmartTagger:
         with sqlite3.connect(self.db_path) as conn:
             results = conn.execute(
                 """
-                SELECT t.term, t.category, pt.confidence, t.frequency, 
+                SELECT t.term, t.category, pt.confidence, t.frequency,
                        t.contexts, t.related_terms, t.first_seen, t.last_used
                 FROM tags t
                 JOIN paper_tags pt ON t.id = pt.tag_id
@@ -685,20 +689,14 @@ class SmartTagger:
                     frequency=row[3],
                     contexts=json.loads(row[4]) if row[4] else [],
                     related_terms=json.loads(row[5]) if row[5] else [],
-                    first_seen=datetime.fromisoformat(row[6])
-                    if row[6]
-                    else datetime.now(),
-                    last_used=datetime.fromisoformat(row[7])
-                    if row[7]
-                    else datetime.now(),
+                    first_seen=datetime.fromisoformat(row[6]) if row[6] else datetime.now(),
+                    last_used=datetime.fromisoformat(row[7]) if row[7] else datetime.now(),
                 )
                 tags.append(tag)
 
             return tags
 
-    def get_trending_tags(
-        self, limit: int = 20, days: int = 30
-    ) -> List[Tuple[str, int, float]]:
+    def get_trending_tags(self, limit: int = 20, days: int = 30) -> List[Tuple[str, int, float]]:
         """Get trending tags based on recent usage."""
         with sqlite3.connect(self.db_path) as conn:
             results = conn.execute(
@@ -710,7 +708,9 @@ class SmartTagger:
                 GROUP BY t.term
                 ORDER BY usage_count DESC, avg_confidence DESC
                 LIMIT ?
-            """.format(days),
+            """.format(
+                    days
+                ),
                 (limit,),
             ).fetchall()
 
@@ -758,7 +758,8 @@ class SmartTagger:
         try:
             with sqlite3.connect(self.db_path) as conn:
                 # Get all tags with statistics
-                results = conn.execute("""
+                results = conn.execute(
+                    """
                     SELECT t.term, t.category, t.confidence, t.frequency,
                            COUNT(pt.id) as paper_count,
                            t.contexts, t.related_terms, t.first_seen, t.last_used
@@ -766,7 +767,8 @@ class SmartTagger:
                     LEFT JOIN paper_tags pt ON t.id = pt.tag_id
                     GROUP BY t.id
                     ORDER BY paper_count DESC, t.confidence DESC
-                """).fetchall()
+                """
+                ).fetchall()
 
                 tags_data = []
                 for row in results:

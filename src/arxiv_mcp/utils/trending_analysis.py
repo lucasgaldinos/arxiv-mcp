@@ -115,7 +115,8 @@ class TrendingAnalyzer:
         """Initialize SQLite database for trending data."""
         with sqlite3.connect(self.db_path) as conn:
             # Paper metrics table
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS paper_metrics (
                     arxiv_id TEXT,
                     date DATE,
@@ -127,10 +128,12 @@ class TrendingAnalyzer:
                     rank_position INTEGER,
                     PRIMARY KEY (arxiv_id, date)
                 )
-            """)
+            """
+            )
 
             # Category trends table
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS category_trends (
                     category TEXT,
                     date DATE,
@@ -141,10 +144,12 @@ class TrendingAnalyzer:
                     growth_rate REAL DEFAULT 0.0,
                     PRIMARY KEY (category, date)
                 )
-            """)
+            """
+            )
 
             # Keyword trends table
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS keyword_trends (
                     keyword TEXT,
                     date DATE,
@@ -155,10 +160,12 @@ class TrendingAnalyzer:
                     categories TEXT,
                     PRIMARY KEY (keyword, date)
                 )
-            """)
+            """
+            )
 
             # Trending snapshots table
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS trending_snapshots (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     date DATE NOT NULL,
@@ -166,21 +173,16 @@ class TrendingAnalyzer:
                     data TEXT NOT NULL,
                     metadata TEXT
                 )
-            """)
+            """
+            )
 
             # Create indexes
-            conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_metrics_date ON paper_metrics(date)"
-            )
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_metrics_date ON paper_metrics(date)")
             conn.execute(
                 "CREATE INDEX IF NOT EXISTS idx_metrics_score ON paper_metrics(trend_score)"
             )
-            conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_category_date ON category_trends(date)"
-            )
-            conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_keyword_date ON keyword_trends(date)"
-            )
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_category_date ON category_trends(date)")
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_keyword_date ON keyword_trends(date)")
 
     def record_paper_metrics(
         self, arxiv_id: str, metrics: Dict[str, int], date: datetime = None
@@ -201,7 +203,7 @@ class TrendingAnalyzer:
             conn.execute(
                 """
                 INSERT OR REPLACE INTO paper_metrics
-                (arxiv_id, date, download_count, citation_count, view_count, 
+                (arxiv_id, date, download_count, citation_count, view_count,
                  social_mentions, trend_score)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
@@ -251,7 +253,7 @@ class TrendingAnalyzer:
         with sqlite3.connect(self.db_path) as conn:
             # Base query for trending papers
             query = """
-                SELECT 
+                SELECT
                     pm.arxiv_id,
                     AVG(pm.trend_score) as avg_score,
                     MAX(pm.download_count) as max_downloads,
@@ -410,9 +412,7 @@ class TrendingAnalyzer:
         )
         return round(base_score * category_multiplier, 3)
 
-    def analyze_keyword_trends(
-        self, limit: int = 20, days: int = 14
-    ) -> List[TrendingKeyword]:
+    def analyze_keyword_trends(self, limit: int = 20, days: int = 14) -> List[TrendingKeyword]:
         """Analyze trending keywords and topics."""
         end_date = datetime.now().date()
         start_date = end_date - timedelta(days=days)
@@ -420,7 +420,7 @@ class TrendingAnalyzer:
         with sqlite3.connect(self.db_path) as conn:
             results = conn.execute(
                 """
-                SELECT 
+                SELECT
                     keyword,
                     SUM(frequency) as total_frequency,
                     COUNT(DISTINCT date) as appearances,
@@ -537,14 +537,10 @@ class TrendingAnalyzer:
         # Sort by trend score and velocity
         viral_papers.sort(key=lambda x: (x.trend_score, x.velocity), reverse=True)
 
-        logger.info(
-            f"Identified {len(viral_papers)} viral papers (threshold: {threshold:.2f})"
-        )
+        logger.info(f"Identified {len(viral_papers)} viral papers (threshold: {threshold:.2f})")
         return viral_papers
 
-    def detect_emerging_topics(
-        self, days: int = 30, growth_threshold: float = 2.0
-    ) -> List[str]:
+    def detect_emerging_topics(self, days: int = 30, growth_threshold: float = 2.0) -> List[str]:
         """Detect emerging topics based on keyword growth."""
         current_keywords = self.analyze_keyword_trends(limit=50, days=days // 2)
         past_keywords = self.analyze_keyword_trends(limit=50, days=days)
@@ -583,9 +579,7 @@ class TrendingAnalyzer:
 
         # Calculate trending threshold
         if trending_papers:
-            trending_threshold = statistics.median(
-                paper.trend_score for paper in trending_papers
-            )
+            trending_threshold = statistics.median(paper.trend_score for paper in trending_papers)
         else:
             trending_threshold = 0.0
 
@@ -631,9 +625,7 @@ class TrendingAnalyzer:
                 ),
             )
 
-    def get_historical_trends(
-        self, arxiv_id: str, days: int = 30
-    ) -> List[Tuple[datetime, float]]:
+    def get_historical_trends(self, arxiv_id: str, days: int = 30) -> List[Tuple[datetime, float]]:
         """Get historical trend data for a paper."""
         end_date = datetime.now().date()
         start_date = end_date - timedelta(days=days)
@@ -650,9 +642,7 @@ class TrendingAnalyzer:
 
             return [(datetime.fromisoformat(row[0]).date(), row[1]) for row in results]
 
-    def compare_papers(
-        self, arxiv_ids: List[str], days: int = 30
-    ) -> Dict[str, Dict[str, float]]:
+    def compare_papers(self, arxiv_ids: List[str], days: int = 30) -> Dict[str, Dict[str, float]]:
         """Compare trending metrics between papers."""
         comparison = {}
 
@@ -666,9 +656,9 @@ class TrendingAnalyzer:
                     "peak_score": max(scores),
                     "current_score": scores[-1] if scores else 0,
                     "volatility": statistics.stdev(scores) if len(scores) > 1 else 0,
-                    "trend_direction": "up"
-                    if len(scores) > 1 and scores[-1] > scores[0]
-                    else "down",
+                    "trend_direction": (
+                        "up" if len(scores) > 1 and scores[-1] > scores[0] else "down"
+                    ),
                 }
             else:
                 comparison[arxiv_id] = {
@@ -681,9 +671,7 @@ class TrendingAnalyzer:
 
         return comparison
 
-    def export_trending_data(
-        self, output_path: str, format: str = "json", days: int = 30
-    ) -> bool:
+    def export_trending_data(self, output_path: str, format: str = "json", days: int = 30) -> bool:
         """Export trending analysis data."""
         try:
             report = self.generate_trending_report(days=days)
@@ -734,9 +722,7 @@ class TrendingAnalyzer:
                 # Export papers data as CSV
                 with open(output_file, "w", newline="") as f:
                     writer = csv.writer(f)
-                    writer.writerow(
-                        ["Type", "Name", "Score", "Frequency", "Additional"]
-                    )
+                    writer.writerow(["Type", "Name", "Score", "Frequency", "Additional"])
 
                     # Add categories
                     for cat in report.top_categories:
@@ -752,9 +738,7 @@ class TrendingAnalyzer:
 
                     # Add keywords
                     for kw in report.top_keywords:
-                        writer.writerow(
-                            ["Keyword", kw.keyword, kw.trend_score, kw.frequency, ""]
-                        )
+                        writer.writerow(["Keyword", kw.keyword, kw.trend_score, kw.frequency, ""])
             else:
                 raise ValueError(f"Unsupported format: {format}")
 

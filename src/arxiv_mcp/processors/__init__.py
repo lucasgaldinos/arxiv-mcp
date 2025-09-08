@@ -55,9 +55,7 @@ class LaTeXProcessor:
         self.metrics = MetricsCollector()
         self.validator = ArxivValidator()
 
-    def extract_archive(
-        self, content: BytesIO, max_files: int = 1000
-    ) -> Dict[str, bytes]:
+    def extract_archive(self, content: BytesIO, max_files: int = 1000) -> Dict[str, bytes]:
         """Extract files from compressed archive."""
         files = {}
         content.seek(0)
@@ -158,9 +156,7 @@ class LaTeXProcessor:
 
                     if result.returncode != 0 and i == 1:  # Only fail on second run
                         self.logger.error(f"LaTeX compilation failed: {result.stderr}")
-                        raise CompilationError(
-                            f"LaTeX compilation failed: {result.stderr}"
-                        )
+                        raise CompilationError(f"LaTeX compilation failed: {result.stderr}")
 
                 # Read the generated PDF
                 pdf_name = main_path.stem + ".pdf"
@@ -176,9 +172,7 @@ class LaTeXProcessor:
                     f"LaTeX compilation timed out after {self.compilation_timeout}s"
                 )
             except FileNotFoundError:
-                raise CompilationError(
-                    "pdflatex not found. Please install a LaTeX distribution."
-                )
+                raise CompilationError("pdflatex not found. Please install a LaTeX distribution.")
 
     def extract_text_from_tex(self, tex_content: str) -> str:
         """Extract readable text from LaTeX source."""

@@ -180,9 +180,7 @@ class AutoSummarizer:
         words = re.findall(r"\b\w+\b", text.lower())
         return words
 
-    def _calculate_sentence_score(
-        self, sentence: str, word_freq: Dict[str, float]
-    ) -> float:
+    def _calculate_sentence_score(self, sentence: str, word_freq: Dict[str, float]) -> float:
         """Calculate relevance score for a sentence."""
         words = self.word_tokenize(sentence)
         words = [w for w in words if w not in self.stopwords and len(w) > 2]
@@ -233,9 +231,7 @@ class AutoSummarizer:
         sorted_keywords = sorted(word_scores.items(), key=lambda x: x[1], reverse=True)
         return [word for word, score in sorted_keywords[:max_keywords]]
 
-    def _extract_key_points(
-        self, sentences: List[str], max_points: int = 5
-    ) -> List[str]:
+    def _extract_key_points(self, sentences: List[str], max_points: int = 5) -> List[str]:
         """Extract key points from sentences using pattern matching."""
         key_points = []
 
@@ -313,9 +309,7 @@ class AutoSummarizer:
                     abstract=abstract,
                     extractive_summary=sentences,
                     key_points=[],
-                    keywords=self._extract_keywords(full_text)
-                    if include_keywords
-                    else [],
+                    keywords=self._extract_keywords(full_text) if include_keywords else [],
                     summary_length=len(sentences),
                     confidence_score=0.3,
                     method_used="minimal_content",
@@ -323,9 +317,7 @@ class AutoSummarizer:
 
             # Calculate word frequencies
             all_words = self.word_tokenize(full_text)
-            filtered_words = [
-                w for w in all_words if w not in self.stopwords and len(w) > 2
-            ]
+            filtered_words = [w for w in all_words if w not in self.stopwords and len(w) > 2]
             word_freq = Counter(filtered_words)
 
             # Normalize frequencies
@@ -400,9 +392,7 @@ class AutoSummarizer:
             confidence += 0.1
 
         # Boost for good compression ratio
-        compression_ratio = (
-            summary_sentences / total_sentences if total_sentences > 0 else 0
-        )
+        compression_ratio = summary_sentences / total_sentences if total_sentences > 0 else 0
         if 0.1 <= compression_ratio <= 0.3:
             confidence += 0.2
 
@@ -480,16 +470,12 @@ class AutoSummarizer:
                 for summary in individual_summaries
             ],
             "common_themes": common_keywords,
-            "comparative_insights": self._generate_comparative_insights(
-                individual_summaries
-            ),
+            "comparative_insights": self._generate_comparative_insights(individual_summaries),
             "average_confidence": avg_confidence,
             "focus_topic": focus_topic,
         }
 
-    def _generate_comparative_insights(
-        self, summaries: List[SummaryResult]
-    ) -> List[str]:
+    def _generate_comparative_insights(self, summaries: List[SummaryResult]) -> List[str]:
         """Generate insights by comparing multiple paper summaries."""
         insights = []
 
@@ -525,10 +511,7 @@ class AutoSummarizer:
         novel_papers = sum(
             1
             for summary in summaries
-            if any(
-                any(novel in kw.lower() for novel in novel_keywords)
-                for kw in summary.keywords
-            )
+            if any(any(novel in kw.lower() for novel in novel_keywords) for kw in summary.keywords)
         )
 
         if novel_papers > 0:

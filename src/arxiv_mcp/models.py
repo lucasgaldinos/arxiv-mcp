@@ -184,37 +184,23 @@ class SearchQuery(BaseArxivModel):
     user_id: Optional[str] = Field(None, description="User identifier")
     filters: Dict[str, Any] = Field(default_factory=dict, description="Search filters")
     categories: List[str] = Field(default_factory=list, description="ArXiv categories")
-    date_range: Optional[Dict[str, datetime]] = Field(
-        None, description="Date range filter"
-    )
+    date_range: Optional[Dict[str, datetime]] = Field(None, description="Date range filter")
     max_results: int = Field(50, ge=1, le=1000, description="Maximum results")
     sort_by: str = Field("relevance", description="Sort criteria")
-    timestamp: datetime = Field(
-        default_factory=datetime.now, description="Query timestamp"
-    )
+    timestamp: datetime = Field(default_factory=datetime.now, description="Query timestamp")
 
 
 class SummaryResult(BaseArxivModel):
     """Text summarization result with metadata."""
 
     summary_text: str = Field("", description="Generated summary")
-    summary_type: SummaryType = Field(
-        SummaryType.EXTRACTIVE, description="Summary type"
-    )
+    summary_type: SummaryType = Field(SummaryType.EXTRACTIVE, description="Summary type")
     confidence: float = Field(0.0, ge=0.0, le=1.0, description="Summary confidence")
-    key_phrases: List[str] = Field(
-        default_factory=list, description="Extracted key phrases"
-    )
+    key_phrases: List[str] = Field(default_factory=list, description="Extracted key phrases")
     word_count: int = Field(0, ge=0, description="Summary word count")
-    compression_ratio: float = Field(
-        0.0, ge=0.0, le=1.0, description="Compression ratio"
-    )
-    processing_time: float = Field(
-        0.0, ge=0.0, description="Processing time in seconds"
-    )
-    metadata: Dict[str, Any] = Field(
-        default_factory=dict, description="Additional metadata"
-    )
+    compression_ratio: float = Field(0.0, ge=0.0, le=1.0, description="Compression ratio")
+    processing_time: float = Field(0.0, ge=0.0, description="Processing time in seconds")
+    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
 
 
 class Tag(BaseArxivModel):
@@ -235,12 +221,8 @@ class ReadingList(BaseArxivModel):
     description: str = Field("", description="List description")
     user_id: str = Field(..., description="Owner user ID")
     papers: List[Paper] = Field(default_factory=list, description="Papers in list")
-    created_date: datetime = Field(
-        default_factory=datetime.now, description="Creation date"
-    )
-    updated_date: datetime = Field(
-        default_factory=datetime.now, description="Last update"
-    )
+    created_date: datetime = Field(default_factory=datetime.now, description="Creation date")
+    updated_date: datetime = Field(default_factory=datetime.now, description="Last update")
     is_public: bool = Field(False, description="Public visibility")
     tags: List[str] = Field(default_factory=list, description="List tags")
 
@@ -253,9 +235,7 @@ class NotificationRule(BaseArxivModel):
     rule_type: NotificationRuleType = Field(..., description="Rule type")
     criteria: Dict[str, Any] = Field(..., description="Rule criteria")
     enabled: bool = Field(True, description="Rule enabled status")
-    created_date: datetime = Field(
-        default_factory=datetime.now, description="Creation date"
-    )
+    created_date: datetime = Field(default_factory=datetime.now, description="Creation date")
     last_triggered: Optional[datetime] = Field(None, description="Last trigger time")
     trigger_count: int = Field(0, ge=0, description="Number of triggers")
 
@@ -268,9 +248,7 @@ class Notification(BaseArxivModel):
     rule_id: str = Field(..., description="Source rule ID")
     paper_id: str = Field(..., description="Related paper ID")
     message: str = Field(..., min_length=1, description="Notification message")
-    created_date: datetime = Field(
-        default_factory=datetime.now, description="Creation date"
-    )
+    created_date: datetime = Field(default_factory=datetime.now, description="Creation date")
     read: bool = Field(False, description="Read status")
     priority: str = Field("normal", description="Notification priority")
 
@@ -280,12 +258,8 @@ class TrendingPaper(Paper):
 
     trending_score: float = Field(0.0, ge=0.0, description="Trending score")
     velocity: float = Field(0.0, description="Growth velocity")
-    peak_position: Optional[int] = Field(
-        None, ge=1, description="Peak ranking position"
-    )
-    trending_categories: List[str] = Field(
-        default_factory=list, description="Trending categories"
-    )
+    peak_position: Optional[int] = Field(None, ge=1, description="Peak ranking position")
+    trending_categories: List[str] = Field(default_factory=list, description="Trending categories")
     social_mentions: int = Field(0, ge=0, description="Social media mentions")
 
 
@@ -298,9 +272,7 @@ class BatchOperation(BaseArxivModel):
     concurrency: int = Field(5, ge=1, le=20, description="Concurrent workers")
     timeout: float = Field(300.0, gt=0, description="Operation timeout")
     retry_count: int = Field(3, ge=0, description="Retry attempts")
-    created_date: datetime = Field(
-        default_factory=datetime.now, description="Creation date"
-    )
+    created_date: datetime = Field(default_factory=datetime.now, description="Creation date")
     status: str = Field("pending", description="Operation status")
 
 
@@ -312,13 +284,9 @@ class BatchResult(BaseArxivModel):
     successful_items: int = Field(..., ge=0, description="Successfully processed items")
     failed_items: int = Field(..., ge=0, description="Failed items")
     processing_time: float = Field(..., ge=0, description="Total processing time")
-    results: List[Dict[str, Any]] = Field(
-        default_factory=list, description="Individual results"
-    )
+    results: List[Dict[str, Any]] = Field(default_factory=list, description="Individual results")
     errors: List[str] = Field(default_factory=list, description="Error messages")
-    completed_date: datetime = Field(
-        default_factory=datetime.now, description="Completion date"
-    )
+    completed_date: datetime = Field(default_factory=datetime.now, description="Completion date")
 
 
 # Export all models

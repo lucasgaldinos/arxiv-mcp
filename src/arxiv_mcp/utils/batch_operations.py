@@ -232,9 +232,7 @@ class BatchProcessor:
         # Generate results summary
         operation.results_summary = self._generate_results_summary(operation)
 
-        logger.info(
-            f"Batch operation {operation.id} completed: {operation.status.value}"
-        )
+        logger.info(f"Batch operation {operation.id} completed: {operation.status.value}")
 
     async def _process_single_item(
         self, item: BatchItem, handler: Callable, config: Dict[str, Any]
@@ -270,18 +268,12 @@ class BatchProcessor:
 
     def _generate_results_summary(self, operation: BatchOperation) -> Dict[str, Any]:
         """Generate a summary of batch operation results."""
-        completed_items = [
-            item for item in operation.items if item.status == BatchStatus.COMPLETED
-        ]
-        failed_items = [
-            item for item in operation.items if item.status == BatchStatus.FAILED
-        ]
+        completed_items = [item for item in operation.items if item.status == BatchStatus.COMPLETED]
+        failed_items = [item for item in operation.items if item.status == BatchStatus.FAILED]
 
         # Calculate timing statistics
         processing_times = [
-            item.processing_time
-            for item in completed_items
-            if item.processing_time is not None
+            item.processing_time for item in completed_items if item.processing_time is not None
         ]
 
         summary = {
@@ -289,12 +281,14 @@ class BatchProcessor:
             "completed_items": len(completed_items),
             "failed_items": len(failed_items),
             "success_rate": operation.success_rate,
-            "total_time": (operation.end_time - operation.start_time).total_seconds()
-            if operation.end_time and operation.start_time
-            else 0,
-            "average_processing_time": sum(processing_times) / len(processing_times)
-            if processing_times
-            else 0,
+            "total_time": (
+                (operation.end_time - operation.start_time).total_seconds()
+                if operation.end_time and operation.start_time
+                else 0
+            ),
+            "average_processing_time": (
+                sum(processing_times) / len(processing_times) if processing_times else 0
+            ),
             "min_processing_time": min(processing_times) if processing_times else 0,
             "max_processing_time": max(processing_times) if processing_times else 0,
         }
@@ -308,9 +302,7 @@ class BatchProcessor:
             )
         elif operation.operation_type == BatchOperationType.DOWNLOAD:
             summary["total_size"] = sum(
-                item.output_data.get("size", 0)
-                for item in completed_items
-                if item.output_data
+                item.output_data.get("size", 0) for item in completed_items if item.output_data
             )
 
         return summary
@@ -338,10 +330,10 @@ class BatchProcessor:
             "failed_items": operation.failed_items,
             "success_rate": operation.success_rate,
             "progress_percentage": (
-                operation.completed_items / operation.total_items * 100
-            )
-            if operation.total_items > 0
-            else 0,
+                (operation.completed_items / operation.total_items * 100)
+                if operation.total_items > 0
+                else 0
+            ),
         }
 
         # Add timing information
@@ -353,9 +345,7 @@ class BatchProcessor:
                 avg_time_per_item = elapsed_time / operation.completed_items
                 remaining_items = operation.total_items - operation.completed_items
                 estimated_remaining = avg_time_per_item * remaining_items
-                progress["estimated_completion"] = (
-                    datetime.now().timestamp() + estimated_remaining
-                )
+                progress["estimated_completion"] = datetime.now().timestamp() + estimated_remaining
 
         return progress
 
@@ -398,18 +388,14 @@ class BatchProcessor:
         successful_items = [
             item for item in operation.items if item.status == BatchStatus.COMPLETED
         ]
-        failed_items = [
-            item for item in operation.items if item.status == BatchStatus.FAILED
-        ]
+        failed_items = [item for item in operation.items if item.status == BatchStatus.FAILED]
 
         total_time = (
             (operation.end_time - operation.start_time).total_seconds()
             if operation.end_time and operation.start_time
             else 0
         )
-        avg_time = (
-            total_time / operation.total_items if operation.total_items > 0 else 0
-        )
+        avg_time = total_time / operation.total_items if operation.total_items > 0 else 0
 
         return BatchResult(
             operation_id=operation_id,
@@ -445,12 +431,8 @@ class BatchProcessor:
                 "operation_type": operation.operation_type.value,
                 "status": operation.status.value,
                 "created_date": operation.created_date.isoformat(),
-                "start_time": operation.start_time.isoformat()
-                if operation.start_time
-                else None,
-                "end_time": operation.end_time.isoformat()
-                if operation.end_time
-                else None,
+                "start_time": operation.start_time.isoformat() if operation.start_time else None,
+                "end_time": operation.end_time.isoformat() if operation.end_time else None,
                 "config": operation.config,
                 "results_summary": operation.results_summary,
                 "items": [],
@@ -538,9 +520,7 @@ class BatchProcessor:
 
 
 # Pre-built operation handlers
-def batch_search_handler(
-    input_data: Dict[str, Any], config: Dict[str, Any]
-) -> Dict[str, Any]:
+def batch_search_handler(input_data: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
     """Handler for batch search operations."""
     query = input_data.get("query", "")
     max_results = config.get("max_results", 10)
@@ -558,9 +538,7 @@ def batch_search_handler(
     return {"query": query, "results": results, "total_found": len(results)}
 
 
-def batch_download_handler(
-    input_data: Dict[str, Any], config: Dict[str, Any]
-) -> Dict[str, Any]:
+def batch_download_handler(input_data: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
     """Handler for batch download operations."""
     arxiv_id = input_data.get("arxiv_id", "")
     format_type = config.get("format", "pdf")
@@ -577,9 +555,7 @@ def batch_download_handler(
     }
 
 
-def batch_analyze_handler(
-    input_data: Dict[str, Any], config: Dict[str, Any]
-) -> Dict[str, Any]:
+def batch_analyze_handler(input_data: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
     """Handler for batch analysis operations."""
     paper_data = input_data.get("paper_data", {})
     analysis_type = config.get("analysis_type", "basic")
@@ -598,9 +574,7 @@ def batch_analyze_handler(
 
 
 # Convenience functions
-def create_batch_processor(
-    max_workers: int = 5, cache_dir: Optional[str] = None
-) -> BatchProcessor:
+def create_batch_processor(max_workers: int = 5, cache_dir: Optional[str] = None) -> BatchProcessor:
     """Create a configured BatchProcessor instance with default handlers."""
     processor = BatchProcessor(max_workers=max_workers, cache_dir=cache_dir)
 
@@ -612,9 +586,7 @@ def create_batch_processor(
     return processor
 
 
-def quick_batch_search(
-    queries: List[str], max_results: int = 10
-) -> List[Dict[str, Any]]:
+def quick_batch_search(queries: List[str], max_results: int = 10) -> List[Dict[str, Any]]:
     """Quick batch search for multiple queries."""
     processor = create_batch_processor()
 
@@ -623,9 +595,7 @@ def quick_batch_search(
     config = {"max_results": max_results}
 
     # Create and submit operation
-    operation = processor.create_batch_operation(
-        BatchOperationType.SEARCH, items_data, config
-    )
+    operation = processor.create_batch_operation(BatchOperationType.SEARCH, items_data, config)
 
     processor.submit_batch_operation(operation.id)
 

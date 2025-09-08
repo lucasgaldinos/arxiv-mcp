@@ -40,9 +40,7 @@ class ArxivAPIClient:
 
         self.last_request_time = asyncio.get_event_loop().time()
 
-    @async_retry(
-        retries=3, delay=1.0, exceptions=[aiohttp.ClientError, asyncio.TimeoutError]
-    )
+    @async_retry(retries=3, delay=1.0, exceptions=[aiohttp.ClientError, asyncio.TimeoutError])
     async def search(
         self,
         query: str,
@@ -76,9 +74,7 @@ class ArxivAPIClient:
 
             # Build search query
             date_range = (date_from, date_to) if date_from or date_to else None
-            search_query = self._build_search_query(
-                query, categories, authors, date_range
-            )
+            search_query = self._build_search_query(query, categories, authors, date_range)
 
             # Build API parameters
             params = {
@@ -152,19 +148,11 @@ class ArxivAPIClient:
             # Extract metadata using proper namespaces
             total_results_elem = root.find(".//opensearch:totalResults", self.NAMESPACE)
             start_index_elem = root.find(".//opensearch:startIndex", self.NAMESPACE)
-            items_per_page_elem = root.find(
-                ".//opensearch:itemsPerPage", self.NAMESPACE
-            )
+            items_per_page_elem = root.find(".//opensearch:itemsPerPage", self.NAMESPACE)
 
-            total_results = (
-                int(total_results_elem.text) if total_results_elem is not None else 0
-            )
-            start_index = (
-                int(start_index_elem.text) if start_index_elem is not None else 0
-            )
-            items_per_page = (
-                int(items_per_page_elem.text) if items_per_page_elem is not None else 0
-            )
+            total_results = int(total_results_elem.text) if total_results_elem is not None else 0
+            start_index = int(start_index_elem.text) if start_index_elem is not None else 0
+            items_per_page = int(items_per_page_elem.text) if items_per_page_elem is not None else 0
 
             # Extract papers
             papers = []
@@ -193,14 +181,10 @@ class ArxivAPIClient:
         paper["id"] = id_elem.text.split("/")[-1] if id_elem is not None else "unknown"
 
         title_elem = entry.find(".//atom:title", self.NAMESPACE)
-        paper["title"] = (
-            title_elem.text.strip() if title_elem is not None else "No title"
-        )
+        paper["title"] = title_elem.text.strip() if title_elem is not None else "No title"
 
         summary_elem = entry.find(".//atom:summary", self.NAMESPACE)
-        paper["summary"] = (
-            summary_elem.text.strip() if summary_elem is not None else "No summary"
-        )
+        paper["summary"] = summary_elem.text.strip() if summary_elem is not None else "No summary"
 
         # Dates
         published = entry.find(".//atom:published", self.NAMESPACE)
@@ -262,9 +246,7 @@ class ArxivAPIClient:
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 if response.status != 200:
-                    raise ArxivError(
-                        f"Failed to fetch paper {arxiv_id}: {response.status}"
-                    )
+                    raise ArxivError(f"Failed to fetch paper {arxiv_id}: {response.status}")
 
                 content = await response.text()
                 result = self._parse_response(content)

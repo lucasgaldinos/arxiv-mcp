@@ -112,9 +112,7 @@ class PaperNotificationSystem:
 
     def __init__(self, cache_dir: Optional[str] = None):
         """Initialize the notification system."""
-        self.cache_dir = (
-            Path(cache_dir) if cache_dir else Path.cwd() / "notification_cache"
-        )
+        self.cache_dir = Path(cache_dir) if cache_dir else Path.cwd() / "notification_cache"
         self.cache_dir.mkdir(exist_ok=True)
 
         self.db_path = self.cache_dir / "notifications.db"
@@ -131,7 +129,8 @@ class PaperNotificationSystem:
         """Initialize SQLite database for persistent storage."""
         with sqlite3.connect(self.db_path) as conn:
             # Notification rules table
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS notification_rules (
                     id TEXT PRIMARY KEY,
                     name TEXT NOT NULL,
@@ -143,10 +142,12 @@ class PaperNotificationSystem:
                     created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     metadata TEXT
                 )
-            """)
+            """
+            )
 
             # Notifications table
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS notifications (
                     id TEXT PRIMARY KEY,
                     rule_id TEXT NOT NULL,
@@ -160,10 +161,12 @@ class PaperNotificationSystem:
                     data TEXT,
                     FOREIGN KEY (rule_id) REFERENCES notification_rules (id)
                 )
-            """)
+            """
+            )
 
             # Paper monitors table
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS paper_monitors (
                     paper_id TEXT PRIMARY KEY,
                     title TEXT NOT NULL,
@@ -176,7 +179,8 @@ class PaperNotificationSystem:
                     check_frequency INTEGER DEFAULT 86400,
                     created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
-            """)
+            """
+            )
 
             # Create indexes
             conn.execute(
@@ -218,7 +222,7 @@ class PaperNotificationSystem:
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
                 """
-                INSERT INTO notification_rules 
+                INSERT INTO notification_rules
                 (id, name, notification_type, conditions, frequency, metadata)
                 VALUES (?, ?, ?, ?, ?, ?)
             """,
@@ -235,9 +239,7 @@ class PaperNotificationSystem:
         logger.info(f"Created notification rule: {name} ({rule_id})")
         return rule
 
-    def get_notification_rules(
-        self, active_only: bool = True
-    ) -> List[NotificationRule]:
+    def get_notification_rules(self, active_only: bool = True) -> List[NotificationRule]:
         """Get all notification rules."""
         with sqlite3.connect(self.db_path) as conn:
             query = "SELECT * FROM notification_rules"
@@ -256,12 +258,8 @@ class PaperNotificationSystem:
                     conditions=json.loads(result[3]),
                     is_active=bool(result[4]),
                     frequency=result[5],
-                    last_triggered=datetime.fromisoformat(result[6])
-                    if result[6]
-                    else None,
-                    created_date=datetime.fromisoformat(result[7])
-                    if result[7]
-                    else datetime.now(),
+                    last_triggered=datetime.fromisoformat(result[6]) if result[6] else None,
+                    created_date=datetime.fromisoformat(result[7]) if result[7] else datetime.now(),
                     metadata=json.loads(result[8]) if result[8] else {},
                 )
                 rules.append(rule)
@@ -282,9 +280,7 @@ class PaperNotificationSystem:
 
         # Calculate initial hashes
         content_hash = hashlib.md5(f"{title}{authors}{version}".encode()).hexdigest()
-        metadata_hash = hashlib.md5(
-            f"{title}{json.dumps(authors)}".encode()
-        ).hexdigest()
+        metadata_hash = hashlib.md5(f"{title}{json.dumps(authors)}".encode()).hexdigest()
 
         monitor = PaperMonitor(
             paper_id=paper_id,
@@ -343,9 +339,7 @@ class PaperNotificationSystem:
                 stored_content_hash,
                 stored_metadata_hash,
             ) = monitor_result
-            stored_authors = (
-                json.loads(stored_authors_json) if stored_authors_json else []
-            )
+            stored_authors = json.loads(stored_authors_json) if stored_authors_json else []
 
             # Check for version changes
             current_version = current_data.get("version", "1")
@@ -374,9 +368,7 @@ class PaperNotificationSystem:
             if current_metadata_hash != stored_metadata_hash:
                 changes = []
                 if current_title != stored_title:
-                    changes.append(
-                        f"Title changed: '{stored_title}' → '{current_title}'"
-                    )
+                    changes.append(f"Title changed: '{stored_title}' → '{current_title}'")
                 if current_authors != stored_authors:
                     changes.append("Authors updated")
 
@@ -404,8 +396,8 @@ class PaperNotificationSystem:
             # Update monitor record
             conn.execute(
                 """
-                UPDATE paper_monitors 
-                SET title = ?, authors = ?, version = ?, content_hash = ?, 
+                UPDATE paper_monitors
+                SET title = ?, authors = ?, version = ?, content_hash = ?,
                     metadata_hash = ?, last_check = ?
                 WHERE paper_id = ?
             """,
@@ -477,9 +469,7 @@ class PaperNotificationSystem:
 
         return notification
 
-    def create_keyword_alert(
-        self, keywords: List[str], name: str = None
-    ) -> NotificationRule:
+    def create_keyword_alert(self, keywords: List[str], name: str = None) -> NotificationRule:
         """Create a keyword-based alert rule."""
         name = name or f"Keyword Alert: {', '.join(keywords[:3])}"
 
@@ -497,9 +487,7 @@ class PaperNotificationSystem:
             frequency="daily",
         )
 
-    def create_author_alert(
-        self, authors: List[str], name: str = None
-    ) -> NotificationRule:
+    def create_author_alert(self, authors: List[str], name: str = None) -> NotificationRule:
         """Create an author-based alert rule."""
         name = name or f"Author Alert: {', '.join(authors[:2])}"
 
@@ -516,9 +504,7 @@ class PaperNotificationSystem:
             frequency="immediate",
         )
 
-    def create_category_alert(
-        self, categories: List[str], name: str = None
-    ) -> NotificationRule:
+    def create_category_alert(self, categories: List[str], name: str = None) -> NotificationRule:
         """Create a category-based alert rule."""
         name = name or f"Category Alert: {', '.join(categories)}"
 
@@ -553,7 +539,7 @@ class PaperNotificationSystem:
 
                 # Extract text to search
                 text_to_search = ""
-                for field in fields:
+                for notification_field in fields:
                     if field in paper_data:
                         text_to_search += f" {paper_data[field]}"
 
@@ -626,9 +612,7 @@ class PaperNotificationSystem:
                 (datetime.now().isoformat(), rule_id),
             )
 
-    def get_notifications(
-        self, unread_only: bool = False, limit: int = 50
-    ) -> List[Notification]:
+    def get_notifications(self, unread_only: bool = False, limit: int = 50) -> List[Notification]:
         """Get notifications."""
         with sqlite3.connect(self.db_path) as conn:
             query = "SELECT * FROM notifications"
@@ -649,9 +633,7 @@ class PaperNotificationSystem:
                     notification_type=NotificationType(result[5]),
                     priority=result[6],
                     is_read=bool(result[7]),
-                    created_date=datetime.fromisoformat(result[8])
-                    if result[8]
-                    else datetime.now(),
+                    created_date=datetime.fromisoformat(result[8]) if result[8] else datetime.now(),
                     data=json.loads(result[9]) if result[9] else {},
                 )
                 notifications.append(notification)
@@ -678,9 +660,7 @@ class PaperNotificationSystem:
     def mark_all_read(self) -> int:
         """Mark all notifications as read."""
         with sqlite3.connect(self.db_path) as conn:
-            cursor = conn.execute(
-                "UPDATE notifications SET is_read = 1 WHERE is_read = 0"
-            )
+            cursor = conn.execute("UPDATE notifications SET is_read = 1 WHERE is_read = 0")
             count = cursor.rowcount
 
         logger.info(f"Marked {count} notifications as read")
@@ -698,17 +678,21 @@ class PaperNotificationSystem:
             ).fetchone()[0]
 
             # By type
-            type_results = conn.execute("""
-                SELECT notification_type, COUNT(*) FROM notifications 
+            type_results = conn.execute(
+                """
+                SELECT notification_type, COUNT(*) FROM notifications
                 GROUP BY notification_type
-            """).fetchall()
+            """
+            ).fetchall()
             notifications_by_type = {row[0]: row[1] for row in type_results}
 
             # By priority
-            priority_results = conn.execute("""
-                SELECT priority, COUNT(*) FROM notifications 
+            priority_results = conn.execute(
+                """
+                SELECT priority, COUNT(*) FROM notifications
                 GROUP BY priority
-            """).fetchall()
+            """
+            ).fetchall()
             notifications_by_priority = {row[0]: row[1] for row in priority_results}
 
             # Active rules
@@ -725,9 +709,7 @@ class PaperNotificationSystem:
             last_check_result = conn.execute(
                 "SELECT MAX(last_check) FROM paper_monitors"
             ).fetchone()[0]
-            last_check = (
-                datetime.fromisoformat(last_check_result) if last_check_result else None
-            )
+            last_check = datetime.fromisoformat(last_check_result) if last_check_result else None
 
             return NotificationStats(
                 total_notifications=total,
@@ -755,27 +737,25 @@ class PaperNotificationSystem:
             try:
                 handler(notification)
             except Exception as e:
-                logger.error(
-                    f"Handler error for {notification.notification_type.value}: {e}"
-                )
+                logger.error(f"Handler error for {notification.notification_type.value}: {e}")
 
     async def run_monitoring_cycle(self) -> int:
         """Run a complete monitoring cycle for all active monitors."""
         notifications_created = 0
 
         with sqlite3.connect(self.db_path) as conn:
-            monitors = conn.execute("""
+            monitors = conn.execute(
+                """
                 SELECT paper_id, title, check_frequency, last_check
-                FROM paper_monitors 
+                FROM paper_monitors
                 WHERE is_active = 1
-            """).fetchall()
+            """
+            ).fetchall()
 
             for monitor in monitors:
                 paper_id, title, check_frequency_seconds, last_check_str = monitor
                 last_check = (
-                    datetime.fromisoformat(last_check_str)
-                    if last_check_str
-                    else datetime.now()
+                    datetime.fromisoformat(last_check_str) if last_check_str else datetime.now()
                 )
                 check_frequency = timedelta(seconds=check_frequency_seconds)
 
@@ -793,9 +773,7 @@ class PaperNotificationSystem:
                     notifications = self.check_paper_updates(paper_id, current_data)
                     notifications_created += len(notifications)
 
-        logger.info(
-            f"Monitoring cycle completed: {notifications_created} notifications created"
-        )
+        logger.info(f"Monitoring cycle completed: {notifications_created} notifications created")
         return notifications_created
 
     def cleanup_old_notifications(self, days: int = 30) -> int:
@@ -805,7 +783,7 @@ class PaperNotificationSystem:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute(
                 """
-                DELETE FROM notifications 
+                DELETE FROM notifications
                 WHERE is_read = 1 AND created_date < ?
             """,
                 (cutoff_date.isoformat(),),
