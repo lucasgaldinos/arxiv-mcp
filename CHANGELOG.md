@@ -5,6 +5,35 @@ All notable changes to the ArXiv MCP Improved project will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2025-01-09
+
+### Added
+
+- **Real ArXiv API Integration**: Complete implementation of ArXiv API search functionality
+  - `ArxivAPIClient` class with comprehensive search capabilities
+  - XML response parsing with proper namespace handling
+  - Rate limiting and error handling for API requests
+  - Support for search queries, metadata extraction, and paper details
+
+### Fixed
+
+- **Import Error Resolution**: Fixed all import compatibility issues after modular refactoring
+  - Fixed `structured_logger` import in core modules
+  - Fixed `ArxivError` exception hierarchy alignment
+  - Fixed `PipelineConfig` missing properties (enable_sandboxing, max_files_per_archive, etc.)
+  - Fixed metrics compatibility for dictionary-based counter incrementation
+
+- **ArXiv API Implementation**: Replaced placeholder search functionality with real API integration
+  - Fixed XML namespace handling for opensearch elements
+  - Added safe element extraction to prevent AttributeError on missing elements
+  - Implemented proper error handling and fallback mechanisms
+
+### Changed
+
+- **Dependency Management**: Added aiohttp dependency for HTTP client functionality
+- **TODO.md Updates**: Marked completed features as done and updated project status
+- **System Validation**: Verified end-to-end functionality through comprehensive testing
+
 ## [0.2.0] - 2025-01-09
 
 ### Added

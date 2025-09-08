@@ -4,8 +4,8 @@
 
 - **[MANDATORY-CHECK] You shall ALWAYS use #think tool before executing any complex task requiring multiple steps**
 - **[MANDATORY-CHECK] When asked to follow instructions step by step, break down the task into clear steps, selecting the appropriate tools and fallbacks (multiple if needed) from your tool list for each step.**
-  - [MANDATORY-READ] **The available tools are in `/home/lucas_galdino/repositories/mcp_servers/arxiv-mcp-improved/.github/.knowledge_base/0-tool_usage/1-simple_tool_list.md`.**
-  - [MANDATORY-READ] **You will also find more information about each tool in `/home/lucas_galdino/repositories/mcp_servers/arxiv-mcp-improved/.github/.knowledge_base/0-tool_usage/tools_and_mcps.md`.**
+  - [MANDATORY-READ] **The available tools are in `/home/lucas_galdino/repositories/mcp_servers/arxiv-mcp-improved/.github/.knowledge_base/0-tool_usage/1-simple_tool_list.md`[folder](.knowledge_base/0-tool_usage).**
+  - [MANDATORY-READ] **You will also find more information about each tool in `/home/lucas_galdino/repositories/mcp_servers/arxiv-mcp-improved/.github/.knowledge_base/0-tool_usage/tools_and_mcps.md`[folder](.knowledge_base/0-tool_usage).**
 - **[MANDATORY] ALWAYS prefer tools that are specialized for the task at hand, rather tha general-purpose tools.**
 - **[MANDATORY] You are obliged to #think and `optimize tool selection`[^1] before executing any task where tools are not explictly set.**
 - **[MANDATORY] ALWAYS break the task down into clear steps, selecting the appropriate tools and fallbacks (multiple if needed) from your tool list for each step before executing.**
@@ -31,6 +31,7 @@
   - **[MANDATORY] ALWAYS create proper relations.**
   - **[MANDATORY] ALWAYS create proper entities where due.**
   - **[MANDATORY] WHEN necessary, recall your memories (read_graph).**
+- **[MANDATORY] look for informations on the internet when necessary.**
 
   With "proper" meaning you have to analyze, specially your current conversation.
 

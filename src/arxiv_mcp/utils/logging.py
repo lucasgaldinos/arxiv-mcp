@@ -2,6 +2,7 @@
 Enhanced logging configuration with structured JSON output.
 Extracted from the main __init__.py for better modularity.
 """
+
 import json
 import logging
 import os
@@ -51,3 +52,8 @@ def setup_logging():
     logger.addHandler(console_handler)
 
     return logging.getLogger(__name__)
+
+
+def structured_logger():
+    """Get a structured logger instance."""
+    return setup_logging()

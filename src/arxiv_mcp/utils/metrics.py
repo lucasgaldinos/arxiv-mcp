@@ -2,8 +2,10 @@
 Comprehensive metrics collection for observability.
 Extracted from the main __init__.py for better modularity.
 """
+
 import time
 from collections import defaultdict
+from typing import Dict, Any, Optional, Union
 
 
 class MetricsCollector:
@@ -31,9 +33,34 @@ class MetricsCollector:
             return duration
         return 0
 
-    def increment_counter(self, name: str, value: int = 1):
-        """Increment a counter metric"""
+    def increment_counter(
+        self,
+        name: str,
+        value: Union[int, Dict[str, Any]] = 1,
+        tags: Optional[Dict[str, Any]] = None,
+    ):
+        """
+        Increment a counter metric.
+
+        Args:
+            name: Counter name
+            value: Either an integer increment value, or tags dict (for backward compatibility)
+            tags: Optional tags/metadata (when value is int)
+        """
+        # Handle backward compatibility where value was passed as tags
+        if isinstance(value, dict):
+            tags = value
+            value = 1
+
+        # Store the increment
         self.counters[name] += value
+
+        # Store tags if provided (for potential future use)
+        if tags:
+            tag_key = f"{name}_tags"
+            if tag_key not in self.counters:
+                self.counters[tag_key] = []
+            self.counters[tag_key].append(tags)
 
     def set_gauge(self, name: str, value: float):
         """Set a gauge metric"""
@@ -54,3 +81,7 @@ class MetricsCollector:
             },
             "gauges": dict(self.gauges),
         }
+
+    def get_all_metrics(self) -> dict:
+        """Alias for get_metrics for backward compatibility"""
+        return self.get_metrics()
