@@ -1,6 +1,7 @@
 # Changelog
 
 <<<<<<< Updated upstream
+
 # Changelog
 
 ## [v2.2.0] - 2025-09-10
@@ -80,6 +81,7 @@
 - **Testing**: Comprehensive tool validation via VS Code MCP integration
 - **Updated**: MCP server architecture for better VS Code integration
 =======
+
 ## [v2.2.0] - 2025-09-10
 
 ### 🚨 Critical Fixes - All Tools Now Working
@@ -130,6 +132,7 @@
 - **Type Safety**: Improved type hints in MetricsCollector and PerformanceMetrics
 - **Code Quality**: Enhanced error handling and graceful fallbacks
 - **Testing**: All critical tools verified with smoke tests
+
 >>>>>>> Stashed changes
 
 ## [v2.1.4] - 2025-09-10
