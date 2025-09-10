@@ -226,7 +226,7 @@ class LaTeXToMarkdownConverter:
         return content
 
     def _convert_figures(self, content: str) -> str:
-        """Convert LaTeX figures to Markdown."""
+        """Convert LaTeX figures to Markdown with improved format handling."""
         # Simple figure conversion
         figure_pattern = r"\\begin\{figure\}(.*?)\\end\{figure\}"
 
@@ -235,14 +235,21 @@ class LaTeXToMarkdownConverter:
 
             # Extract includegraphics
             img_match = re.search(
-                r"\\includegraphics(?:\\[.*?\\])?\{([^}]+)\}", figure_content
+                r"\\includegraphics(?:\[.*?\])?\{([^}]+)\}", figure_content
             )
             if img_match:
                 img_path = img_match.group(1)
+                
+                # Improve image path handling
+                img_path = self._improve_image_path(img_path)
 
                 # Extract caption
                 caption_match = re.search(r"\\caption\{([^}]+)\}", figure_content)
                 caption = caption_match.group(1) if caption_match else ""
+                
+                # Clean up caption LaTeX commands
+                if caption:
+                    caption = self._clean_latex_commands(caption)
 
                 if caption:
                     return f"![{caption}]({img_path})"
@@ -254,6 +261,29 @@ class LaTeXToMarkdownConverter:
         content = re.sub(figure_pattern, replace_figure, content, flags=re.DOTALL)
 
         return content
+        
+    def _improve_image_path(self, img_path: str) -> str:
+        """Improve image path for better Markdown compatibility."""
+        # Remove file extensions that don't work well in Markdown
+        if img_path.endswith(('.ps', '.eps')):
+            # Suggest PNG alternative
+            base_name = img_path.rsplit('.', 1)[0]
+            return f"{base_name}.png"
+        elif img_path.endswith('.pdf'):
+            # Convert PDF figures to PNG for better display
+            base_name = img_path.rsplit('.', 1)[0]
+            return f"{base_name}.png"
+        
+        # Keep original path for supported formats
+        return img_path
+        
+    def _clean_latex_commands(self, text: str) -> str:
+        """Clean LaTeX commands from text for better Markdown display."""
+        # Remove common LaTeX commands that don't translate well
+        text = re.sub(r'\\[a-zA-Z]+\{([^}]*)\}', r'\1', text)  # \command{content} -> content
+        text = re.sub(r'\\[a-zA-Z]+', '', text)  # \command -> empty
+        text = re.sub(r'\s+', ' ', text)  # normalize whitespace
+        return text.strip()
 
     def _convert_tables(self, content: str) -> str:
         """Convert simple LaTeX tables to Markdown."""

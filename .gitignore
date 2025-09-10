@@ -176,3 +176,10 @@ target/
 # IPython
 profile_default/
 ipython_config.py
+
+# Test outputs and demonstration files
+test_output/
+demo_output/
+batch_demo/
+*_demo/
+testing/

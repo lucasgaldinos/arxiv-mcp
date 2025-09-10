@@ -112,6 +112,12 @@ class ConfigurationManager:
         ".arxiv_mcp.yaml",
         ".arxiv_mcp.yml",
         ".arxiv_mcp.json",
+        # VS Code workspace-relative paths
+        ".vscode/arxiv_mcp_config.yaml",
+        ".vscode/arxiv_mcp_config.json",
+        # User config directory paths
+        os.path.expanduser("~/.config/arxiv_mcp/config.yaml"),
+        os.path.expanduser("~/.config/arxiv_mcp/config.json"),
     ]
 
     ENV_PREFIX = "ARXIV_MCP_"
