@@ -14,3 +14,7 @@ uv.lock
 
 .github/
 .github/*
+
+logs
+
+*_cache,*.cache
