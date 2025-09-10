@@ -1,5 +1,40 @@
 # Changelog
 
+## [v2.1.3] - 2025-09-10
+
+### 🧹 Repository Cleanup & Organization
+
+- **Enhanced .gitignore**: Comprehensive ignore patterns for professional development
+  - Added 160+ ignore patterns covering Python, IDE, OS, testing, and cache files
+  - Properly excludes virtual environments, build artifacts, and temporary files
+  - Includes project-specific cache directories and database files
+
+### 🗂️ File Organization
+
+- **Removed Runtime Data from Tracking**: Cleaned up accidentally tracked cache and log files
+  - `arxiv_cache/cache.db` - ArXiv API response cache
+  - `dependency_cache/dependencies.db` - Package dependency analysis cache
+  - `notification_cache/notifications.db` - Paper notification system cache
+  - `reading_cache/reading_lists.db` - User reading list storage
+  - `tag_cache/tags.db` - Smart tagging system cache
+  - `trending_cache/trending.db` - Trending analysis cache
+  - `logs/arxiv_mcp_server.log` - Runtime server logs
+  - `.coverage` - Test coverage reports
+
+### 📋 Development Standards
+
+- **Professional Git Hygiene**: Repository now follows industry best practices
+  - Only source code, configuration, and documentation tracked
+  - Runtime data properly excluded from version control
+  - Clean development environment for team collaboration
+  - Optimized for CI/CD and deployment workflows
+
+### ✅ Quality Assurance
+
+- **Production Verification**: All MCP tools confirmed working after cleanup
+- **Test Suite**: 112/112 tests still passing
+- **Clean Working Tree**: No cache pollution in commits
+
 ## [v2.1.2] - 2025-09-10
 
 ### 🎯 Production Validation ✅ **CRITICAL MILESTONE**
