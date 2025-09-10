@@ -1,26 +1,44 @@
 # LaTeX and Markdown Processing Documentation
 
-## Current Capabilities & Planned Features
+## Current Capabilities
 
-### ✅ Currently Available
+### ✅ Fully Implemented Features
 
 - **LaTeX Processing**: Extract and process LaTeX source files from ArXiv papers
-- **Text Extraction**: Basic text extraction from LaTeX files
-- **PDF Compilation**: Compile LaTeX to PDF (optional)
-- **Configurable Output**: Output directory configuration (`./output` by default)
+- **LaTeX to Markdown Conversion**: High-quality conversion using pandoc with intelligent fallbacks
+- **File Saving**: Complete file output system with organized directory structure
+- **YAML Frontmatter**: Automatic metadata extraction to YAML headers
+- **Unified Download+Convert**: Single-command workflow for download and multi-format conversion
+- **Quality Validation**: Conversion quality assessment and issue detection
+- **Batch Processing**: Concurrent processing with configurable limits
+- **Output Management**: Organized file structure with manifest tracking
 
-### ❌ Currently Missing (Will Implement)
+### 📁 Output Structure
 
-- **File Saving**: Papers are processed in memory but not saved to files
-- **LaTeX to Markdown Conversion**: No conversion capability exists
-- **YAML Frontmatter**: No metadata extraction to YAML headers
-- **Unified Download+Convert**: No tool combining download with format conversion
+Papers are organized in a structured directory format:
 
-## Questions & Answers
+```bash
+output/
+├── latex/
+│   └── {arxiv_id}/
+│       ├── main.tex
+│       ├── figures/
+│       ├── sections/
+│       └── manifest.json
+├── markdown/
+│   └── {arxiv_id}/
+│       ├── {arxiv_id}.md      # Converted markdown with YAML frontmatter
+│       └── metadata.json     # Extracted metadata
+└── metadata/
+    └── {arxiv_id}/
+        └── processing_info.json
+```
 
-### 1. Where are the LaTeX papers being outputted?
+## Implementation Details
 
-**Current State**: LaTeX papers are **NOT currently saved to files**. They are only processed in memory and returned as results.
+### 1. File Output Locations
+
+**Current State**: Papers are saved to organized directory structures with full file output capability.
 
 **Configuration**: Output directory is configurable via:
 
