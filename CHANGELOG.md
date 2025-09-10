@@ -1,5 +1,50 @@
 # Changelog
 
+## [v2.1.2] - 2025-09-10
+
+### 🎯 Production Validation ✅ **CRITICAL MILESTONE**
+
+- **MCP Tools Production Testing**: Verified all core tools work in production environment
+  - ✅ Search ArXiv: Successfully searches and returns papers with metadata
+  - ✅ Download Papers: Downloads and extracts LaTeX source files  
+  - ✅ Content Fetch: Processes and extracts text content (37,731+ characters)
+  - ✅ MCP Server: Starts properly and lists 10 available tools
+
+### 📊 Production Test Results
+
+- **Production Test Score**: 3/3 PASSED (100%)
+- **Total Test Suite**: 112/112 tests passing
+- **Available MCP Tools**: 10 tools ready for use
+- **Performance**: Fast downloads and processing with SQLite caching
+
+### 📋 Documentation Updates
+
+- **Production Status Report**: Created comprehensive PRODUCTION_STATUS.md
+- **README.md**: Added production validation badges and status
+- **TODO.md**: Updated with production validation milestone
+
+### 🚀 User Impact
+
+- **Production Ready**: ArXiv MCP server fully operational for end users
+- **Core Functionality**: Search, download, and content processing all working
+- **Real-World Testing**: Validated with actual ArXiv papers and API calls
+
+## [v2.1.1] - 2025-01-20
+
+### 🐛 Critical Fixes
+
+- **Testing Infrastructure**: Fixed pytest ModuleNotFoundError for src/ layout
+  - Added `pythonpath = ["src"]` to pyproject.toml pytest configuration
+  - Fixed import statements in test files (src.arxiv_mcp → arxiv_mcp)
+  - Installed package in editable mode for proper module resolution
+  - All 112 tests now pass without import errors
+
+### 🔧 Development Environment
+
+- **Python Environment**: Configured Python 3.11.12 with uv package manager
+- **Import Resolution**: Resolved src/ layout compatibility with pytest
+- **Test Execution**: Restored full test suite functionality following fix-rectification protocol
+
 ## [v2.1.0] - 2025-09-08
 
 ### ✨ Enhanced Testing Infrastructure

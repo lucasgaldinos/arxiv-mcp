@@ -150,7 +150,7 @@ class TestSmartNewFeatures:
         notifications = PaperNotificationSystem(db_path=self.db_path)
 
         # Test adding a notification rule
-        from src.arxiv_mcp.utils.paper_notifications import NotificationType
+        from arxiv_mcp.utils.paper_notifications import NotificationType
 
         rule_id = notifications.create_notification_rule(
             name="ML Keywords Alert",

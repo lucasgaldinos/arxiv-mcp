@@ -7,7 +7,7 @@ import pytest
 from io import BytesIO
 import zipfile
 
-from src.arxiv_mcp.processors.document_processor import (
+from arxiv_mcp.processors.document_processor import (
     DocumentProcessor,
     DocumentFormat,
 )

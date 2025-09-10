@@ -104,6 +104,7 @@ markers = [
     "performance: marks tests as performance tests",
 ]
 testpaths = ["tests"]
+pythonpath = ["src"]
 asyncio_mode = "strict"
 filterwarnings = [
     "error::DeprecationWarning:arxiv_mcp.*",
