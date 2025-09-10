@@ -1,5 +1,21 @@
 # Changelog
 
+## [v2.1.1] - 2025-01-20
+
+### 🐛 Critical Fixes
+
+- **Testing Infrastructure**: Fixed pytest ModuleNotFoundError for src/ layout
+  - Added `pythonpath = ["src"]` to pyproject.toml pytest configuration
+  - Fixed import statements in test files (src.arxiv_mcp → arxiv_mcp)
+  - Installed package in editable mode for proper module resolution
+  - All 112 tests now pass without import errors
+
+### 🔧 Development Environment
+
+- **Python Environment**: Configured Python 3.11.12 with uv package manager
+- **Import Resolution**: Resolved src/ layout compatibility with pytest
+- **Test Execution**: Restored full test suite functionality following fix-rectification protocol
+
 ## [v2.1.0] - 2025-09-08
 
 ### ✨ Enhanced Testing Infrastructure

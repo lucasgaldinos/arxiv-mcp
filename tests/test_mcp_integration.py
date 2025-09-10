@@ -7,7 +7,7 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src.arxiv_mcp.tools import handle_process_document_formats
+from arxiv_mcp.tools import handle_process_document_formats
 
 
 def test_supported_formats():
