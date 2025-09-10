@@ -1,0 +1,27 @@
+{
+  "status": "success",
+  "tool": "get_output_structure",
+  "output_directory": "arxiv-mcp-dev",
+  "subdirectories": {
+    "latex": "arxiv-mcp-dev/latex",
+    "markdown": "arxiv-mcp-dev/markdown",
+    "metadata": "arxiv-mcp-dev/metadata"
+  },
+  "saved_papers": {
+    "latex": [],
+    "markdown": [
+      "1706.03762"
+    ],
+    "total_latex": 0,
+    "total_markdown": 1
+  },
+  "directory_exists": true,
+  "latex_papers": [],
+  "markdown_papers": [
+    {
+      "arxiv_id": "1706.03762",
+      "path": "arxiv-mcp-dev/markdown/1706.03762",
+      "markdown_file": "arxiv-mcp-dev/markdown/1706.03762/1706.03762.md"
+    }
+  ]
+}
