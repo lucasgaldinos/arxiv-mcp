@@ -1,0 +1,11 @@
+{
+  "title": "Synchronized",
+  "authors": [
+    "gyuszko2000"
+  ],
+  "abstract": "We consider a variation of the well-known traveling salesman problem in which there are multiple agents who all have to tour the whole set of nodes of the same graph, while obeying node- and edge-capacity constraints require that agents must not \"crash\". We consider the simplest model in which the input is an undirected graph with all capacities equal to one. A solution to the synchronized traveling salesman problem is called an \"agency\". Our model puts the synchronized traveling salesman problem in a similar relation with the traveling salesman problem as the so-called evacuation problem, or the well-known dynamic flow (flow-over-time) problem is in relation with the minimum cost flow problem. \n\nWe measure the strength of an agency in terms of number of agents which should be as large as possible, and the time horizon which should be as small as possible. Beside some elementary discussion of the notions introduced, we establish several upper and lower bounds for the strength of an agency under the assumption that the input graph is a tree, or a 3-connected 3-regular graph.",
+  "date": "August 2020",
+  "arxiv_id": "2012.00311",
+  "processed_at": "2025-09-10T18:28:26.910863",
+  "saved_at": "2025-09-10T18:28:27.585142"
+}

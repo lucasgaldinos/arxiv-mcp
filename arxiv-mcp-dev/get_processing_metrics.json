@@ -1,0 +1,15 @@
+{
+  "status": "success",
+  "tool": "get_processing_metrics",
+  "time_range": "24h",
+  "metrics": {
+    "time_range": "24h",
+    "total_operations": 0,
+    "timer_stats": {},
+    "counters": {},
+    "gauges": {},
+    "insights": [
+      "Performance looks good - no issues detected"
+    ]
+  }
+}
