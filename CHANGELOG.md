@@ -1,5 +1,47 @@
 # Changelog
 
+## [v2.1.4] - 2025-09-10
+
+### 📚 Documentation Reorganization
+
+- **Consolidated TODO Files**: Merged 3 separate TODO files into single master TODO.md
+  - Combined `TODO.md`, `TODO_ENHANCED.md`, and `TODO_REORGANIZED.md`
+  - Eliminated duplicate content and conflicting priorities
+  - Created clear development roadmap with current status
+
+- **Archive Organization**: Established proper documentation hierarchy
+  - Created `docs/archive/september-2025/` for historical documents
+  - Moved session summaries and legacy files to archive
+  - Preserved implementation details and development history
+
+- **Documentation Index**: Added comprehensive navigation guide
+  - Created `DOCUMENTATION_INDEX.md` for easy project navigation
+  - Established documentation standards and naming conventions
+  - Clear organization principles for future development
+
+### 🗂️ File Management
+
+- **Archived Documents**:
+  - `TODO_ENHANCED.md` → `docs/archive/september-2025/`
+  - `TODO_REORGANIZED.md` → `docs/archive/september-2025/`
+  - `IMPLEMENTATION_SUMMARY.md` → `docs/archive/september-2025/`
+  - `COMPLETION_SUMMARY.md` → `docs/archive/september-2025/`
+  - `TESTING_ENHANCEMENT_SUMMARY.md` → `docs/archive/september-2025/`
+  - `UPDATE.md` → `docs/archive/september-2025/`
+
+- **Clean Root Directory**: Only active, current documents remain at project root
+  - Single source of truth for project status and planning
+  - Eliminated confusion from multiple TODO files
+  - Clear separation between current and historical documentation
+
+### 📋 Development Organization
+
+- **Single Master TODO**: Comprehensive project planning in one file
+  - Clear priority levels (High, Medium, Low)
+  - Current status overview with completed milestones
+  - Realistic development roadmap with time estimates
+  - Success metrics and quality targets
+
 ## [v2.1.3] - 2025-09-10
 
 ### 🧹 Repository Cleanup & Organization
