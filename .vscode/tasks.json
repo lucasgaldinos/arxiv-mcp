@@ -4,8 +4,10 @@
 		{
 			"label": "Test: Run All Tests",
 			"type": "shell",
-			"command": "python",
+			"command": "uv",
 			"args": [
+				"run",
+				"python",
 				"-m",
 				"pytest",
 				"tests/",
