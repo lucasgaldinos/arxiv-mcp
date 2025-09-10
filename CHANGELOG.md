@@ -1,5 +1,43 @@
 # Changelog
 
+## [v2.1.5] - 2025-09-10
+
+### 🚀 MCP Server Integration Fix
+
+- **Resolved VS Code Integration Issue**: Fixed "tuple object has no attribute name" error
+  - Migrated from legacy MCP SDK to FastMCP for better compatibility
+  - Created new `fastmcp_tools.py` with modern `@mcp.tool()` decorators
+  - Updated entry points to use FastMCP implementation
+  - Resolved MCP protocol communication issues
+
+- **FastMCP Implementation**: Complete rewrite using FastMCP framework
+  - Added `fastmcp` dependency for modern MCP server implementation
+  - All 10 tools properly exposed via FastMCP decorators
+  - Simplified server startup and protocol handling
+  - Beautiful ASCII art startup banner with version info
+
+- **VS Code Configuration**: Created proper MCP configuration
+  - Added `.vscode/mcp.json` with correct server command
+  - Configured stdio transport for VS Code integration
+  - Server now properly recognized in VS Code tool selection
+
+### 🔧 Technical Improvements
+
+- **Protocol Compatibility**: Fixed MCP JSON-RPC communication
+  - Resolved tuple serialization issues in tools/list endpoint
+  - Proper initialization sequence with notifications
+  - Clean tool listing and execution via MCP protocol
+
+- **Development Tools**: Added debugging and testing utilities
+  - Created debug scripts for MCP protocol testing
+  - Added minimal test servers for troubleshooting
+  - Comprehensive protocol validation scripts
+
+### 📦 Dependencies
+
+- **Added**: `fastmcp==2.12.2` for modern MCP server implementation
+- **Updated**: MCP server architecture for better VS Code integration
+
 ## [v2.1.4] - 2025-09-10
 
 ### 📚 Documentation Reorganization
