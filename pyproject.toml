@@ -68,6 +68,9 @@ dev = [
 all = [
     "arxiv-mcp-improved[nlp,visualization,advanced-parsing,ml]",
 ]
+network-analysis = [
+    "networkx>=3.5",
+]
 
 [build-system]
 requires = ["hatchling"]
