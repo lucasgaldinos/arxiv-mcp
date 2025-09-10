@@ -5,7 +5,7 @@
 ### Primary Documentation
 
 - **[README.md](README.md)** - Main project overview and getting started guide
-- **[TODO.md](TODO.md)** - Current development priorities and roadmap  
+- **[TODO.md](TODO.md)** - **SINGLE SOURCE OF TRUTH** for development priorities and roadmap  
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history and release notes
 - **[PRODUCTION_STATUS.md](PRODUCTION_STATUS.md)** - Current production validation status
 
@@ -73,6 +73,12 @@
 - **ALL_CAPS.md**: Project-level documents (README, TODO, CHANGELOG)
 - **lowercase_with_underscores.md**: Technical documentation
 - **CamelCase.md**: Legacy files (being phased out)
+
+### Single Source of Truth Rule
+
+- **Only ONE TODO.md**: Never create multiple TODO files (TODO_MASTER.md, TODO_ENHANCED.md, etc.)
+- **Archive Old Versions**: Move superseded TODO files to docs/archive/ with date stamps
+- **Clear Ownership**: Each document type should have one authoritative version
 
 ---
 
