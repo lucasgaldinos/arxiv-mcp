@@ -199,6 +199,45 @@
 			"group": "build"
 		},
 		{
+			"label": "Workspace: Validate Organization",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"scripts/validate_workspace.py"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false
+			},
+			"problemMatcher": [],
+			"detail": "Validates workspace organization against enterprise standards"
+		},
+		{
+			"label": "Workspace: Fix Violations",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"scripts/validate_workspace.py",
+				"--fix"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false
+			},
+			"problemMatcher": [],
+			"detail": "Attempts to automatically fix workspace organization violations"
+		},
+		{
 			"label": "Automated Docstring Generation",
 			"type": "shell",
 			"command": "python",

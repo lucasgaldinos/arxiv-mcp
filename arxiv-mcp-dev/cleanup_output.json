@@ -1,7 +1,0 @@
-{
-  "status": "success",
-  "tool": "cleanup_output",
-  "cleaned_latex": 0,
-  "cleaned_markdown": 0,
-  "cutoff_days": 30
-}

@@ -5,7 +5,7 @@ Provides comprehensive LaTeX to Markdown conversion with metadata extraction.
 
 import re
 import subprocess
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Match
 from datetime import datetime
 
 from ..utils.logging import structured_logger
@@ -201,64 +201,128 @@ class LaTeXToMarkdownConverter:
         return content
 
     def _convert_math(self, content: str) -> str:
-        """Convert LaTeX math to Markdown-compatible format."""
-        # Inline math - keep as is (many markdown processors support LaTeX math)
-        # Display math environments
+        """Convert LaTeX math to Markdown-compatible format with enhanced support."""
+        # Inline math - handle various forms
+        content = re.sub(r'\$([^$]+)\$', r'$\1$', content)  # Single $ (inline math)
+        content = re.sub(r'\\\(([^)]+)\\\)', r'$\1$', content)  # \( \) (inline math)
+        
+        # Display math environments - enhanced coverage
         content = re.sub(
-            r"\\begin\{equation\}(.*?)\\end\{equation\}",
-            r"$$\\1$$",
+            r"\\begin\{equation\*?\}(.*?)\\end\{equation\*?\}",
+            r"$$\1$$",
             content,
             flags=re.DOTALL,
         )
         content = re.sub(
-            r"\\begin\{align\}(.*?)\\end\{align\}", r"$$\\1$$", content, flags=re.DOTALL
+            r"\\begin\{align\*?\}(.*?)\\end\{align\*?\}", 
+            r"$$\1$$", 
+            content, 
+            flags=re.DOTALL
         )
         content = re.sub(
-            r"\\begin\{eqnarray\}(.*?)\\end\{eqnarray\}",
-            r"$$\\1$$",
+            r"\\begin\{eqnarray\*?\}(.*?)\\end\{eqnarray\*?\}",
+            r"$$\1$$",
+            content,
+            flags=re.DOTALL,
+        )
+        content = re.sub(
+            r"\\begin\{gather\*?\}(.*?)\\end\{gather\*?\}",
+            r"$$\1$$",
+            content,
+            flags=re.DOTALL,
+        )
+        content = re.sub(
+            r"\\begin\{multline\*?\}(.*?)\\end\{multline\*?\}",
+            r"$$\1$$",
+            content,
+            flags=re.DOTALL,
+        )
+        content = re.sub(
+            r"\\begin\{split\}(.*?)\\end\{split\}",
+            r"$$\1$$",
             content,
             flags=re.DOTALL,
         )
 
-        # Display math with \\[ \\]
-        content = re.sub(r"\\\\\\[(.*?)\\\\\\]", r"$$\\1$$", content, flags=re.DOTALL)
-
+        # Display math with delimiters
+        content = re.sub(r"\\\[(.*?)\\\]", r"$$\1$$", content, flags=re.DOTALL)
+        content = re.sub(r"\$\$(.*?)\$\$", r"$$\1$$", content, flags=re.DOTALL)  # Clean double $$
+        
+        # Handle common math commands that need preservation
+        content = re.sub(r"\\displaystyle\s+", "", content)  # Remove displaystyle as it's implied in $$
+        content = re.sub(r"\\textstyle\s+", "", content)     # Remove textstyle 
+        
+        # Clean up alignment characters that don't work in markdown
+        content = re.sub(r"&\s*=\s*&", " = ", content)  # Alignment ampersands
+        content = re.sub(r"\\\\\\\\", r"\\\\", content)    # Double newlines in equations
+        
         return content
 
     def _convert_figures(self, content: str) -> str:
         """Convert LaTeX figures to Markdown with improved format handling."""
-        # Simple figure conversion
-        figure_pattern = r"\\begin\{figure\}(.*?)\\end\{figure\}"
+        # Enhanced figure conversion
+        figure_pattern = r"\\begin\{figure\*?\}(.*?)\\end\{figure\*?\}"
 
         def replace_figure(match):
             figure_content = match.group(1)
 
-            # Extract includegraphics
+            # Extract includegraphics with better pattern matching
             img_match = re.search(
-                r"\\includegraphics(?:\[.*?\])?\{([^}]+)\}", figure_content
+                r"\\includegraphics(?:\[([^\]]*)\])?\{([^}]+)\}", figure_content
             )
             if img_match:
-                img_path = img_match.group(1)
+                options = img_match.group(1) or ""
+                img_path = img_match.group(2)
                 
                 # Improve image path handling
                 img_path = self._improve_image_path(img_path)
 
-                # Extract caption
+                # Extract caption with better cleaning
                 caption_match = re.search(r"\\caption\{([^}]+)\}", figure_content)
-                caption = caption_match.group(1) if caption_match else ""
-                
-                # Clean up caption LaTeX commands
-                if caption:
+                caption = ""
+                if caption_match:
+                    caption = caption_match.group(1)
+                    # Clean up caption LaTeX commands more thoroughly
                     caption = self._clean_latex_commands(caption)
+                
+                # Extract label for cross-referencing
+                label_match = re.search(r"\\label\{([^}]+)\}", figure_content)
+                label = label_match.group(1) if label_match else ""
 
-                if caption:
+                # Build markdown figure
+                if caption and label:
+                    return f"![{caption}]({img_path})\n<a id=\"{label}\"></a>"
+                elif caption:
                     return f"![{caption}]({img_path})"
+                elif label:
+                    return f"![]({img_path})\n<a id=\"{label}\"></a>"
                 else:
                     return f"![]({img_path})"
 
-            return "[Figure]"
+            # Handle subfigures
+            subfig_pattern = r"\\begin\{subfigure\}.*?\\end\{subfigure\}"
+            if re.search(subfig_pattern, figure_content, re.DOTALL):
+                subfigs = re.findall(
+                    r"\\begin\{subfigure\}.*?\\includegraphics.*?\{([^}]+)\}.*?\\end\{subfigure\}",
+                    figure_content,
+                    re.DOTALL
+                )
+                if subfigs:
+                    improved_paths = [self._improve_image_path(path) for path in subfigs]
+                    subfig_markdown = " | ".join([f"![]({path})" for path in improved_paths])
+                    return f"{subfig_markdown}\n\n*Subfigures*"
+
+            return "[Figure - Complex figure layout not fully supported]"
 
         content = re.sub(figure_pattern, replace_figure, content, flags=re.DOTALL)
+        
+        # Handle standalone includegraphics outside figure environments
+        standalone_pattern = r"\\includegraphics(?:\[[^\]]*\])?\{([^}]+)\}"
+        def replace_standalone(match):
+            img_path = self._improve_image_path(match.group(1))
+            return f"![]({img_path})"
+        
+        content = re.sub(standalone_pattern, replace_standalone, content)
 
         return content
         
@@ -286,12 +350,71 @@ class LaTeXToMarkdownConverter:
         return text.strip()
 
     def _convert_tables(self, content: str) -> str:
-        """Convert simple LaTeX tables to Markdown."""
-        # This is a simplified table conversion
-        # Full table conversion would require more sophisticated parsing
+        """Convert LaTeX tables to Markdown with improved support."""
+        # Enhanced table conversion for simple cases
+        def replace_tabular(match):
+            table_content = match.group(1)
+            
+            # Extract table specification (column alignment)
+            spec_match = re.search(r'\\begin\{tabular\}\{([^}]+)\}', match.group(0))
+            if not spec_match:
+                return "[Table - Complex table conversion not supported]"
+            
+            # Count columns from specification
+            spec = spec_match.group(1)
+            num_cols = len([c for c in spec if c in 'lcr'])
+            
+            if num_cols == 0:
+                return "[Table - Invalid table specification]"
+            
+            # Try to convert simple tables
+            lines = table_content.split('\\\\')
+            markdown_rows = []
+            
+            for i, line in enumerate(lines):
+                if not line.strip():
+                    continue
+                    
+                # Remove LaTeX commands and split by &
+                clean_line = re.sub(r'\\[a-zA-Z]+\{([^}]*)\}', r'\1', line)
+                clean_line = re.sub(r'\\[a-zA-Z]+', '', clean_line)
+                cells = [cell.strip() for cell in clean_line.split('&')]
+                
+                # Pad or trim to expected number of columns
+                while len(cells) < num_cols:
+                    cells.append('')
+                cells = cells[:num_cols]
+                
+                markdown_rows.append('| ' + ' | '.join(cells) + ' |')
+                
+                # Add header separator after first row
+                if i == 0:
+                    separator = '|' + ''.join([' --- |' for _ in range(num_cols)])
+                    markdown_rows.append(separator)
+            
+            if markdown_rows:
+                return '\n'.join(markdown_rows)
+            else:
+                return "[Table - Content extraction failed]"
+        
+        # Handle tabular environments
         content = re.sub(
             r"\\begin\{tabular\}.*?\\end\{tabular\}",
-            "[Table - LaTeX table conversion not fully supported]",
+            replace_tabular,
+            content,
+            flags=re.DOTALL,
+        )
+        
+        # Handle other table environments with simpler fallback
+        content = re.sub(
+            r"\\begin\{array\}.*?\\end\{array\}",
+            "[Array/Matrix - LaTeX array conversion not fully supported]",
+            content,
+            flags=re.DOTALL,
+        )
+        content = re.sub(
+            r"\\begin\{matrix\}.*?\\end\{matrix\}",
+            "[Matrix - LaTeX matrix conversion not fully supported]",
             content,
             flags=re.DOTALL,
         )

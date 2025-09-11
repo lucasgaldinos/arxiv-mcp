@@ -3,7 +3,7 @@ MCP tools for the ArXiv server.
 """
 
 import asyncio
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional, Union, Tuple
 
 # MCP Server imports
 from mcp.server import Server
@@ -219,7 +219,7 @@ def get_tools() -> List[Tool]:
 # Tool Handler Functions - Real Implementations
 
 
-async def handle_search_arxiv(query: str, **filters) -> Dict[str, Any]:
+async def handle_search_arxiv(query: str, **filters: Any) -> Dict[str, Any]:
     """Handle search_arxiv tool with real ArxivAPIClient."""
     client = ArxivAPIClient()
     results = await client.search(query, **filters)
@@ -313,9 +313,9 @@ def handle_get_processing_metrics(time_range: str = "24h") -> Dict[str, Any]:
 
 
 def handle_process_document_formats(
-    file_path: str = None,
-    document_content: str = None,
-    filename: str = None,
+    file_path: Optional[str] = None,
+    document_content: Optional[str] = None,
+    filename: Optional[str] = None,
     extract_metadata: bool = True,
     supported_formats: bool = False,
 ) -> Dict[str, Any]:
@@ -435,7 +435,7 @@ def handle_parse_bibliography(bibliography_text: str) -> Dict[str, Any]:
     }
 
 
-def handle_check_dependencies(package_name: str = None) -> Dict[str, Any]:
+def handle_check_dependencies(package_name: Optional[str] = None) -> Dict[str, Any]:
     """Handle check_dependencies tool with real DependencyAnalyzer."""
     analyzer = DependencyAnalyzer()
     analysis = analyzer.analyze_package_dependencies(package_name)
@@ -453,13 +453,14 @@ def handle_analyze_citation_network(
     analyzer = NetworkAnalyzer()
 
     # Convert paper data to network nodes and edges
-    nodes = []
-    edges = []
+    nodes: List[NetworkNode] = []
+    edges: List[NetworkEdge] = []
 
     for paper in papers_data:
         # Create node for paper
+        paper_id = paper.get("id", paper.get("arxiv_id", "unknown"))
         node = NetworkNode(
-            node_id=paper.get("id", paper.get("arxiv_id", "unknown")),
+            node_id=paper_id,
             node_type="paper",
             label=paper.get("title", "Unknown Title"),
             attributes={
@@ -471,13 +472,13 @@ def handle_analyze_citation_network(
         nodes.append(node)
 
         # Create edges for citations
-        paper_id = paper.get("id", paper.get("arxiv_id"))
         citations = paper.get("citations", [])
         for cited_id in citations:
-            edge = NetworkEdge(
-                source=paper_id, target=cited_id, weight=1.0, edge_type="citation"
-            )
-            edges.append(edge)
+            if cited_id and paper_id:  # Ensure both are valid
+                edge = NetworkEdge(
+                    source=paper_id, target=cited_id, weight=1.0, edge_type="citation"
+                )
+                edges.append(edge)
 
     # Analyze the network
     analysis = analyzer.analyze_network_from_data(nodes, edges, NetworkType.CITATION)
@@ -489,7 +490,7 @@ def handle_analyze_citation_network(
     }
 
 
-def handle_get_trending_papers(category: str = None, days: int = 7) -> Dict[str, Any]:
+def handle_get_trending_papers(category: Optional[str] = None, days: int = 7) -> Dict[str, Any]:
     """Handle get_trending_papers tool with real TrendingAnalyzer."""
     analyzer = TrendingAnalyzer()
     report = analyzer.generate_trending_report(days=days)
@@ -560,13 +561,59 @@ def handle_parse_citations_from_arxiv(arxiv_id: str) -> Dict[str, Any]:
     }
 
 
-def handle_generate_api_docs() -> Dict[str, Any]:
+def handle_generate_api_docs(output_format: str = "markdown") -> Dict[str, Any]:
     """Handle generate_api_docs tool with enhanced documentation generation."""
-    return {
-        "status": "success",
-        "api_documentation": "Enhanced API documentation generated",
-        "implementation_status": "ready",
-    }
+    from pathlib import Path
+    from .utils.docs_generator import generate_api_docs
+    
+    try:
+        # Generate comprehensive API documentation
+        docs = generate_api_docs(
+            source_path=str(Path(__file__).parent),
+            output_path="docs/api",
+            formats=[output_format, "json"]  # Always generate JSON for programmatic access
+        )
+        
+        return {
+            "status": "success",
+            "api_documentation": {
+                "title": docs.title,
+                "version": docs.version,
+                "generated_at": docs.generated_at,
+                "modules_documented": len(docs.modules),
+                "tools_documented": len(docs.tools_summary or []),
+                "output_format": output_format,
+                "files_generated": [
+                    f"docs/api/api_documentation.{output_format}",
+                    "docs/api/api_documentation.json"
+                ]
+            },
+            "tools_summary": [
+                {
+                    "name": tool.name,
+                    "description": tool.description,
+                    "parameters_count": len(tool.parameters),
+                }
+                for tool in docs.tools_summary or []
+            ],
+            "modules_summary": [
+                {
+                    "name": module.name,
+                    "description": module.description,
+                    "classes_count": len(module.classes or []),
+                    "functions_count": len(module.functions or []),
+                }
+                for module in docs.modules
+            ],
+            "implementation_status": "completed"
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e),
+            "fallback_documentation": "Basic API documentation structure available",
+            "implementation_status": "error_fallback"
+        }
 
 
 # New unified download and convert tools

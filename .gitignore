@@ -6,6 +6,9 @@ dist/
 wheels/
 *.egg-info
 
+# Development artifacts (organized under .dev/)
+.dev/
+
 # Virtual environments
 .venv/
 venv/
@@ -22,12 +25,14 @@ pip-wheel-metadata/
 *.egg-info/
 
 # IDE and Editor files
-.github/
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+
+# GitHub specific (keep .github/ directory but ignore some files)
+.github/.knowledge_base/
 
 # OS generated files
 .DS_Store
@@ -43,7 +48,7 @@ Thumbs.db
 .coverage
 .coverage.*
 .cache
-htmlcov/
+.dev/build/htmlcov/
 .tox/
 .hypothesis/
 
@@ -52,7 +57,7 @@ docs/_build/
 site/
 
 # Logs and databases
-logs/
+.dev/runtime/logs/
 *.log
 *.db
 *.db-shm

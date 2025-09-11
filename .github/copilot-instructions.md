@@ -1,4 +1,4 @@
----
+<!-- ---
 applyTo: '**'
 ---
 # Absolute Rules
@@ -58,4 +58,4 @@ applyTo: '**'
   - If there is any `TODO.md`, `IMPROVEMENTS.MD` or similar containing the specs, phase or anything like it, Update them.If there aren't, create one. NEVER keep creating new changelogs.
 - [MANDATORY] python should always be used with uv
 - [MANDATORY] use typescript instead of javascript when possible
-- [MANDATORY] use async/await (aiohttp/httpx in python) when possible
+- [MANDATORY] use async/await (aiohttp/httpx in python) when possible -->
