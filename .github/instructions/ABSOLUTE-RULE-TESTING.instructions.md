@@ -19,18 +19,21 @@ applyTo: '**/{test,tests,__tests__}/**/*test*.*'
 ## Production Testing Checklist
 
 ### MCP Server Integration Testing
+
 - **[MANDATORY] Test all MCP tools with actual MCP client (e.g., Claude Desktop, VS Code with MCP)**
 - **[MANDATORY] Validate inline chat functionality and tool responses**
 - **[MANDATORY] Test error handling in client-server communication**
 - **[MANDATORY] Verify tool parameter validation and response formatting**
 
 ### Development Branch Testing Protocol
+
 - **[MANDATORY] Create dedicated development branch for production testing**
 - **[MANDATORY] Test with real ArXiv paper IDs and actual network requests**
 - **[MANDATORY] Validate full workflow from search to download to conversion**
 - **[MANDATORY] Test concurrent operations and rate limiting**
 
 ### Client Environment Validation
+
 - **[MANDATORY] Test MCP server startup and tool registration**
 - **[MANDATORY] Validate tool descriptions and parameter schemas**
 - **[MANDATORY] Test error scenarios and graceful degradation**
@@ -39,18 +42,21 @@ applyTo: '**/{test,tests,__tests__}/**/*test*.*'
 ## Production Testing Infrastructure
 
 ### Required Test Suites
+
 1. **Unit Tests**: Core functionality validation (must pass 100%)
 2. **MCP Server Integration Tests**: Tool registration and direct invocation
 3. **Inline Chat Integration Tests**: Client-like interaction simulation
 4. **End-to-End Production Tests**: Complete workflow validation
 
 ### Test Environment Setup
+
 - **[MANDATORY] Use `.dev/production_tests/` directory for production test infrastructure**
 - **[MANDATORY] Maintain separate test results and reports**
 - **[MANDATORY] Include performance benchmarks and success rate tracking**
 - **[MANDATORY] Document test scenarios covering normal and edge cases**
 
 ### Production Readiness Criteria
+
 - **[MANDATORY] 100% unit test pass rate**
 - **[MANDATORY] 100% MCP server integration test pass rate**
 - **[MANDATORY] 100% inline chat integration test pass rate**
@@ -59,6 +65,7 @@ applyTo: '**/{test,tests,__tests__}/**/*test*.*'
 - **[MANDATORY] Performance benchmarks within acceptable limits**
 
 ### Pre-Deployment Validation
+
 - **[MANDATORY] Run comprehensive production test suite**
 - **[MANDATORY] Generate production readiness report**
 - **[MANDATORY] Validate with actual MCP client environment**
@@ -69,6 +76,7 @@ applyTo: '**/{test,tests,__tests__}/**/*test*.*'
 ## Branch-Specific Testing Requirements
 
 ### Development Branch Testing (arxiv-dev-mcp)
+
 - **[MANDATORY] Test MCP server configuration in development environment**
 - **[MANDATORY] Validate tool functionality with development-specific settings**
 - **[MANDATORY] Test integration with actual MCP clients (Claude Desktop, VS Code)**
@@ -76,6 +84,7 @@ applyTo: '**/{test,tests,__tests__}/**/*test*.*'
 - **[MANDATORY] Test error recovery and graceful degradation**
 
 ### Production Branch Testing
+
 - **[MANDATORY] Full regression test suite before merge**
 - **[MANDATORY] Performance validation under production load**
 - **[MANDATORY] Security and stability validation**
