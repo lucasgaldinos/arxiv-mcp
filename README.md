@@ -70,12 +70,35 @@ A comprehensive Model Context Protocol (MCP) server for downloading, processing,
 - **Dependency Tracking**: Monitor package dependencies and versions
 - **Performance Metrics**: Track processing statistics and optimization data
 
+## 📁 Project Organization
+
+This project follows a "Surgical Organization" approach for optimal development workflow:
+
+```bash
+arxiv-mcp-improved/
+├── src/              # Source code
+├── tests/            # Test files
+├── docs/             # Documentation
+├── examples/         # Usage examples
+├── cache/            # Working cache systems (preserved)
+├── batch_cache/      # Batch processing cache
+├── tag_cache/        # Tag cache system  
+├── network_cache/    # Network cache
+└── .dev/            # Development artifacts
+    ├── build/        # Coverage reports, build outputs
+    ├── runtime/      # Logs, generated outputs
+    ├── temp/         # Temporary files
+    └── artifacts/    # CI/CD artifacts
+```
+
+See `.dev/ORGANIZATION_GUIDELINES.md` for detailed organization principles.
+
 ## 📁 Output Structure
 
 When using the enhanced features, papers are organized as follows:
 
 ```bash
-output/
+.dev/runtime/output/
 ├── latex/
 │   └── {arxiv_id}/
 │       ├── main.tex
