@@ -104,7 +104,7 @@ class TestMCPToolsCore:
     @pytest.mark.asyncio
     async def test_handle_download_paper_success(self):
         """Test successful paper download with ArxivPipeline."""
-        with patch('arxiv_mcp.core.pipeline.ArxivPipeline') as mock_pipeline_class:
+        with patch('arxiv_mcp.tools.ArxivPipeline') as mock_pipeline_class:
             mock_pipeline = AsyncMock()
             mock_pipeline_class.return_value = mock_pipeline
             
@@ -120,22 +120,22 @@ class TestMCPToolsCore:
             }
             
             # Call the function
-            result = await handle_download_paper(paper_id="1234.5678")
+            result = await handle_download_paper(paper_id="2001.00001")
             
             # Assertions - be flexible about response structure
             assert result['status'] == "success"
-            assert result['paper_id'] == "1234.5678"
+            assert result['paper_id'] == "2001.00001"
             # Check for content presence (flexible about field names)
             assert 'main_tex_file' in result or 'tex_file' in result
             assert 'extracted_text' in result or 'content' in result
             
             # Verify pipeline was called correctly
-            mock_pipeline.process_paper.assert_called_once_with("1234.5678")
+            mock_pipeline.process_paper.assert_called_once_with("2001.00001")
 
     @pytest.mark.asyncio
     async def test_handle_download_paper_failure(self):
         """Test paper download failure handling."""
-        with patch('arxiv_mcp.core.pipeline.ArxivPipeline') as mock_pipeline_class:
+        with patch('arxiv_mcp.tools.ArxivPipeline') as mock_pipeline_class:
             mock_pipeline = AsyncMock()
             mock_pipeline_class.return_value = mock_pipeline
             
@@ -143,16 +143,16 @@ class TestMCPToolsCore:
             mock_pipeline.process_paper.return_value = {"success": False}
             
             # Call the function
-            result = await handle_download_paper(paper_id="1234.5678")
+            result = await handle_download_paper(paper_id="2001.00002")
             
             # Should return error status
             assert result['status'] == "error"
-            assert result['paper_id'] == "1234.5678"
+            assert result['paper_id'] == "2001.00002"
 
     @pytest.mark.asyncio
     async def test_handle_fetch_arxiv_paper_content_success(self):
         """Test successful ArXiv paper content fetching."""
-        with patch('arxiv_mcp.core.pipeline.ArxivPipeline') as mock_pipeline_class:
+        with patch('arxiv_mcp.tools.ArxivPipeline') as mock_pipeline_class:
             mock_pipeline = AsyncMock()
             mock_pipeline_class.return_value = mock_pipeline
             

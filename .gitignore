@@ -32,7 +32,7 @@ pip-wheel-metadata/
 *~
 
 # GitHub specific (keep .github/ directory but ignore some files)
-.github/.knowledge_base/
+.github/.knowledge_base
 
 # OS generated files
 .DS_Store
@@ -48,6 +48,19 @@ Thumbs.db
 .coverage
 .coverage.*
 .cache
+
+# Workspace organization protection - prevent development files in root
+/debug_*.py
+/test_*.py
+/*_debug.py
+/*_test.py
+/tool_*.py
+/*_tool.py
+output/
+
+# Prevent scattered TODO files
+/TODO_*.md
+/TASKS_*.md
 .dev/build/htmlcov/
 .tox/
 .hypothesis/
