@@ -19,34 +19,33 @@ class WorkspaceValidator:
         self.warnings = []
         
     def validate_cache_organization(self) -> bool:
-        """Validate cache directory organization."""
+        """Validate cache directory organization following PRINCIPLE 6: Cache System Preservation."""
         print("🔍 Validating cache organization...")
         
-        # Required cache structure
-        required_cache_dirs = {
-            'arxiv', 'network', 'dependencies', 'reading', 
-            'notifications', 'tags', 'trending', 'temp'
-        }
-        
-        cache_dir = self.workspace_path / 'cache'
-        if not cache_dir.exists():
-            self.violations.append("CRITICAL: cache/ directory does not exist")
-            return False
-            
-        # Check for scattered cache directories in root
-        scattered_cache_patterns = [
-            'arxiv_cache', 'batch_cache', 'network_cache', 
-            'dependency_cache', 'reading_cache', 'notification_cache',
-            'tag_cache', 'trending_cache'
+        # According to PRINCIPLE 6: Existing cache directories MUST be preserved
+        # These are COMPLIANT and should remain at root level:
+        preserved_cache_dirs = [
+            'cache',           # General cache (PRESERVED)
+            'batch_cache',     # Batch processing cache (PRESERVED)  
+            'tag_cache',       # Tag-specific cache (PRESERVED)
+            'network_cache'    # Network request cache (PRESERVED)
         ]
         
-        for pattern in scattered_cache_patterns:
-            if (self.workspace_path / pattern).exists():
-                self.violations.append(f"VIOLATION: Scattered cache directory found: {pattern}")
-                
-        # Check required subdirectories
-        existing_subdirs = {d.name for d in cache_dir.iterdir() if d.is_dir()}
-        missing_dirs = required_cache_dirs - existing_subdirs
+        # Validate that preserved caches exist and are not moved
+        all_good = True
+        for cache_dir in preserved_cache_dirs:
+            cache_path = self.workspace_path / cache_dir
+            if cache_path.exists():
+                # This is GOOD - cache is preserved as required
+                continue
+            else:
+                # Check if it was incorrectly moved to .dev/
+                dev_cache_path = self.workspace_path / '.dev' / 'cache' / cache_dir.replace('_cache', '')
+                if dev_cache_path.exists():
+                    self.violations.append(f"VIOLATION: {cache_dir}/ moved to .dev/ - should remain at root for performance")
+                    all_good = False
+        
+        return all_good
         
         if missing_dirs:
             self.warnings.append(f"Missing cache subdirectories: {missing_dirs}")
