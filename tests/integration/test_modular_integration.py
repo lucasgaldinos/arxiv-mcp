@@ -5,25 +5,26 @@ Tests all major components and their interactions to ensure system integrity.
 
 import os
 import sys
-import pytest
 from unittest.mock import patch
+
+import pytest
 
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from arxiv_mcp.utils.validation import ArxivValidator
-from arxiv_mcp.utils.metrics import MetricsCollector
+from arxiv_mcp.clients import AsyncArxivDownloader
+from arxiv_mcp.core.config import load_config
+from arxiv_mcp.core.enhanced_config import PipelineConfig
+from arxiv_mcp.core.pipeline import ArxivPipeline
 from arxiv_mcp.exceptions import (
     ArxivMCPError,
+    CompilationError,
     DownloadError,
     ExtractionError,
-    CompilationError,
 )
-from arxiv_mcp.core.enhanced_config import PipelineConfig
-from arxiv_mcp.core.config import load_config
-from arxiv_mcp.clients import AsyncArxivDownloader
 from arxiv_mcp.processors import LaTeXProcessor, PDFProcessor
-from arxiv_mcp.core.pipeline import ArxivPipeline
+from arxiv_mcp.utils.metrics import MetricsCollector
+from arxiv_mcp.utils.validation import ArxivValidator
 
 
 class TestArxivValidator:

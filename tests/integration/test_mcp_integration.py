@@ -2,8 +2,8 @@
 Integration test for the new process_document_formats MCP tool.
 """
 
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -30,8 +30,8 @@ def test_supported_formats():
 
 def test_text_processing():
     """Test processing a simple text file."""
-    import tempfile
     import os
+    import tempfile
 
     # Create a temporary text file
     test_content = b"This is a test document for the new MCP tool.\n\nIt has multiple paragraphs and should be processed correctly."
@@ -41,9 +41,7 @@ def test_text_processing():
         tmp_path = tmp.name
 
     try:
-        result = handle_process_document_formats(
-            file_path=tmp_path, extract_metadata=True
-        )
+        result = handle_process_document_formats(file_path=tmp_path, extract_metadata=True)
 
         assert result["status"] == "success"
         assert result["format"] == "txt"
@@ -64,9 +62,7 @@ def test_error_handling():
     assert "Either file_path or document_content must be provided" in result["error"]
 
     # Test document_content without filename
-    result = handle_process_document_formats(
-        document_content="dGVzdA=="
-    )  # "test" in base64
+    result = handle_process_document_formats(document_content="dGVzdA==")  # "test" in base64
     assert result["status"] == "error"
     assert "filename is required" in result["error"]
 
