@@ -5,17 +5,16 @@ This module provides comprehensive dependency analysis capabilities including
 package dependencies, paper dependencies, and cross-reference analysis.
 """
 
-import json
-import sqlite3
-from datetime import datetime
-from pathlib import Path
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
+import json
+from pathlib import Path
+import sqlite3
+from typing import Any
 
 from .logging import structured_logger
 from .optional_deps import OPTIONAL_DEPS
-
 
 logger = structured_logger()
 
@@ -38,7 +37,7 @@ class Dependency:
     target: str
     dependency_type: DependencyType
     strength: float = 1.0
-    metadata: Dict[str, Any] = None
+    metadata: dict[str, Any] = None
     discovered_at: datetime = None
 
     def __post_init__(self):
@@ -55,11 +54,11 @@ class DependencyNode:
     node_id: str
     node_type: str
     name: str
-    version: Optional[str] = None
-    description: Optional[str] = None
-    metadata: Dict[str, Any] = None
-    dependencies: List[str] = None
-    dependents: List[str] = None
+    version: str | None = None
+    description: str | None = None
+    metadata: dict[str, Any] = None
+    dependencies: list[str] = None
+    dependents: list[str] = None
 
     def __post_init__(self):
         if self.metadata is None:
@@ -74,11 +73,11 @@ class DependencyNode:
 class DependencyGraph:
     """Represents a complete dependency graph."""
 
-    nodes: Dict[str, DependencyNode]
-    edges: List[Dependency]
+    nodes: dict[str, DependencyNode]
+    edges: list[Dependency]
     graph_type: str
     created_at: datetime
-    metadata: Dict[str, Any] = None
+    metadata: dict[str, Any] = None
 
     def __post_init__(self):
         if self.metadata is None:
@@ -99,7 +98,7 @@ class DependencyAnalyzer:
     - Impact analysis
     """
 
-    def __init__(self, cache_dir: Optional[str] = None):
+    def __init__(self, cache_dir: str | None = None):
         """Initialize the dependency analyzer."""
         self.cache_dir = Path(cache_dir) if cache_dir else Path.cwd() / "dependency_cache"
         self.cache_dir.mkdir(exist_ok=True)
@@ -158,7 +157,7 @@ class DependencyAnalyzer:
 
             conn.commit()
 
-    def analyze_package_dependencies(self, package_name: str = None) -> Dict[str, Any]:
+    def analyze_package_dependencies(self, package_name: str = None) -> dict[str, Any]:
         """Analyze package dependencies using the optional dependencies system."""
         logger.info(f"Analyzing package dependencies for: {package_name or 'all packages'}")
 
@@ -213,7 +212,7 @@ class DependencyAnalyzer:
             return analysis_results
 
         except Exception as e:
-            logger.error(f"Failed to analyze package dependencies: {e}")
+            logger.exception(f"Failed to analyze package dependencies: {e}")
             return {
                 "error": str(e),
                 "available_dependencies": {},
@@ -221,8 +220,8 @@ class DependencyAnalyzer:
             }
 
     def analyze_paper_dependencies(
-        self, paper_id: str, citations: List[str] = None
-    ) -> Dict[str, Any]:
+        self, paper_id: str, citations: list[str] = None
+    ) -> dict[str, Any]:
         """Analyze dependencies between papers based on citations."""
         logger.info(f"Analyzing paper dependencies for: {paper_id}")
 
@@ -277,10 +276,10 @@ class DependencyAnalyzer:
             return analysis_results
 
         except Exception as e:
-            logger.error(f"Failed to analyze paper dependencies: {e}")
+            logger.exception(f"Failed to analyze paper dependencies: {e}")
             return {"error": str(e), "paper_id": paper_id, "direct_dependencies": 0}
 
-    def detect_circular_dependencies(self, dependency_type: DependencyType) -> List[List[str]]:
+    def detect_circular_dependencies(self, dependency_type: DependencyType) -> list[list[str]]:
         """Detect circular dependencies in the dependency graph."""
         logger.info(f"Detecting circular dependencies for type: {dependency_type.value}")
 
@@ -331,7 +330,7 @@ class DependencyAnalyzer:
                     path.pop()
 
                 # Check all nodes
-                for node in graph.keys():
+                for node in graph:
                     if node not in visited:
                         dfs(node, [])
 
@@ -339,10 +338,10 @@ class DependencyAnalyzer:
                 return cycles
 
         except Exception as e:
-            logger.error(f"Failed to detect circular dependencies: {e}")
+            logger.exception(f"Failed to detect circular dependencies: {e}")
             return []
 
-    def get_dependency_impact(self, node_id: str, max_depth: int = 3) -> Dict[str, Any]:
+    def get_dependency_impact(self, node_id: str, max_depth: int = 3) -> dict[str, Any]:
         """Analyze the impact of a node in the dependency graph."""
         logger.info(f"Analyzing dependency impact for: {node_id}")
 
@@ -419,7 +418,7 @@ class DependencyAnalyzer:
                 return impact_analysis
 
         except Exception as e:
-            logger.error(f"Failed to analyze dependency impact: {e}")
+            logger.exception(f"Failed to analyze dependency impact: {e}")
             return {"error": str(e), "node_id": node_id, "impact_score": 0}
 
     def build_dependency_graph(self, dependency_type: DependencyType = None) -> DependencyGraph:
@@ -537,7 +536,7 @@ class DependencyAnalyzer:
                 return graph
 
         except Exception as e:
-            logger.error(f"Failed to build dependency graph: {e}")
+            logger.exception(f"Failed to build dependency graph: {e}")
             return DependencyGraph(
                 nodes={},
                 edges=[],
@@ -567,10 +566,10 @@ class DependencyAnalyzer:
                 )
                 conn.commit()
         except Exception as e:
-            logger.error(f"Failed to store dependency: {e}")
+            logger.exception(f"Failed to store dependency: {e}")
 
     def _store_analysis_result(
-        self, analysis_type: str, target_id: str, results: Dict[str, Any]
+        self, analysis_type: str, target_id: str, results: dict[str, Any]
     ) -> None:
         """Store analysis results in the database."""
         try:
@@ -584,9 +583,9 @@ class DependencyAnalyzer:
                 )
                 conn.commit()
         except Exception as e:
-            logger.error(f"Failed to store analysis result: {e}")
+            logger.exception(f"Failed to store analysis result: {e}")
 
-    def _get_stored_analysis(self, analysis_type: str, target_id: str) -> Optional[Dict[str, Any]]:
+    def _get_stored_analysis(self, analysis_type: str, target_id: str) -> dict[str, Any] | None:
         """Get the most recent stored analysis result for a specific type and target."""
         try:
             with sqlite3.connect(self.db_path) as conn:
@@ -606,12 +605,12 @@ class DependencyAnalyzer:
                 return None
 
         except Exception as e:
-            logger.error(f"Failed to get stored analysis: {e}")
+            logger.exception(f"Failed to get stored analysis: {e}")
             return None
 
     def get_analysis_history(
         self, analysis_type: str = None, target_id: str = None
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get historical analysis results."""
         try:
             with sqlite3.connect(self.db_path) as conn:
@@ -663,17 +662,17 @@ class DependencyAnalyzer:
                 return results
 
         except Exception as e:
-            logger.error(f"Failed to get analysis history: {e}")
+            logger.exception(f"Failed to get analysis history: {e}")
             return []
 
 
 # Convenience functions
-def create_dependency_analyzer(cache_dir: Optional[str] = None) -> DependencyAnalyzer:
+def create_dependency_analyzer(cache_dir: str | None = None) -> DependencyAnalyzer:
     """Create a dependency analyzer instance."""
     return DependencyAnalyzer(cache_dir)
 
 
-def quick_package_analysis() -> Dict[str, Any]:
+def quick_package_analysis() -> dict[str, Any]:
     """Quick analysis of package dependencies."""
     analyzer = create_dependency_analyzer()
     return analyzer.analyze_package_dependencies()

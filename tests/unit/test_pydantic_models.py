@@ -3,25 +3,25 @@ Test suite for Pydantic models in ArXiv MCP server.
 Comprehensive validation testing for all data models.
 """
 
-import pytest
 from pydantic import ValidationError
+import pytest
 
 from arxiv_mcp.models import (
     ArxivID,
+    ArxivIDFormat,
     Author,
+    BatchOperation,
     Citation,
+    NotificationRule,
+    NotificationRuleType,
     Paper,
+    PaperStatus,
+    ReadingList,
     SearchQuery,
     SummaryResult,
-    Tag,
-    ReadingList,
-    NotificationRule,
-    TrendingPaper,
-    BatchOperation,
-    ArxivIDFormat,
-    PaperStatus,
-    NotificationRuleType,
     SummaryType,
+    Tag,
+    TrendingPaper,
 )
 
 
@@ -34,7 +34,7 @@ class TestArxivID:
             "2301.00001",
             "2301.00001v1",
             "2301.12345v2",
-            "2001.00001",
+            "1234.5678",
         ]
 
         for id_str in valid_ids:
@@ -236,9 +236,7 @@ class TestTag:
 
     def test_valid_tag(self):
         """Test valid tag creation."""
-        tag = Tag(
-            text="machine learning", category="algorithm", confidence=0.9, frequency=5
-        )
+        tag = Tag(text="machine learning", category="algorithm", confidence=0.9, frequency=5)
 
         assert tag.text == "machine learning"
         assert tag.category == "algorithm"
@@ -323,9 +321,7 @@ class TestBatchOperation:
     def test_concurrency_bounds(self):
         """Test concurrency bounds validation."""
         # Valid values
-        operation = BatchOperation(
-            operation_type="test", items=["item1"], concurrency=10
-        )
+        operation = BatchOperation(operation_type="test", items=["item1"], concurrency=10)
         assert operation.concurrency == 10
 
         # Invalid values

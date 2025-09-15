@@ -23,6 +23,8 @@ dependencies = [
     "beautifulsoup4>=4.13.5",
     "pydantic>=2.11.7",
     "fastmcp>=2.12.2",
+    "ruff>=0.13.0",
+    "scipy>=1.16.1",
 ]
 
 [project.scripts]
@@ -96,6 +98,10 @@ dev = [
     "pytest-timeout>=2.2.0",
     "pytest-benchmark>=4.0.0",
     "mcp>=1.13.1",
+    "vulture>=2.14",
+    "rope>=1.12.0",
+    "autoflake>=2.3.1",
+    "pre-commit>=4.3.0",
 ]
 
 [tool.pytest.ini_options]
@@ -120,10 +126,12 @@ python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 minversion = "8.0"
+cache_dir = ".dev/build/pytest_cache"
 
 [tool.coverage.run]
 branch = true
 source = ["src/arxiv_mcp"]
+data_file = ".dev/build/coverage/.coverage"
 omit = [
     "*/tests/*",
     "*/test_*",
@@ -153,7 +161,175 @@ exclude_lines = [
 ]
 
 [tool.coverage.xml]
-output = "coverage.xml"
+output = ".dev/artifacts/coverage.xml"
 
 [tool.coverage.html]
-directory = ".dev/build/htmlcov"
+directory = ".dev/build/coverage/html"
+
+# Ruff Configuration - Modern Python Linting
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+cache-dir = ".dev/build/ruff_cache"
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "build",
+    "dist",
+    ".dev",
+    "htmlcov",
+    "logs",
+    "output",
+    "cache",
+    "network_cache",
+    "tag_cache",
+    "batch_cache",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings  
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+    "S",   # bandit security
+    "C4",  # flake8-comprehensions
+    "ICN", # flake8-import-conventions
+    "PIE", # flake8-pie
+    "T20", # flake8-print
+    "RET", # flake8-return
+    "SIM", # flake8-simplify
+    "PTH", # flake8-use-pathlib
+    "PL",  # pylint
+    "A",   # flake8-builtins
+    "COM", # flake8-commas
+    "DTZ", # flake8-datetimez
+    "EM",  # flake8-errmsg
+    "G",   # flake8-logging-format
+    "INP", # flake8-no-pep420
+    "RSE", # flake8-raise
+    "TRY", # tryceratops
+]
+
+ignore = [
+    "S101",   # Use of assert in tests
+    "PLR2004", # Magic value used in comparison
+    "COM812",  # Trailing comma missing (conflicts with black)
+    "ISC001",  # Implicitly concatenated string literals (conflicts with black)
+    "T201",    # Print found (allow for debugging/logging)
+    "T203",    # Pprint found (allow for debugging)
+    "TRY003",  # Avoid specifying long messages outside exception class
+    "EM101",   # Exception must not use a string literal
+    "EM102",   # Exception must not use an f-string literal
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "S101",    # Use of assert
+    "PLR2004", # Magic values in tests are acceptable
+    "S106",    # Possible hardcoded password (test fixtures)
+    "S608",    # Possible SQL injection via string concatenation
+    "INP001",  # File is part of an implicit namespace package
+]
+"scripts/**" = [
+    "T201",    # Print statements allowed in scripts
+    "INP001",  # File is part of an implicit namespace package
+]
+"src/arxiv_mcp/__init__.py" = ["F401"]  # Unused imports in __init__.py
+"src/arxiv_mcp/**/__init__.py" = ["F401"]  # Unused imports in __init__.py
+
+[tool.ruff.lint.isort]
+known-first-party = ["arxiv_mcp"]
+force-sort-within-sections = true
+split-on-trailing-comma = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+# Black Configuration (if used alongside ruff)
+[tool.black]
+line-length = 100
+target-version = ['py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    \.git
+  | \.venv
+  | __pycache__
+  | build
+  | dist
+  | \.dev
+  | htmlcov
+  | logs
+  | output
+  | cache
+  | network_cache
+  | tag_cache
+  | batch_cache
+)/
+'''
+
+# MyPy Configuration
+[tool.mypy]
+python_version = "3.11"
+cache_dir = ".dev/build/mypy_cache"
+sqlite_cache = true
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = [
+    "aiofiles.*",
+    "diskcache.*",
+    "tenacity.*",
+    "python_magic.*",
+    "markitdown.*",
+    "pytest_asyncio.*",
+    "beautifulsoup4.*",
+    "bs4.*",
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+
+# Vulture Configuration
+[tool.vulture]
+min_confidence = 80
+paths = ["src", "tests", "scripts"]
+exclude = [
+    "*/migrations/*",
+    "*/.venv/*",
+    "*/build/*",
+    "*/.dev/*",
+]
+ignore_decorators = ["@app.route", "@require_*", "@pytest.fixture"]
+ignore_names = ["_", "__*"]
+
+# Rope Configuration - Python Refactoring Tool
+[tool.rope]
+project_dir = "."
+rope_folder = ".dev/build/rope_cache"
+ignore_syntax_errors = false
+ignore_bad_imports = false
+extension_modules = []

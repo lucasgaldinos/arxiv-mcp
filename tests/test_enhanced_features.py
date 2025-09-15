@@ -2,18 +2,19 @@
 Integration tests for the new LaTeX to Markdown conversion and file saving features.
 """
 
-import pytest
-import tempfile
-import shutil
 from pathlib import Path
+import shutil
+import tempfile
 
+import pytest
+
+from arxiv_mcp.core.config import PipelineConfig
 from arxiv_mcp.utils.file_saver import FileSaver
 from arxiv_mcp.utils.latex_to_markdown import LaTeXToMarkdownConverter
 from arxiv_mcp.utils.unified_converter import (
     UnifiedDownloadConverter,
     download_and_convert_paper,
 )
-from arxiv_mcp.core.config import PipelineConfig
 
 
 class TestFileSaver:
@@ -62,7 +63,7 @@ class TestFileSaver:
         # Check manifest content
         import json
 
-        with open(paper_dir / "manifest.json", "r") as f:
+        with open(paper_dir / "manifest.json") as f:
             manifest = json.load(f)
 
         assert manifest["arxiv_id"] == arxiv_id
@@ -81,16 +82,14 @@ class TestFileSaver:
             "arxiv_id": arxiv_id,
         }
 
-        result_path_str = self.file_saver.save_markdown_file(
-            arxiv_id, markdown_content, metadata
-        )
+        result_path_str = self.file_saver.save_markdown_file(arxiv_id, markdown_content, metadata)
         result_path = Path(result_path_str)
 
         # Check file was created
         assert result_path.exists()
 
         # Check content
-        with open(result_path, "r") as f:
+        with open(result_path) as f:
             content = f.read()
 
         assert content.startswith("---")
@@ -139,10 +138,7 @@ class TestLaTeXToMarkdownConverter:
 
         assert result["success"]
         assert "Test Paper" in result["markdown"]
-        assert (
-            "# Introduction" in result["markdown"]
-            or "## Introduction" in result["markdown"]
-        )
+        assert "# Introduction" in result["markdown"] or "## Introduction" in result["markdown"]
 
     def test_metadata_extraction(self):
         """Test metadata extraction from LaTeX."""
@@ -186,10 +182,7 @@ class TestLaTeXToMarkdownConverter:
         assert result["metadata"]["title"] == "Test Paper"
         assert "Test Author" in result["metadata"]["authors"]
         assert "Test abstract" in result["metadata"]["abstract"]
-        assert (
-            "# Introduction" in result["markdown"]
-            or "## Introduction" in result["markdown"]
-        )
+        assert "# Introduction" in result["markdown"] or "## Introduction" in result["markdown"]
 
 
 class TestUnifiedDownloadConverter:
@@ -296,9 +289,7 @@ class TestIntegrationWorkflow:
         """
 
         # Convert to markdown
-        conversion_result = converter.convert_with_metadata(
-            latex_content, "test.integration"
-        )
+        conversion_result = converter.convert_with_metadata(latex_content, "test.integration")
 
         if conversion_result["success"]:
             # Save the result
@@ -310,7 +301,7 @@ class TestIntegrationWorkflow:
 
             # Verify the file exists and has content
             assert Path(markdown_path).exists()
-            with open(markdown_path, "r") as f:
+            with open(markdown_path) as f:
                 content = f.read()
 
             assert "title: Integration Test" in content

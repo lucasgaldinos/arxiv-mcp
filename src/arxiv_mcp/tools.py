@@ -3,7 +3,7 @@ MCP tools for the ArXiv server.
 """
 
 import asyncio
-from typing import List, Dict, Any, Optional, Union, Tuple
+from typing import Any
 
 # MCP Server imports
 from mcp.server import Server
@@ -15,29 +15,29 @@ from mcp.types import (
     Tool,
 )
 
-# Import the real implementations
-from .utils.dependency_analysis import DependencyAnalyzer
-from .utils.network_analysis import (
-    NetworkAnalyzer,
-    NetworkNode,
-    NetworkEdge,
-    NetworkType,
-)
-from .utils.citations import (
-    CitationParser,
-    format_citations_as_bibliography,
-    CitationFormat,
-)
-from .utils.docs_generator import DocGenerator
-from .utils.trending_analysis import TrendingAnalyzer
 from .clients.arxiv_api import ArxivAPIClient
 from .core.pipeline import ArxivPipeline
+from .utils.citations import (
+    CitationFormat,
+    CitationParser,
+    format_citations_as_bibliography,
+)
 
+# Import the real implementations
+from .utils.dependency_analysis import DependencyAnalyzer
+from .utils.docs_generator import DocGenerator
+from .utils.network_analysis import (
+    NetworkAnalyzer,
+    NetworkEdge,
+    NetworkNode,
+    NetworkType,
+)
+from .utils.trending_analysis import TrendingAnalyzer
 
 # Import the real implementations
 
 
-def get_tools() -> List[Tool]:
+def get_tools() -> list[Tool]:
     """
     Return a list of available MCP tools.
 
@@ -176,9 +176,7 @@ def get_tools() -> List[Tool]:
             description="Download a paper PDF from ArXiv",
             inputSchema={
                 "type": "object",
-                "properties": {
-                    "paper_id": {"type": "string", "description": "ArXiv paper ID"}
-                },
+                "properties": {"paper_id": {"type": "string", "description": "ArXiv paper ID"}},
                 "required": ["paper_id"],
             },
         ),
@@ -219,7 +217,7 @@ def get_tools() -> List[Tool]:
 # Tool Handler Functions - Real Implementations
 
 
-async def handle_search_arxiv(query: str, **filters: Any) -> Dict[str, Any]:
+async def handle_search_arxiv(query: str, **filters: Any) -> dict[str, Any]:
     """Handle search_arxiv tool with real ArxivAPIClient."""
     client = ArxivAPIClient()
     results = await client.search(query, **filters)
@@ -231,7 +229,7 @@ async def handle_search_arxiv(query: str, **filters: Any) -> Dict[str, Any]:
     }
 
 
-async def handle_download_paper(paper_id: str) -> Dict[str, Any]:
+async def handle_download_paper(paper_id: str) -> dict[str, Any]:
     """Handle download_paper tool with real ArxivPipeline."""
     from .core.config import PipelineConfig
 
@@ -251,17 +249,16 @@ async def handle_download_paper(paper_id: str) -> Dict[str, Any]:
             "pdf_text": result.get("pdf_text"),
             "processing_time": result.get("processing_time"),
         }
-    else:
-        return {
-            "status": "error",
-            "paper_id": paper_id,
-            "error": result.get("error", "Unknown error occurred"),
-        }
+    return {
+        "status": "error",
+        "paper_id": paper_id,
+        "error": result.get("error", "Unknown error occurred"),
+    }
 
 
 async def handle_fetch_arxiv_paper_content(
     arxiv_id: str, include_pdf: bool = False
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Handle fetch_arxiv_paper_content tool with real ArxivPipeline."""
     from .core.config import PipelineConfig
 
@@ -282,15 +279,14 @@ async def handle_fetch_arxiv_paper_content(
             "processing_time": result.get("processing_time"),
             "metadata": result.get("metadata", {}),
         }
-    else:
-        return {
-            "status": "error",
-            "arxiv_id": arxiv_id,
-            "error": result.get("error", "Unknown error occurred"),
-        }
+    return {
+        "status": "error",
+        "arxiv_id": arxiv_id,
+        "error": result.get("error", "Unknown error occurred"),
+    }
 
 
-def handle_get_processing_metrics(time_range: str = "24h") -> Dict[str, Any]:
+def handle_get_processing_metrics(time_range: str = "24h") -> dict[str, Any]:
     """Handle get_processing_metrics tool."""
     try:
         from .utils.metrics import PerformanceMetrics
@@ -313,15 +309,16 @@ def handle_get_processing_metrics(time_range: str = "24h") -> Dict[str, Any]:
 
 
 def handle_process_document_formats(
-    file_path: Optional[str] = None,
-    document_content: Optional[str] = None,
-    filename: Optional[str] = None,
+    file_path: str | None = None,
+    document_content: str | None = None,
+    filename: str | None = None,
     extract_metadata: bool = True,
     supported_formats: bool = False,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Handle process_document_formats tool with real DocumentProcessor."""
-    from .processors.document_processor import DocumentProcessor
     import base64
+
+    from .processors.document_processor import DocumentProcessor
 
     processor = DocumentProcessor()
 
@@ -400,7 +397,7 @@ def handle_process_document_formats(
         return {"status": "error", "error": f"Document processing failed: {str(e)}"}
 
 
-def handle_extract_citations(text: str) -> Dict[str, Any]:
+def handle_extract_citations(text: str) -> dict[str, Any]:
     """Handle extract_citations tool with real CitationParser."""
     parser = CitationParser()
     citations = parser.extract_citations_from_text(text)
@@ -422,7 +419,7 @@ def handle_extract_citations(text: str) -> Dict[str, Any]:
     }
 
 
-def handle_parse_bibliography(bibliography_text: str) -> Dict[str, Any]:
+def handle_parse_bibliography(bibliography_text: str) -> dict[str, Any]:
     """Handle parse_bibliography tool with real citation formatting."""
     parser = CitationParser()
     citations = parser.extract_citations_from_text(bibliography_text)
@@ -435,7 +432,7 @@ def handle_parse_bibliography(bibliography_text: str) -> Dict[str, Any]:
     }
 
 
-def handle_check_dependencies(package_name: Optional[str] = None) -> Dict[str, Any]:
+def handle_check_dependencies(package_name: str | None = None) -> dict[str, Any]:
     """Handle check_dependencies tool with real DependencyAnalyzer."""
     analyzer = DependencyAnalyzer()
     analysis = analyzer.analyze_package_dependencies(package_name)
@@ -447,14 +444,14 @@ def handle_check_dependencies(package_name: Optional[str] = None) -> Dict[str, A
 
 
 def handle_analyze_citation_network(
-    papers_data: List[Dict[str, Any]],
-) -> Dict[str, Any]:
+    papers_data: list[dict[str, Any]],
+) -> dict[str, Any]:
     """Handle analyze_citation_network tool with real NetworkAnalyzer."""
     analyzer = NetworkAnalyzer()
 
     # Convert paper data to network nodes and edges
-    nodes: List[NetworkNode] = []
-    edges: List[NetworkEdge] = []
+    nodes: list[NetworkNode] = []
+    edges: list[NetworkEdge] = []
 
     for paper in papers_data:
         # Create node for paper
@@ -490,7 +487,7 @@ def handle_analyze_citation_network(
     }
 
 
-def handle_get_trending_papers(category: Optional[str] = None, days: int = 7) -> Dict[str, Any]:
+def handle_get_trending_papers(category: str | None = None, days: int = 7) -> dict[str, Any]:
     """Handle get_trending_papers tool with real TrendingAnalyzer."""
     analyzer = TrendingAnalyzer()
     report = analyzer.generate_trending_report(days=days)
@@ -528,7 +525,7 @@ def handle_get_trending_papers(category: Optional[str] = None, days: int = 7) ->
     }
 
 
-def handle_generate_documentation(output_format: str = "markdown") -> Dict[str, Any]:
+def handle_generate_documentation(output_format: str = "markdown") -> dict[str, Any]:
     """Handle generate_documentation tool with real DocGenerator."""
     generator = DocGenerator(source_path="src/arxiv_mcp")
     tools_file = generator.source_path / "tools.py"
@@ -550,7 +547,7 @@ def handle_generate_documentation(output_format: str = "markdown") -> Dict[str, 
     }
 
 
-def handle_parse_citations_from_arxiv(arxiv_id: str) -> Dict[str, Any]:
+def handle_parse_citations_from_arxiv(arxiv_id: str) -> dict[str, Any]:
     """Handle parse_citations_from_arxiv tool combining pipeline and citation parsing."""
     # This would use both ArxivPipeline to get the paper and CitationParser to extract citations
     return {
@@ -561,19 +558,20 @@ def handle_parse_citations_from_arxiv(arxiv_id: str) -> Dict[str, Any]:
     }
 
 
-def handle_generate_api_docs(output_format: str = "markdown") -> Dict[str, Any]:
+def handle_generate_api_docs(output_format: str = "markdown") -> dict[str, Any]:
     """Handle generate_api_docs tool with enhanced documentation generation."""
     from pathlib import Path
+
     from .utils.docs_generator import generate_api_docs
-    
+
     try:
         # Generate comprehensive API documentation
         docs = generate_api_docs(
             source_path=str(Path(__file__).parent),
             output_path="docs/api",
-            formats=[output_format, "json"]  # Always generate JSON for programmatic access
+            formats=[output_format, "json"],  # Always generate JSON for programmatic access
         )
-        
+
         return {
             "status": "success",
             "api_documentation": {
@@ -585,8 +583,8 @@ def handle_generate_api_docs(output_format: str = "markdown") -> Dict[str, Any]:
                 "output_format": output_format,
                 "files_generated": [
                     f"docs/api/api_documentation.{output_format}",
-                    "docs/api/api_documentation.json"
-                ]
+                    "docs/api/api_documentation.json",
+                ],
             },
             "tools_summary": [
                 {
@@ -605,14 +603,14 @@ def handle_generate_api_docs(output_format: str = "markdown") -> Dict[str, Any]:
                 }
                 for module in docs.modules
             ],
-            "implementation_status": "completed"
+            "implementation_status": "completed",
         }
     except Exception as e:
         return {
             "status": "error",
             "error": str(e),
             "fallback_documentation": "Basic API documentation structure available",
-            "implementation_status": "error_fallback"
+            "implementation_status": "error_fallback",
         }
 
 
@@ -623,7 +621,7 @@ async def handle_download_and_convert_paper(
     save_latex: bool = True,
     save_markdown: bool = True,
     include_pdf: bool = False,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Handle unified download and convert for a single paper."""
     try:
         from .utils.unified_converter import download_and_convert_paper
@@ -646,13 +644,13 @@ async def handle_download_and_convert_paper(
 
 
 async def handle_batch_download_and_convert(
-    arxiv_ids: List[str],
+    arxiv_ids: list[str],
     output_dir: str = "./output",
     save_latex: bool = True,
     save_markdown: bool = True,
     include_pdf: bool = False,
     max_concurrent: int = 3,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Handle batch unified download and convert for multiple papers."""
     try:
         from .core.config import PipelineConfig
@@ -679,7 +677,7 @@ async def handle_batch_download_and_convert(
         }
 
 
-def handle_get_output_structure(output_dir: str = "./output") -> Dict[str, Any]:
+def handle_get_output_structure(output_dir: str = "./output") -> dict[str, Any]:
     """Handle get output structure for saved papers."""
     try:
         from .core.config import PipelineConfig
@@ -701,9 +699,15 @@ def handle_get_output_structure(output_dir: str = "./output") -> Dict[str, Any]:
 
 
 def handle_validate_conversion_quality(
-    arxiv_id: str, output_dir: str = "./output"
-) -> Dict[str, Any]:
-    """Handle conversion quality validation for a specific paper."""
+    arxiv_id: str, output_dir: str = "./output", format_type: str = "single"
+) -> dict[str, Any]:
+    """Handle conversion quality validation for a specific paper with independent format support.
+
+    Args:
+        arxiv_id: ArXiv paper ID to validate
+        output_dir: Output directory path
+        format_type: Validation mode - "single" (auto-detect), "latex_only", "markdown_only", or "both" (legacy)
+    """
     try:
         from .core.config import PipelineConfig
         from .utils.unified_converter import UnifiedDownloadConverter
@@ -711,11 +715,13 @@ def handle_validate_conversion_quality(
         config = PipelineConfig.from_dict({"output_directory": output_dir})
         converter = UnifiedDownloadConverter(config)
 
-        quality_result = converter.validate_conversion_quality(arxiv_id)
+        quality_result = converter.validate_conversion_quality(arxiv_id, format_type)
 
         return {
             "status": "success",
             "tool": "validate_conversion_quality",
+            "meets_90_percent_target": quality_result.get("meets_target", False),
+            "validation_mode": quality_result.get("validation_mode", format_type),
             **quality_result,
         }
 
@@ -727,10 +733,8 @@ def handle_validate_conversion_quality(
         }
 
 
-def handle_cleanup_output(
-    output_dir: str = "./output", days_old: int = 30
-) -> Dict[str, Any]:
-    """Handle cleanup of old output files."""
+def handle_cleanup_output(output_dir: str = "./output", days_old: int = 30) -> dict[str, Any]:
+    """Handle cleanup of old output files - LEGACY VERSION for backward compatibility."""
     try:
         from .core.config import PipelineConfig
         from .utils.unified_converter import UnifiedDownloadConverter
@@ -747,6 +751,59 @@ def handle_cleanup_output(
             "status": "error",
             "tool": "cleanup_output",
             "error": f"Cleanup failed: {str(e)}",
+        }
+
+
+def handle_enhanced_cleanup_output(
+    output_dir: str = "./output", time_spec: str = "30d", cleanup_type: str = "comprehensive"
+) -> dict[str, Any]:
+    """
+    Enhanced cleanup with multi-temporal support.
+
+    Args:
+        output_dir: Output directory to clean
+        time_spec: Time specification (e.g., "30s", "5m", "2h", "1d", "30d")
+        cleanup_type: Type of cleanup ("files", "batch", "notifications", "comprehensive")
+
+    Returns:
+        Dictionary with cleanup results
+    """
+    try:
+        from .core.config import PipelineConfig
+        from .enhanced.multi_temporal_cleanup import create_enhanced_adapter
+
+        config = PipelineConfig.from_dict({"output_directory": output_dir})
+        adapter = create_enhanced_adapter(config)
+
+        if cleanup_type == "files":
+            result = adapter.cleanup_files(time_spec, output_dir)
+        elif cleanup_type == "batch":
+            result = adapter.cleanup_batch_operations(time_spec)
+        elif cleanup_type == "notifications":
+            result = adapter.cleanup_notifications(time_spec)
+        elif cleanup_type == "comprehensive":
+            result = adapter.comprehensive_cleanup(time_spec, output_dir)
+        else:
+            return {
+                "status": "error",
+                "tool": "enhanced_cleanup_output",
+                "error": f"Unknown cleanup_type: {cleanup_type}. Must be one of: files, batch, notifications, comprehensive",
+            }
+
+        return {
+            "status": "success",
+            "tool": "enhanced_cleanup_output",
+            "cleanup_type": cleanup_type,
+            **result,
+        }
+
+    except Exception as e:
+        return {
+            "status": "error",
+            "tool": "enhanced_cleanup_output",
+            "error": f"Enhanced cleanup failed: {str(e)}",
+            "time_spec": time_spec,
+            "cleanup_type": cleanup_type,
         }
 
 
@@ -890,7 +947,7 @@ async def handle_list_tools() -> ListToolsResult:
             ),
             Tool(
                 name="validate_conversion_quality",
-                description="Validate the quality of LaTeX to Markdown conversion",
+                description="Validate document processing quality with independent format support and 90%+ accuracy targets",
                 inputSchema={
                     "type": "object",
                     "properties": {
@@ -899,6 +956,12 @@ async def handle_list_tools() -> ListToolsResult:
                             "type": "string",
                             "description": "Output directory path",
                             "default": "./output",
+                        },
+                        "format_type": {
+                            "type": "string",
+                            "description": "Validation mode: 'single' (auto-detect available format), 'latex_only' (LaTeX files only), 'markdown_only' (Markdown files only), or 'both' (legacy mode requiring both formats)",
+                            "enum": ["single", "latex_only", "markdown_only", "both"],
+                            "default": "single",
                         },
                     },
                     "required": ["arxiv_id"],
@@ -966,6 +1029,31 @@ async def handle_list_tools() -> ListToolsResult:
                     },
                 },
             ),
+            Tool(
+                name="enhanced_cleanup_output",
+                description="Enhanced cleanup with multi-temporal support (seconds to days precision)",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "output_dir": {
+                            "type": "string",
+                            "description": "Output directory path",
+                            "default": "./output",
+                        },
+                        "time_spec": {
+                            "type": "string",
+                            "description": "Time specification (e.g., '30s', '5m', '2h', '1d', '30d', '1h30m')",
+                            "default": "30d",
+                        },
+                        "cleanup_type": {
+                            "type": "string",
+                            "description": "Type of cleanup: 'files', 'batch', 'notifications', 'comprehensive'",
+                            "default": "comprehensive",
+                            "enum": ["files", "batch", "notifications", "comprehensive"],
+                        },
+                    },
+                },
+            ),
         ]
     )
 
@@ -988,6 +1076,8 @@ async def handle_call_tool(request: CallToolRequest) -> CallToolResult:
             result = handle_validate_conversion_quality(**request.params.arguments)
         elif request.params.name == "cleanup_output":
             result = handle_cleanup_output(**request.params.arguments)
+        elif request.params.name == "enhanced_cleanup_output":
+            result = handle_enhanced_cleanup_output(**request.params.arguments)
         elif request.params.name == "extract_citations":
             result = handle_extract_citations(**request.params.arguments)
         elif request.params.name == "analyze_citation_network":
@@ -1000,9 +1090,7 @@ async def handle_call_tool(request: CallToolRequest) -> CallToolResult:
         return CallToolResult(content=[{"type": "text", "text": str(result)}])
 
     except Exception as e:
-        return CallToolResult(
-            content=[{"type": "text", "text": f"Error: {str(e)}"}], isError=True
-        )
+        return CallToolResult(content=[{"type": "text", "text": f"Error: {str(e)}"}], isError=True)
 
 
 async def async_main():

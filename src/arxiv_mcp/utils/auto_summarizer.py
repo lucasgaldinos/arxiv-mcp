@@ -3,13 +3,13 @@ Auto-summarization for generating paper summaries using existing text processing
 Provides extractive and abstractive summary generation for academic papers.
 """
 
-import re
-from typing import List, Dict, Any, Optional
 from collections import Counter, defaultdict
 from dataclasses import dataclass
+import re
+from typing import Any
 
-from .optional_deps import safe_import_nltk
 from .logging import structured_logger
+from .optional_deps import safe_import_nltk
 
 
 @dataclass
@@ -17,10 +17,10 @@ class SummaryResult:
     """Results from paper summarization."""
 
     title: str
-    abstract: Optional[str]
-    extractive_summary: List[str]
-    key_points: List[str]
-    keywords: List[str]
+    abstract: str | None
+    extractive_summary: list[str]
+    key_points: list[str]
+    keywords: list[str]
     summary_length: int
     confidence_score: float
     method_used: str
@@ -110,7 +110,6 @@ class AutoSummarizer:
             "was",
             "will",
             "with",
-            "the",
             "this",
             "but",
             "they",
@@ -152,7 +151,6 @@ class AutoSummarizer:
             "been",
             "call",
             "who",
-            "its",
             "now",
             "find",
             "long",
@@ -166,23 +164,19 @@ class AutoSummarizer:
             "part",
         }
 
-    def _basic_sent_tokenize(self, text: str) -> List[str]:
+    def _basic_sent_tokenize(self, text: str) -> list[str]:
         """Basic sentence tokenization using regex."""
         # Split on periods, exclamation marks, and question marks
         sentences = re.split(r"[.!?]+", text)
         # Clean and filter sentences
-        sentences = [s.strip() for s in sentences if s.strip() and len(s.strip()) > 10]
-        return sentences
+        return [s.strip() for s in sentences if s.strip() and len(s.strip()) > 10]
 
-    def _basic_word_tokenize(self, text: str) -> List[str]:
+    def _basic_word_tokenize(self, text: str) -> list[str]:
         """Basic word tokenization using regex."""
         # Split on whitespace and punctuation, keep alphanumeric
-        words = re.findall(r"\b\w+\b", text.lower())
-        return words
+        return re.findall(r"\b\w+\b", text.lower())
 
-    def _calculate_sentence_score(
-        self, sentence: str, word_freq: Dict[str, float]
-    ) -> float:
+    def _calculate_sentence_score(self, sentence: str, word_freq: dict[str, float]) -> float:
         """Calculate relevance score for a sentence."""
         words = self.word_tokenize(sentence)
         words = [w for w in words if w not in self.stopwords and len(w) > 2]
@@ -210,7 +204,7 @@ class AutoSummarizer:
 
         return score
 
-    def _extract_keywords(self, text: str, max_keywords: int = 10) -> List[str]:
+    def _extract_keywords(self, text: str, max_keywords: int = 10) -> list[str]:
         """Extract key terms from the text."""
         words = self.word_tokenize(text)
         words = [w for w in words if w not in self.stopwords and len(w) > 3]
@@ -233,9 +227,7 @@ class AutoSummarizer:
         sorted_keywords = sorted(word_scores.items(), key=lambda x: x[1], reverse=True)
         return [word for word, score in sorted_keywords[:max_keywords]]
 
-    def _extract_key_points(
-        self, sentences: List[str], max_points: int = 5
-    ) -> List[str]:
+    def _extract_key_points(self, sentences: list[str], max_points: int = 5) -> list[str]:
         """Extract key points from sentences using pattern matching."""
         key_points = []
 
@@ -286,7 +278,7 @@ class AutoSummarizer:
             include_keywords=include_keywords,
         )
 
-    def extract_key_phrases(self, text: str, max_phrases: int = 10) -> List[str]:
+    def extract_key_phrases(self, text: str, max_phrases: int = 10) -> list[str]:
         """Extract key phrases/keywords from text.
 
         Args:
@@ -301,8 +293,8 @@ class AutoSummarizer:
     def summarize_paper(
         self,
         title: str,
-        abstract: Optional[str] = None,
-        content: Optional[str] = None,
+        abstract: str | None = None,
+        content: str | None = None,
         max_sentences: int = 5,
         include_keywords: bool = True,
     ) -> SummaryResult:
@@ -349,9 +341,7 @@ class AutoSummarizer:
                     abstract=abstract,
                     extractive_summary=sentences,
                     key_points=[],
-                    keywords=self._extract_keywords(full_text)
-                    if include_keywords
-                    else [],
+                    keywords=self._extract_keywords(full_text) if include_keywords else [],
                     summary_length=len(sentences),
                     confidence_score=0.3,
                     method_used="minimal_content",
@@ -359,9 +349,7 @@ class AutoSummarizer:
 
             # Calculate word frequencies
             all_words = self.word_tokenize(full_text)
-            filtered_words = [
-                w for w in all_words if w not in self.stopwords and len(w) > 2
-            ]
+            filtered_words = [w for w in all_words if w not in self.stopwords and len(w) > 2]
             word_freq = Counter(filtered_words)
 
             # Normalize frequencies
@@ -407,7 +395,7 @@ class AutoSummarizer:
             )
 
         except Exception as e:
-            self.logger.error(f"Failed to summarize paper '{title}': {e}")
+            self.logger.exception(f"Failed to summarize paper '{title}': {e}")
             return SummaryResult(
                 title=title,
                 abstract=abstract,
@@ -423,7 +411,7 @@ class AutoSummarizer:
         self,
         total_sentences: int,
         summary_sentences: int,
-        word_freq: Dict[str, float],
+        word_freq: dict[str, float],
         has_abstract: bool,
     ) -> float:
         """Calculate confidence score for the summary."""
@@ -436,9 +424,7 @@ class AutoSummarizer:
             confidence += 0.1
 
         # Boost for good compression ratio
-        compression_ratio = (
-            summary_sentences / total_sentences if total_sentences > 0 else 0
-        )
+        compression_ratio = summary_sentences / total_sentences if total_sentences > 0 else 0
         if 0.1 <= compression_ratio <= 0.3:
             confidence += 0.2
 
@@ -457,8 +443,8 @@ class AutoSummarizer:
         return min(confidence, 1.0)
 
     def summarize_multiple_papers(
-        self, papers: List[Dict[str, Any]], max_sentences_per_paper: int = 3
-    ) -> List[SummaryResult]:
+        self, papers: list[dict[str, Any]], max_sentences_per_paper: int = 3
+    ) -> list[SummaryResult]:
         """Summarize multiple papers efficiently."""
         results = []
 
@@ -478,8 +464,8 @@ class AutoSummarizer:
         return results
 
     def generate_comparative_summary(
-        self, papers: List[Dict[str, Any]], focus_topic: Optional[str] = None
-    ) -> Dict[str, Any]:
+        self, papers: list[dict[str, Any]], focus_topic: str | None = None
+    ) -> dict[str, Any]:
         """Generate a comparative summary across multiple papers."""
         if not papers:
             return {}
@@ -516,16 +502,12 @@ class AutoSummarizer:
                 for summary in individual_summaries
             ],
             "common_themes": common_keywords,
-            "comparative_insights": self._generate_comparative_insights(
-                individual_summaries
-            ),
+            "comparative_insights": self._generate_comparative_insights(individual_summaries),
             "average_confidence": avg_confidence,
             "focus_topic": focus_topic,
         }
 
-    def _generate_comparative_insights(
-        self, summaries: List[SummaryResult]
-    ) -> List[str]:
+    def _generate_comparative_insights(self, summaries: list[SummaryResult]) -> list[str]:
         """Generate insights by comparing multiple paper summaries."""
         insights = []
 
@@ -561,10 +543,7 @@ class AutoSummarizer:
         novel_papers = sum(
             1
             for summary in summaries
-            if any(
-                any(novel in kw.lower() for novel in novel_keywords)
-                for kw in summary.keywords
-            )
+            if any(any(novel in kw.lower() for novel in novel_keywords) for kw in summary.keywords)
         )
 
         if novel_papers > 0:

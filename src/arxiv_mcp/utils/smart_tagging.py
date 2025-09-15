@@ -6,23 +6,23 @@ This module provides automatic keyword extraction and tagging capabilities
 for research papers, leveraging NLP techniques and domain-specific knowledge.
 """
 
-import re
-from typing import List, Dict, Any, Optional, Tuple
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
-from pathlib import Path
-import json
-import sqlite3
 from datetime import datetime
+import json
+from pathlib import Path
+import re
+import sqlite3
+from typing import Any
 
 # Optional NLTK imports
 try:
     import nltk
-    from nltk.corpus import stopwords
-    from nltk.tokenize import word_tokenize, sent_tokenize
-    from nltk.stem import PorterStemmer
     from nltk.chunk import ne_chunk
+    from nltk.corpus import stopwords
+    from nltk.stem import PorterStemmer
     from nltk.tag import pos_tag
+    from nltk.tokenize import sent_tokenize, word_tokenize
 
     NLTK_AVAILABLE = True
 except ImportError:
@@ -41,8 +41,8 @@ class Tag:
     category: str
     confidence: float
     frequency: int = 0
-    contexts: List[str] = field(default_factory=list)
-    related_terms: List[str] = field(default_factory=list)
+    contexts: list[str] = field(default_factory=list)
+    related_terms: list[str] = field(default_factory=list)
     first_seen: datetime = field(default_factory=datetime.now)
     last_used: datetime = field(default_factory=datetime.now)
 
@@ -52,12 +52,12 @@ class TaggingResult:
     """Result of smart tagging operation."""
 
     paper_id: str
-    tags: List[Tag]
-    categories: Dict[str, List[Tag]]
+    tags: list[Tag]
+    categories: dict[str, list[Tag]]
     confidence_score: float
     processing_time: float
     method_used: str
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class SmartTagger:
@@ -211,7 +211,7 @@ class SmartTagger:
         "review": ["survey", "review", "overview", "state-of-art", "literature"],
     }
 
-    def __init__(self, cache_dir: Optional[str] = None):
+    def __init__(self, cache_dir: str | None = None):
         """Initialize the smart tagger."""
         self.cache_dir = Path(cache_dir) if cache_dir else Path.cwd() / "tag_cache"
         self.cache_dir.mkdir(exist_ok=True)
@@ -335,9 +335,7 @@ class SmartTagger:
                 except Exception as e:
                     logger.warning(f"Could not download NLTK data {data_name}: {e}")
 
-    def categorize_paper(
-        self, text: str, title: str = "", abstract: str = ""
-    ) -> List[Tag]:
+    def categorize_paper(self, text: str, title: str = "", abstract: str = "") -> list[Tag]:
         """
         Categorize paper content and extract tags.
 
@@ -353,7 +351,7 @@ class SmartTagger:
         """
         return self.extract_tags(text=text, title=title, abstract=abstract)
 
-    def extract_tags(self, text: str, title: str = "", abstract: str = "") -> List[Tag]:
+    def extract_tags(self, text: str, title: str = "", abstract: str = "") -> list[Tag]:
         """
         Extract smart tags from text content.
 
@@ -395,7 +393,7 @@ class SmartTagger:
 
         return tags
 
-    def _extract_tags_nltk(self, text: str, title: str, abstract: str) -> List[Tag]:
+    def _extract_tags_nltk(self, text: str, title: str, abstract: str) -> list[Tag]:
         """Extract tags using NLTK capabilities."""
         tags = []
 
@@ -443,7 +441,7 @@ class SmartTagger:
 
         return tags
 
-    def _extract_tags_basic(self, text: str, title: str, abstract: str) -> List[Tag]:
+    def _extract_tags_basic(self, text: str, title: str, abstract: str) -> list[Tag]:
         """Extract tags using basic text processing."""
         tags = []
 
@@ -469,7 +467,7 @@ class SmartTagger:
 
         return tags
 
-    def _extract_domain_tags(self, text: str) -> List[Tag]:
+    def _extract_domain_tags(self, text: str) -> list[Tag]:
         """Extract domain-specific tags."""
         tags = []
         text_lower = text.lower()
@@ -512,7 +510,7 @@ class SmartTagger:
 
         return tags
 
-    def _categorize_tags(self, tags: List[Tag]) -> List[Tag]:
+    def _categorize_tags(self, tags: list[Tag]) -> list[Tag]:
         """Categorize tags based on content analysis."""
         categorized = []
 
@@ -535,7 +533,7 @@ class SmartTagger:
 
         return categorized
 
-    def _deduplicate_tags(self, tags: List[Tag]) -> List[Tag]:
+    def _deduplicate_tags(self, tags: list[Tag]) -> list[Tag]:
         """Remove duplicate tags and merge similar ones."""
         seen_terms = {}
         deduplicated = []
@@ -572,9 +570,7 @@ class SmartTagger:
 
         # Context boost (if term appears in title/abstract context)
         context_boost = (
-            0.2
-            if any("title" in ctx or "abstract" in ctx for ctx in tag.contexts)
-            else 0
+            0.2 if any("title" in ctx or "abstract" in ctx for ctx in tag.contexts) else 0
         )
 
         final_confidence = min(
@@ -583,7 +579,7 @@ class SmartTagger:
         )
         return round(final_confidence, 3)
 
-    def tag_paper(self, paper_id: str, content: Dict[str, str]) -> TaggingResult:
+    def tag_paper(self, paper_id: str, content: dict[str, str]) -> TaggingResult:
         """
         Tag a complete paper.
 
@@ -609,10 +605,7 @@ class SmartTagger:
             categories[tag.category].append(tag)
 
         # Calculate overall confidence
-        if tags:
-            confidence_score = sum(tag.confidence for tag in tags) / len(tags)
-        else:
-            confidence_score = 0.0
+        confidence_score = sum(tag.confidence for tag in tags) / len(tags) if tags else 0.0
 
         processing_time = (datetime.now() - start_time).total_seconds()
         method_used = "NLTK-enhanced" if NLTK_AVAILABLE else "basic"
@@ -631,9 +624,7 @@ class SmartTagger:
                 "total_tags": len(tags),
                 "categories_found": len(categories),
                 "top_category": (
-                    max(categories.keys(), key=lambda k: len(categories[k]))
-                    if categories
-                    else None
+                    max(categories.keys(), key=lambda k: len(categories[k])) if categories else None
                 ),
                 "text_length": len(text),
                 "has_title": bool(title),
@@ -641,12 +632,10 @@ class SmartTagger:
             },
         )
 
-        logger.info(
-            f"Tagged paper {paper_id}: {len(tags)} tags, {confidence_score:.2f} confidence"
-        )
+        logger.info(f"Tagged paper {paper_id}: {len(tags)} tags, {confidence_score:.2f} confidence")
         return result
 
-    def _store_paper_tags(self, paper_id: str, tags: List[Tag]) -> None:
+    def _store_paper_tags(self, paper_id: str, tags: list[Tag]) -> None:
         """Store paper tags in database."""
         with sqlite3.connect(self.db_path) as conn:
             for tag in tags:
@@ -689,7 +678,7 @@ class SmartTagger:
                     ),
                 )
 
-    def get_paper_tags(self, paper_id: str) -> List[Tag]:
+    def get_paper_tags(self, paper_id: str) -> list[Tag]:
         """Retrieve tags for a specific paper."""
         with sqlite3.connect(self.db_path) as conn:
             results = conn.execute(
@@ -713,38 +702,32 @@ class SmartTagger:
                     frequency=row[3],
                     contexts=json.loads(row[4]) if row[4] else [],
                     related_terms=json.loads(row[5]) if row[5] else [],
-                    first_seen=datetime.fromisoformat(row[6])
-                    if row[6]
-                    else datetime.now(),
-                    last_used=datetime.fromisoformat(row[7])
-                    if row[7]
-                    else datetime.now(),
+                    first_seen=datetime.fromisoformat(row[6]) if row[6] else datetime.now(),
+                    last_used=datetime.fromisoformat(row[7]) if row[7] else datetime.now(),
                 )
                 tags.append(tag)
 
             return tags
 
-    def get_trending_tags(
-        self, limit: int = 20, days: int = 30
-    ) -> List[Tuple[str, int, float]]:
+    def get_trending_tags(self, limit: int = 20, days: int = 30) -> list[tuple[str, int, float]]:
         """Get trending tags based on recent usage."""
         with sqlite3.connect(self.db_path) as conn:
             results = conn.execute(
-                """
+                f"""
                 SELECT t.term, COUNT(pt.id) as usage_count, AVG(pt.confidence) as avg_confidence
                 FROM tags t
                 JOIN paper_tags pt ON t.id = pt.tag_id
-                WHERE pt.created_at >= datetime('now', '-{} days')
+                WHERE pt.created_at >= datetime('now', '-{days} days')
                 GROUP BY t.term
                 ORDER BY usage_count DESC, avg_confidence DESC
                 LIMIT ?
-            """.format(days),
+            """,
                 (limit,),
             ).fetchall()
 
             return [(row[0], row[1], row[2]) for row in results]
 
-    def suggest_related_tags(self, tag_term: str, limit: int = 10) -> List[str]:
+    def suggest_related_tags(self, tag_term: str, limit: int = 10) -> list[str]:
         """Suggest related tags based on co-occurrence."""
         with sqlite3.connect(self.db_path) as conn:
             # Find papers that contain the given tag
@@ -834,17 +817,17 @@ class SmartTagger:
                 return True
 
         except Exception as e:
-            logger.error(f"Failed to export tags: {e}")
+            logger.exception(f"Failed to export tags: {e}")
             return False
 
 
 # Convenience functions
-def create_smart_tagger(cache_dir: Optional[str] = None) -> SmartTagger:
+def create_smart_tagger(cache_dir: str | None = None) -> SmartTagger:
     """Create a configured SmartTagger instance."""
     return SmartTagger(cache_dir=cache_dir)
 
 
-def quick_tag_extraction(text: str, max_tags: int = 10) -> List[str]:
+def quick_tag_extraction(text: str, max_tags: int = 10) -> list[str]:
     """Quick tag extraction for simple use cases."""
     tagger = SmartTagger()
     tags = tagger.extract_tags(text)

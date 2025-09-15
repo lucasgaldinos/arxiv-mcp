@@ -3,8 +3,8 @@ Smart validation script for the implemented priority features.
 Tests real functionality rather than just making tests pass.
 """
 
-import sys
 import os
+import sys
 
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
@@ -30,9 +30,9 @@ def test_citation_extraction_real():
 
     citations = parser.extract_citations(academic_text)
 
-    print(f"✓ Citation extraction test:")
+    print("✓ Citation extraction test:")
     print(f"  - Found {len(citations)} citations")
-    print(f"  - Expected at least 2 citations from the references section")
+    print("  - Expected at least 2 citations from the references section")
 
     for i, citation in enumerate(citations):
         print(f"  - Citation {i + 1}: {citation.title[:50]}...")
@@ -49,7 +49,7 @@ def test_optional_dependencies_real():
 
     features = get_available_features()
 
-    print(f"✓ Optional dependencies test:")
+    print("✓ Optional dependencies test:")
     print(f"  - Total optional packages checked: {len(features)}")
 
     available_count = sum(1 for available in features.values() if available)
@@ -61,7 +61,7 @@ def test_optional_dependencies_real():
         nltk_dep = optional_import("nltk")
         print(f"  - NLTK available: {nltk_dep.available}")
         if not nltk_dep.available:
-            print(f"    Fallback working correctly")
+            print("    Fallback working correctly")
     except Exception as e:
         print(f"  - Error in optional dependency handling: {e}")
         return False
@@ -71,16 +71,16 @@ def test_optional_dependencies_real():
 
 def test_docs_generation_real():
     """Test real documentation generation."""
-    from arxiv_mcp.utils.docs_generator import generate_api_docs
     import tempfile
-    import json
+
+    from arxiv_mcp.utils.docs_generator import generate_api_docs
 
     with tempfile.TemporaryDirectory() as temp_dir:
         try:
             # Generate docs in temporary directory
             docs = generate_api_docs(output_path=temp_dir, formats=["json"])
 
-            print(f"✓ Documentation generation test:")
+            print("✓ Documentation generation test:")
             print(f"  - Generated documentation for {len(docs.modules)} modules")
             print(f"  - Found {len(docs.tools_summary or [])} MCP tools")
             print(f"  - Documentation title: {docs.title}")
@@ -107,8 +107,8 @@ def test_mcp_tools_integration():
     """Test that MCP tools can be imported and have correct structure."""
     try:
         # Add src to path for relative imports
-        import sys
         import os
+        import sys
 
         sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
@@ -116,7 +116,7 @@ def test_mcp_tools_integration():
 
         tools = get_tools()
 
-        print(f"✓ MCP tools integration test:")
+        print("✓ MCP tools integration test:")
         print(f"  - Total tools available: {len(tools)}")
 
         # Check for our new tools
@@ -148,7 +148,7 @@ def test_mcp_tools_integration():
 
 def test_real_workflow():
     """Test a complete workflow using our features."""
-    print(f"✓ Complete workflow test:")
+    print("✓ Complete workflow test:")
 
     try:
         # 1. Check optional dependencies
@@ -158,7 +158,7 @@ def test_real_workflow():
         print(f"  - Dependency check: {len(features)} packages evaluated")
 
         # 2. Extract citations from sample text
-        from arxiv_mcp.utils.citations import CitationParser, CitationFormat
+        from arxiv_mcp.utils.citations import CitationFormat, CitationParser
 
         parser = CitationParser()
 
@@ -176,8 +176,9 @@ def test_real_workflow():
             print(f"  - Citation formatting: BibTeX generated ({len(bibtex)} chars)")
 
         # 4. Generate documentation
-        from arxiv_mcp.utils.docs_generator import generate_api_docs
         import tempfile
+
+        from arxiv_mcp.utils.docs_generator import generate_api_docs
 
         with tempfile.TemporaryDirectory() as temp_dir:
             docs = generate_api_docs(output_path=temp_dir, formats=["markdown"])

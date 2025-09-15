@@ -3,10 +3,10 @@ File saving utilities for ArXiv papers.
 Handles saving LaTeX files, markdown files, and metadata to organized directory structure.
 """
 
+from datetime import datetime
 import json
 from pathlib import Path
-from typing import Dict, Any, List, Optional
-from datetime import datetime
+from typing import Any
 
 from ..utils.logging import structured_logger
 
@@ -32,8 +32,8 @@ class FileSaver:
         logger.info(f"Output directories ensured: {self.output_directory}")
 
     def save_latex_files(
-        self, arxiv_id: str, files: Dict[str, bytes], main_tex_file: str
-    ) -> Dict[str, str]:
+        self, arxiv_id: str, files: dict[str, bytes], main_tex_file: str
+    ) -> dict[str, str]:
         """Save LaTeX files to organized directory structure.
 
         Args:
@@ -83,7 +83,7 @@ class FileSaver:
         self,
         arxiv_id: str,
         markdown_content: str,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> str:
         """Save markdown file with optional YAML frontmatter.
 
@@ -114,7 +114,7 @@ class FileSaver:
         logger.info(f"Saved markdown file for {arxiv_id} to {markdown_path}")
         return str(markdown_path)
 
-    def save_metadata(self, arxiv_id: str, metadata: Dict[str, Any]) -> str:
+    def save_metadata(self, arxiv_id: str, metadata: dict[str, Any]) -> str:
         """Save paper metadata as JSON file.
 
         Args:
@@ -135,7 +135,7 @@ class FileSaver:
         logger.info(f"Saved metadata for {arxiv_id} to {metadata_path}")
         return str(metadata_path)
 
-    def _generate_yaml_frontmatter(self, metadata: Dict[str, Any]) -> str:
+    def _generate_yaml_frontmatter(self, metadata: dict[str, Any]) -> str:
         """Generate YAML frontmatter from metadata.
 
         Args:
@@ -176,7 +176,7 @@ class FileSaver:
 
         return f"---\n{yaml_str}---"
 
-    def get_saved_papers(self) -> Dict[str, List[str]]:
+    def get_saved_papers(self) -> dict[str, list[str]]:
         """Get list of saved papers by format.
 
         Returns:
@@ -197,7 +197,7 @@ class FileSaver:
             "total_markdown": len(markdown_papers),
         }
 
-    def cleanup_old_files(self, days_old: int = 30) -> Dict[str, int]:
+    def cleanup_old_files(self, days_old: int = 30) -> dict[str, int]:
         """Clean up files older than specified days.
 
         Args:
@@ -217,7 +217,7 @@ class FileSaver:
             if paper_dir.is_dir():
                 manifest_path = paper_dir / "manifest.json"
                 if manifest_path.exists():
-                    with open(manifest_path, "r") as f:
+                    with open(manifest_path) as f:
                         manifest = json.load(f)
 
                     saved_at = datetime.fromisoformat(manifest.get("saved_at", ""))

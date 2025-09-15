@@ -1,10 +1,27 @@
+# ArXiv MCP Server Documentation
+
+Welcome to the documentation for the ArXiv MCP Server. This documentation is organized using the Diátaxis framework, which separates content into four distinct categories:
+
+- **[Tutorials](./tutorials/)**: Learning-oriented lessons for beginners.
+- **[How-To Guides](./how-to-guides/)**: Goal-oriented steps to solve a specific problem.
+- **[Reference](./reference/)**: Technical descriptions of the machinery.
+- **[Explanation](./explanation/)**: Big-picture understanding and concepts.
+
+## Getting Started
+
+If you are new to the project, we recommend starting with the [Getting Started](./tutorials/1_getting_started.md) tutorial.
+
+## Legacy Documentation
+
+Archived and outdated documentation can be found in the [legacy](./legacy/) directory.
+
 # Documentation
 
 This directory contains all project documentation, organized by audience and purpose.
 
 ## 📁 Documentation Structure
 
-```
+```text
 docs/
 ├── api/                    # API documentation and references
 ├── archive/                # Historical documentation and decisions
@@ -35,7 +52,7 @@ docs/
 - Integration guides
 - Response schemas
 
-#### `guides/` - User Documentation  
+#### `guides/` - User Documentation
 
 - Getting started guide
 - Configuration guide
@@ -103,10 +120,10 @@ Links to related documentation...
 ### Review Process
 
 1. **Technical accuracy**: Verify with code
-2. **Clarity**: Get feedback from users
-3. **Completeness**: Check all scenarios covered
-4. **Currency**: Ensure information is up-to-date
+1. **Clarity**: Get feedback from users
+1. **Completeness**: Check all scenarios covered
+1. **Currency**: Ensure information is up-to-date
 
----
+______________________________________________________________________
 
 *Good documentation is code. It should be versioned, reviewed, and maintained with the same rigor as source code.*

@@ -4,22 +4,22 @@ Tests all 7 newly implemented features: Search Analytics, Auto-Summarization,
 Smart Tagging, Reading Lists, Paper Notifications, Trending Analysis, and Batch Operations.
 """
 
-import pytest
-import tempfile
+from datetime import datetime
 import os
 import sqlite3
-from datetime import datetime
+import tempfile
 
-from arxiv_mcp.utils.search_analytics import SearchAnalytics, SearchQuery
+import pytest
+
 from arxiv_mcp.utils.auto_summarizer import AutoSummarizer, SummaryResult
-from arxiv_mcp.utils.smart_tagging import SmartTagger, Tag
-from arxiv_mcp.utils.reading_lists import ReadingListManager, Paper
+from arxiv_mcp.utils.batch_operations import BatchProcessor
 from arxiv_mcp.utils.paper_notifications import (
     PaperNotificationSystem,
-    NotificationRule,
 )
-from arxiv_mcp.utils.trending_analysis import TrendingAnalyzer, TrendingPaper
-from arxiv_mcp.utils.batch_operations import BatchProcessor, BatchOperation
+from arxiv_mcp.utils.reading_lists import Paper, ReadingListManager
+from arxiv_mcp.utils.search_analytics import SearchAnalytics, SearchQuery
+from arxiv_mcp.utils.smart_tagging import SmartTagger, Tag
+from arxiv_mcp.utils.trending_analysis import TrendingAnalyzer
 
 
 class TestSmartNewFeatures:
@@ -120,9 +120,7 @@ class TestSmartNewFeatures:
         manager = ReadingListManager(db_path=self.db_path)
 
         # Test creating a reading list
-        list_id = manager.create_reading_list(
-            "ML Papers", "Papers about machine learning"
-        )
+        list_id = manager.create_reading_list("ML Papers", "Papers about machine learning")
         assert list_id is not None
 
         # Test adding a paper
@@ -245,9 +243,7 @@ class TestSmartNewFeaturesEdgeCases:
 
         # Test empty text
         summary = summarizer.summarize_text("")
-        assert len(summary.extractive_summary) == 0 or summary.extractive_summary == [
-            ""
-        ]
+        assert len(summary.extractive_summary) == 0 or summary.extractive_summary == [""]
 
         tags = tagger.extract_tags("")
         assert tags == []

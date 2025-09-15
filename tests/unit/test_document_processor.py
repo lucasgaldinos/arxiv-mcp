@@ -3,13 +3,14 @@ Tests for the enhanced DocumentProcessor functionality (Phase 4A).
 Tests additional document format support: ODT, RTF, DOCX.
 """
 
-import pytest
 from io import BytesIO
 import zipfile
 
+import pytest
+
 from arxiv_mcp.processors.document_processor import (
-    DocumentProcessor,
     DocumentFormat,
+    DocumentProcessor,
 )
 
 

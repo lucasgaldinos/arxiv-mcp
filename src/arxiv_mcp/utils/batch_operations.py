@@ -6,16 +6,17 @@ This module provides batch processing capabilities for multiple research papers,
 enabling efficient bulk operations and parallel processing.
 """
 
-import json
 import asyncio
-from typing import List, Dict, Any, Optional, Callable
-from dataclasses import dataclass, field
-from pathlib import Path
-from datetime import datetime, timedelta
-import uuid
-import time
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
 from enum import Enum
+import json
+from pathlib import Path
+import time
+from typing import Any
+import uuid
 
 from .logging import get_logger
 
@@ -51,14 +52,14 @@ class BatchItem:
     """Represents a single item in a batch operation."""
 
     id: str
-    input_data: Dict[str, Any]
-    output_data: Optional[Dict[str, Any]] = None
+    input_data: dict[str, Any]
+    output_data: dict[str, Any] | None = None
     status: BatchStatus = BatchStatus.PENDING
-    error_message: Optional[str] = None
-    start_time: Optional[datetime] = None
-    end_time: Optional[datetime] = None
-    processing_time: Optional[float] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    error_message: str | None = None
+    start_time: datetime | None = None
+    end_time: datetime | None = None
+    processing_time: float | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -67,18 +68,18 @@ class BatchOperation:
 
     id: str
     operation_type: BatchOperationType
-    items: List[BatchItem]
+    items: list[BatchItem]
     status: BatchStatus = BatchStatus.PENDING
     created_date: datetime = field(default_factory=datetime.now)
-    start_time: Optional[datetime] = None
-    end_time: Optional[datetime] = None
+    start_time: datetime | None = None
+    end_time: datetime | None = None
     total_items: int = 0
     completed_items: int = 0
     failed_items: int = 0
     success_rate: float = 0.0
-    estimated_completion: Optional[datetime] = None
-    config: Dict[str, Any] = field(default_factory=dict)
-    results_summary: Dict[str, Any] = field(default_factory=dict)
+    estimated_completion: datetime | None = None
+    config: dict[str, Any] = field(default_factory=dict)
+    results_summary: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -88,12 +89,12 @@ class BatchResult:
     operation_id: str
     operation_type: BatchOperationType
     total_items: int
-    successful_items: List[BatchItem]
-    failed_items: List[BatchItem]
+    successful_items: list[BatchItem]
+    failed_items: list[BatchItem]
     success_rate: float
     total_time: float
     average_time_per_item: float
-    summary: Dict[str, Any]
+    summary: dict[str, Any]
 
 
 class BatchProcessor:
@@ -110,24 +111,24 @@ class BatchProcessor:
     - Persistence and recovery
     """
 
-    def __init__(self, max_workers: int = 5, cache_dir: Optional[str] = None):
+    def __init__(self, max_workers: int = 5, cache_dir: str | None = None):
         """Initialize the batch processor."""
         self.max_workers = max_workers
         self.cache_dir = Path(cache_dir) if cache_dir else Path.cwd() / "batch_cache"
         self.cache_dir.mkdir(exist_ok=True)
 
-        self.operations: Dict[str, BatchOperation] = {}
+        self.operations: dict[str, BatchOperation] = {}
         self.executor = ThreadPoolExecutor(max_workers=max_workers)
 
         # Operation handlers
-        self.handlers: Dict[BatchOperationType, Callable] = {}
+        self.handlers: dict[BatchOperationType, Callable] = {}
 
         logger.info(f"BatchProcessor initialized with {max_workers} workers")
 
     def register_handler(
         self,
         operation_type: BatchOperationType,
-        handler: Callable[[Dict[str, Any]], Dict[str, Any]],
+        handler: Callable[[dict[str, Any]], dict[str, Any]],
     ) -> None:
         """Register a handler for a specific operation type."""
         self.handlers[operation_type] = handler
@@ -136,8 +137,8 @@ class BatchProcessor:
     def create_batch_operation(
         self,
         operation_type: BatchOperationType,
-        items_data: List[Dict[str, Any]],
-        config: Dict[str, Any] = None,
+        items_data: list[dict[str, Any]],
+        config: dict[str, Any] = None,
     ) -> BatchOperation:
         """Create a new batch operation."""
         operation_id = str(uuid.uuid4())
@@ -224,7 +225,7 @@ class BatchProcessor:
                 operation.status = BatchStatus.FAILED
 
         except Exception as e:
-            logger.error(f"Batch operation {operation.id} failed: {e}")
+            logger.exception(f"Batch operation {operation.id} failed: {e}")
             operation.status = BatchStatus.FAILED
 
         operation.end_time = datetime.now()
@@ -235,7 +236,7 @@ class BatchProcessor:
         logger.info(f"Batch operation {operation.id} completed: {operation.status.value}")
 
     async def _process_single_item(
-        self, item: BatchItem, handler: Callable, config: Dict[str, Any]
+        self, item: BatchItem, handler: Callable, config: dict[str, Any]
     ) -> BatchItem:
         """Process a single batch item."""
         item.start_time = datetime.now()
@@ -256,7 +257,7 @@ class BatchProcessor:
             item.status = BatchStatus.COMPLETED
 
         except Exception as e:
-            logger.error(f"Item {item.id} failed: {e}")
+            logger.exception(f"Item {item.id} failed: {e}")
             item.error_message = str(e)
             item.status = BatchStatus.FAILED
 
@@ -266,7 +267,7 @@ class BatchProcessor:
 
         return item
 
-    def _generate_results_summary(self, operation: BatchOperation) -> Dict[str, Any]:
+    def _generate_results_summary(self, operation: BatchOperation) -> dict[str, Any]:
         """Generate a summary of batch operation results."""
         completed_items = [item for item in operation.items if item.status == BatchStatus.COMPLETED]
         failed_items = [item for item in operation.items if item.status == BatchStatus.FAILED]
@@ -307,16 +308,16 @@ class BatchProcessor:
 
         return summary
 
-    def get_batch_operation(self, operation_id: str) -> Optional[BatchOperation]:
+    def get_batch_operation(self, operation_id: str) -> BatchOperation | None:
         """Get a batch operation by ID."""
         return self.operations.get(operation_id)
 
-    def get_batch_status(self, operation_id: str) -> Optional[BatchStatus]:
+    def get_batch_status(self, operation_id: str) -> BatchStatus | None:
         """Get the status of a batch operation."""
         operation = self.operations.get(operation_id)
         return operation.status if operation else None
 
-    def get_batch_progress(self, operation_id: str) -> Optional[Dict[str, Any]]:
+    def get_batch_progress(self, operation_id: str) -> dict[str, Any] | None:
         """Get progress information for a batch operation."""
         operation = self.operations.get(operation_id)
         if not operation:
@@ -363,8 +364,8 @@ class BatchProcessor:
         return False
 
     def list_batch_operations(
-        self, status_filter: Optional[BatchStatus] = None
-    ) -> List[BatchOperation]:
+        self, status_filter: BatchStatus | None = None
+    ) -> list[BatchOperation]:
         """List all batch operations, optionally filtered by status."""
         operations = list(self.operations.values())
 
@@ -376,7 +377,7 @@ class BatchProcessor:
 
         return operations
 
-    def get_batch_results(self, operation_id: str) -> Optional[BatchResult]:
+    def get_batch_results(self, operation_id: str) -> BatchResult | None:
         """Get detailed results for a completed batch operation."""
         operation = self.operations.get(operation_id)
         if not operation or operation.status not in [
@@ -491,7 +492,7 @@ class BatchProcessor:
             return True
 
         except Exception as e:
-            logger.error(f"Failed to export batch results: {e}")
+            logger.exception(f"Failed to export batch results: {e}")
             return False
 
     def cleanup_completed_operations(self, days: int = 7) -> int:
@@ -520,7 +521,7 @@ class BatchProcessor:
 
 
 # Pre-built operation handlers
-def batch_search_handler(input_data: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
+def batch_search_handler(input_data: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
     """Handler for batch search operations."""
     query = input_data.get("query", "")
     max_results = config.get("max_results", 10)
@@ -538,7 +539,7 @@ def batch_search_handler(input_data: Dict[str, Any], config: Dict[str, Any]) -> 
     return {"query": query, "results": results, "total_found": len(results)}
 
 
-def batch_download_handler(input_data: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
+def batch_download_handler(input_data: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
     """Handler for batch download operations."""
     arxiv_id = input_data.get("arxiv_id", "")
     format_type = config.get("format", "pdf")
@@ -555,13 +556,13 @@ def batch_download_handler(input_data: Dict[str, Any], config: Dict[str, Any]) -
     }
 
 
-def batch_analyze_handler(input_data: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
+def batch_analyze_handler(input_data: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
     """Handler for batch analysis operations."""
     paper_data = input_data.get("paper_data", {})
     analysis_type = config.get("analysis_type", "basic")
 
     # Mock analysis implementation
-    analysis_result = {
+    return {
         "paper_id": paper_data.get("arxiv_id", ""),
         "analysis_type": analysis_type,
         "word_count": 5000,
@@ -570,11 +571,9 @@ def batch_analyze_handler(input_data: Dict[str, Any], config: Dict[str, Any]) ->
         "key_topics": ["machine learning", "neural networks", "optimization"],
     }
 
-    return analysis_result
-
 
 # Convenience functions
-def create_batch_processor(max_workers: int = 5, cache_dir: Optional[str] = None) -> BatchProcessor:
+def create_batch_processor(max_workers: int = 5, cache_dir: str | None = None) -> BatchProcessor:
     """Create a configured BatchProcessor instance with default handlers."""
     processor = BatchProcessor(max_workers=max_workers, cache_dir=cache_dir)
 
@@ -586,7 +585,7 @@ def create_batch_processor(max_workers: int = 5, cache_dir: Optional[str] = None
     return processor
 
 
-def quick_batch_search(queries: List[str], max_results: int = 10) -> List[Dict[str, Any]]:
+def quick_batch_search(queries: list[str], max_results: int = 10) -> list[dict[str, Any]]:
     """Quick batch search for multiple queries."""
     processor = create_batch_processor()
 

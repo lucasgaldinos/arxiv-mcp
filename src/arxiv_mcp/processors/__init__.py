@@ -3,25 +3,25 @@ Processors module for document processing functionality.
 Extracted from the main __init__.py for better modularity.
 """
 
-from typing import Dict, Any, Optional
-import re
-import zipfile
-import tarfile
-import subprocess
-import tempfile
-from pathlib import Path
 from io import BytesIO
+from pathlib import Path
+import re
+import subprocess
+import tarfile
+import tempfile
+from typing import Any, Dict, Optional
+import zipfile
 
+from ..exceptions import CompilationError, ExtractionError
 from ..utils.logging import structured_logger
 from ..utils.metrics import MetricsCollector
 from ..utils.validation import ArxivValidator
-from ..exceptions import ExtractionError, CompilationError
 
 # Import the new DocumentProcessor
 from .document_processor import (
-    DocumentProcessor,
     DocumentFormat,
     DocumentMetadata,
+    DocumentProcessor,
     ProcessingResult,
 )
 
@@ -55,7 +55,7 @@ class LaTeXProcessor:
         self.metrics = MetricsCollector()
         self.validator = ArxivValidator()
 
-    def extract_archive(self, content: BytesIO, max_files: int = 1000) -> Dict[str, bytes]:
+    def extract_archive(self, content: BytesIO, max_files: int = 1000) -> dict[str, bytes]:
         """Extract files from compressed archive."""
         files = {}
         content.seek(0)
@@ -93,9 +93,9 @@ class LaTeXProcessor:
         self.logger.info(f"Extracted {len(files)} files from archive")
         return files
 
-    def find_main_tex_file(self, files: Dict[str, bytes]) -> Optional[str]:
+    def find_main_tex_file(self, files: dict[str, bytes]) -> str | None:
         """Find the main TeX file in the extracted files."""
-        tex_files = [name for name in files.keys() if name.endswith(".tex")]
+        tex_files = [name for name in files if name.endswith(".tex")]
 
         if not tex_files:
             return None
@@ -125,7 +125,7 @@ class LaTeXProcessor:
         # Return the first .tex file as fallback
         return tex_files[0] if tex_files else None
 
-    def compile_latex(self, files: Dict[str, bytes], main_file: str) -> bytes:
+    def compile_latex(self, files: dict[str, bytes], main_file: str) -> bytes:
         """Compile LaTeX files to PDF."""
         with tempfile.TemporaryDirectory() as temp_dir:
             # Write all files to temp directory
@@ -148,6 +148,7 @@ class LaTeXProcessor:
                             temp_dir,
                             str(main_path),
                         ],
+                        check=False,
                         timeout=self.compilation_timeout,
                         capture_output=True,
                         text=True,
@@ -164,8 +165,7 @@ class LaTeXProcessor:
 
                 if pdf_path.exists():
                     return pdf_path.read_bytes()
-                else:
-                    raise CompilationError("PDF file was not generated")
+                raise CompilationError("PDF file was not generated")
 
             except subprocess.TimeoutExpired:
                 raise CompilationError(
@@ -212,8 +212,9 @@ class PDFProcessor:
     def extract_text_from_pdf(self, pdf_content: bytes) -> str:
         """Extract text from PDF content."""
         try:
-            from pypdf import PdfReader
             from io import BytesIO
+
+            from pypdf import PdfReader
 
             pdf_reader = PdfReader(BytesIO(pdf_content))
             text = ""
@@ -227,14 +228,15 @@ class PDFProcessor:
             self.logger.warning("pypdf not available, PDF text extraction disabled")
             return "[PDF text extraction requires pypdf]"
         except Exception as e:
-            self.logger.error(f"PDF text extraction failed: {str(e)}")
+            self.logger.exception(f"PDF text extraction failed: {str(e)}")
             return f"[PDF text extraction failed: {str(e)}]"
 
-    def get_pdf_metadata(self, pdf_content: bytes) -> Dict[str, Any]:
+    def get_pdf_metadata(self, pdf_content: bytes) -> dict[str, Any]:
         """Extract metadata from PDF."""
         try:
-            from pypdf import PdfReader
             from io import BytesIO
+
+            from pypdf import PdfReader
 
             pdf_reader = PdfReader(BytesIO(pdf_content))
             metadata = pdf_reader.metadata

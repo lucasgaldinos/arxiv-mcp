@@ -32,8 +32,10 @@
 		{
 			"label": "Test: Run with Coverage",
 			"type": "shell",
-			"command": "python",
+			"command": "uv",
 			"args": [
+				"run",
+				"python",
 				"-m",
 				"coverage",
 				"run",
@@ -58,8 +60,10 @@
 		{
 			"label": "Test: Coverage Report",
 			"type": "shell",
-			"command": "python",
+			"command": "uv",
 			"args": [
+				"run",
+				"python",
 				"-m",
 				"coverage",
 				"report",
@@ -71,8 +75,10 @@
 		{
 			"label": "Test: Coverage HTML Report",
 			"type": "shell",
-			"command": "python",
+			"command": "uv",
 			"args": [
+				"run",
+				"python",
 				"-m",
 				"coverage",
 				"html"
@@ -83,8 +89,10 @@
 		{
 			"label": "Test: Run Unit Tests",
 			"type": "shell",
-			"command": "python",
+			"command": "uv",
 			"args": [
+				"run",
+				"python",
 				"-m",
 				"pytest",
 				"tests/",
@@ -102,8 +110,10 @@
 		{
 			"label": "Test: Run Integration Tests",
 			"type": "shell",
-			"command": "python",
+			"command": "uv",
 			"args": [
+				"run",
+				"python",
 				"-m",
 				"pytest",
 				"tests/",
@@ -121,8 +131,10 @@
 		{
 			"label": "Test: Run Parallel Tests",
 			"type": "shell",
-			"command": "python",
+			"command": "uv",
 			"args": [
+				"run",
+				"python",
 				"-m",
 				"pytest",
 				"tests/",
@@ -140,8 +152,10 @@
 		{
 			"label": "Test: Quick Smoke Tests",
 			"type": "shell",
-			"command": "python",
+			"command": "uv",
 			"args": [
+				"run",
+				"python",
 				"-m",
 				"pytest",
 				"tests/",
@@ -160,8 +174,10 @@
 		{
 			"label": "Quality: Lint All",
 			"type": "shell",
-			"command": "python",
+			"command": "uv",
 			"args": [
+				"run",
+				"python",
 				"-m",
 				"flake8",
 				"src/",
@@ -178,8 +194,10 @@
 		{
 			"label": "Quality: Type Check",
 			"type": "shell",
-			"command": "python",
+			"command": "uv",
 			"args": [
+				"run",
+				"python",
 				"-m",
 				"mypy",
 				"src/arxiv_mcp"
@@ -189,8 +207,10 @@
 		{
 			"label": "Quality: Format Code",
 			"type": "shell",
-			"command": "python",
+			"command": "uv",
 			"args": [
+				"run",
+				"python",
 				"-m",
 				"black",
 				"src/",
@@ -201,8 +221,10 @@
 		{
 			"label": "Workspace: Validate Organization",
 			"type": "shell",
-			"command": "python",
+			"command": "uv",
 			"args": [
+				"run",
+				"python",
 				"scripts/validate_workspace.py"
 			],
 			"group": "build",
@@ -220,8 +242,10 @@
 		{
 			"label": "Workspace: Fix Violations",
 			"type": "shell",
-			"command": "python",
+			"command": "uv",
 			"args": [
+				"run",
+				"python",
 				"scripts/validate_workspace.py",
 				"--fix"
 			],
@@ -240,8 +264,10 @@
 		{
 			"label": "Automated Docstring Generation",
 			"type": "shell",
-			"command": "python",
+			"command": "uv",
 			"args": [
+				"run",
+				"python",
 				"-c",
 				"import ast\nimport os\nimport sys\n\ndef find_missing_docstrings(file_path):\n    \"\"\"Find functions and classes missing docstrings.\"\"\"\n    with open(file_path, 'r', encoding='utf-8') as f:\n        try:\n            tree = ast.parse(f.read())\n        except SyntaxError:\n            return []\n    \n    missing = []\n    for node in ast.walk(tree):\n        if isinstance(node, (ast.FunctionDef, ast.ClassDef, ast.AsyncFunctionDef)):\n            # Check if first statement is a docstring\n            if (not node.body or\n                not isinstance(node.body[0], ast.Expr) or\n                not isinstance(node.body[0].value, ast.Constant) or\n                not isinstance(node.body[0].value.value, str)):\n                missing.append({\n                    'type': type(node).__name__,\n                    'name': node.name,\n                    'line': node.lineno,\n                    'file': file_path\n                })\n    return missing\n\ndef scan_project():\n    \"\"\"Scan entire project for missing docstrings.\"\"\"\n    python_files = []\n    for root, dirs, files in os.walk('src'):\n        for file in files:\n            if file.endswith('.py'):\n                python_files.append(os.path.join(root, file))\n    \n    all_missing = []\n    for file_path in python_files:\n        missing = find_missing_docstrings(file_path)\n        all_missing.extend(missing)\n    \n    print(f'Found {len(all_missing)} missing docstrings across {len(python_files)} Python files:')\n    \n    # Group by file\n    by_file = {}\n    for item in all_missing:\n        file = item['file']\n        if file not in by_file:\n            by_file[file] = []\n        by_file[file].append(item)\n    \n    for file, items in sorted(by_file.items()):\n        print(f'\\n{file}: {len(items)} missing')\n        for item in items:\n            print(f'  Line {item[\"line\"]}: {item[\"type\"]} {item[\"name\"]}')\n    \n    return all_missing\n\nif __name__ == '__main__':\n    missing = scan_project()\n    print(f'\\nTotal missing docstrings: {len(missing)}')\n"
 			],

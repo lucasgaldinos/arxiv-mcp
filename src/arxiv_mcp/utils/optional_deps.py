@@ -5,10 +5,11 @@ This module provides utilities for handling optional dependencies and implementi
 graceful fallbacks when dependencies are not available.
 """
 
-import warnings
-from typing import Any, Optional, Callable, Dict
-import importlib
+from collections.abc import Callable
 from functools import wraps
+import importlib
+from typing import Any
+import warnings
 
 
 class OptionalDependency:
@@ -33,7 +34,7 @@ class OptionalDependency:
         return self._available
 
     @property
-    def module(self) -> Optional[Any]:
+    def module(self) -> Any | None:
         """Get the imported module if available."""
         if self.available:
             return self._module
@@ -101,8 +102,7 @@ def requires_optional_dep(dep_name: str, fallback_return=None):
                 if fallback_return is not None:
                     dep.warn_if_missing(f"Function '{func.__name__}' requires {dep.name}")
                     return fallback_return
-                else:
-                    dep.require()  # This will raise ImportError
+                dep.require()  # This will raise ImportError
             return func(*args, **kwargs)
 
         return wrapper
@@ -110,12 +110,12 @@ def requires_optional_dep(dep_name: str, fallback_return=None):
     return decorator
 
 
-def get_available_features() -> Dict[str, bool]:
+def get_available_features() -> dict[str, bool]:
     """Get a dictionary of available optional features."""
     return {name: dep.available for name, dep in OPTIONAL_DEPS.items()}
 
 
-def check_optional_dependencies() -> Dict[str, Any]:
+def check_optional_dependencies() -> dict[str, Any]:
     """Check all optional dependencies and return status information."""
     status = {}
     for name, dep in OPTIONAL_DEPS.items():
@@ -130,7 +130,7 @@ def check_optional_dependencies() -> Dict[str, Any]:
 def warn_missing_dependencies() -> None:
     """Warn about any missing optional dependencies."""
     missing = []
-    for name, dep in OPTIONAL_DEPS.items():
+    for _name, dep in OPTIONAL_DEPS.items():
         if not dep.available:
             missing.append(f"  - {dep.name}: {dep.feature}")
 
@@ -184,6 +184,7 @@ def safe_import_nltk():
                 "NLTK punkt tokenizer not found. Some functionality may be limited. "
                 "Run 'python -c \"import nltk; nltk.download('punkt')\"' to install.",
                 UserWarning,
+                stacklevel=2,
             )
         return nltk
     return None
@@ -193,9 +194,9 @@ def safe_import_matplotlib():
     """Safely import matplotlib with fallback."""
     dep = optional_import("matplotlib")
     if dep.available:
-        import matplotlib
+        import matplotlib as mpl
 
-        matplotlib.use("Agg")  # Use non-interactive backend
+        mpl.use("Agg")  # Use non-interactive backend
         import matplotlib.pyplot as plt
 
         return plt
@@ -219,7 +220,6 @@ def _init_warnings():
     """Initialize warnings for missing dependencies."""
     # Only warn about core optional dependencies when explicitly requested
     # Don't warn on import to avoid issues during testing/development
-    pass
 
 
 # Run initialization

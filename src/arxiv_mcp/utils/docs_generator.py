@@ -6,14 +6,13 @@ docstrings, and type hints, providing both Markdown and HTML output formats.
 """
 
 import ast
+from dataclasses import asdict, dataclass
+from datetime import datetime
 import json
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Union
-from dataclasses import dataclass, asdict
-from datetime import datetime
+from typing import Any
 
 from .logging import structured_logger
-
 
 logger = structured_logger()
 
@@ -35,10 +34,10 @@ class ToolDoc:
 
     name: str
     description: str
-    parameters: List[ParameterDoc]
-    examples: List[str] = None
+    parameters: list[ParameterDoc]
+    examples: list[str] = None
     returns: str = ""
-    errors: List[str] = None
+    errors: list[str] = None
 
 
 @dataclass
@@ -47,9 +46,9 @@ class ModuleDoc:
 
     name: str
     description: str
-    classes: List[Dict[str, Any]] = None
-    functions: List[Dict[str, Any]] = None
-    tools: List[ToolDoc] = None
+    classes: list[dict[str, Any]] = None
+    functions: list[dict[str, Any]] = None
+    tools: list[ToolDoc] = None
 
 
 @dataclass
@@ -59,9 +58,9 @@ class APIDocumentation:
     title: str
     version: str
     description: str
-    modules: List[ModuleDoc]
+    modules: list[ModuleDoc]
     generated_at: str
-    tools_summary: List[ToolDoc] = None
+    tools_summary: list[ToolDoc] = None
 
 
 class DocGenerator:
@@ -72,12 +71,12 @@ class DocGenerator:
         self.output_path = Path(output_path) if output_path else Path("docs/api")
         self.output_path.mkdir(parents=True, exist_ok=True)
 
-    def extract_mcp_tools(self, tools_file: Path) -> List[ToolDoc]:
+    def extract_mcp_tools(self, tools_file: Path) -> list[ToolDoc]:
         """Extract MCP tool documentation from tools.py."""
         logger.info(f"Extracting MCP tools from {tools_file}")
 
         try:
-            with open(tools_file, "r") as f:
+            with open(tools_file) as f:
                 content = f.read()
 
             # Parse the tools list
@@ -99,10 +98,10 @@ class DocGenerator:
 
             return tools
         except Exception as e:
-            logger.error(f"Error extracting tools: {e}")
+            logger.exception(f"Error extracting tools: {e}")
             return []
 
-    def _parse_tool_ast(self, tool_node: ast.Call) -> Optional[ToolDoc]:
+    def _parse_tool_ast(self, tool_node: ast.Call) -> ToolDoc | None:
         """Parse a Tool() call from AST."""
         try:
             name = ""
@@ -128,11 +127,11 @@ class DocGenerator:
                     errors=["Tool execution errors", "Invalid arguments"],
                 )
         except Exception as e:
-            logger.error(f"Error parsing tool AST: {e}")
+            logger.exception(f"Error parsing tool AST: {e}")
 
         return None
 
-    def _parse_input_schema(self, schema_node: ast.Dict) -> List[ParameterDoc]:
+    def _parse_input_schema(self, schema_node: ast.Dict) -> list[ParameterDoc]:
         """Parse the inputSchema dictionary from AST."""
         parameters = []
 
@@ -154,7 +153,7 @@ class DocGenerator:
         logger.info(f"Extracting module documentation from {module_path}")
 
         try:
-            with open(module_path, "r") as f:
+            with open(module_path) as f:
                 content = f.read()
 
             tree = ast.parse(content)
@@ -170,7 +169,7 @@ class DocGenerator:
                 if isinstance(node, ast.ClassDef):
                     class_doc = self._extract_class_doc(node)
                     classes.append(class_doc)
-                elif isinstance(node, ast.FunctionDef) or isinstance(node, ast.AsyncFunctionDef):
+                elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                     func_doc = self._extract_function_doc(node)
                     functions.append(func_doc)
 
@@ -181,24 +180,24 @@ class DocGenerator:
                 functions=functions,
             )
         except Exception as e:
-            logger.error(f"Error extracting module doc: {e}")
+            logger.exception(f"Error extracting module doc: {e}")
             return ModuleDoc(name=module_path.stem, description="", classes=[], functions=[])
 
-    def _extract_class_doc(self, class_node: ast.ClassDef) -> Dict[str, Any]:
+    def _extract_class_doc(self, class_node: ast.ClassDef) -> dict[str, Any]:
         """Extract documentation from a class definition."""
         docstring = ast.get_docstring(class_node) or ""
         methods = []
 
         for node in class_node.body:
-            if isinstance(node, ast.FunctionDef) or isinstance(node, ast.AsyncFunctionDef):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 method_doc = self._extract_function_doc(node)
                 methods.append(method_doc)
 
         return {"name": class_node.name, "description": docstring, "methods": methods}
 
     def _extract_function_doc(
-        self, func_node: Union[ast.FunctionDef, ast.AsyncFunctionDef]
-    ) -> Dict[str, Any]:
+        self, func_node: ast.FunctionDef | ast.AsyncFunctionDef
+    ) -> dict[str, Any]:
         """Extract documentation from a function definition."""
         docstring = ast.get_docstring(func_node) or ""
 
@@ -307,7 +306,7 @@ The ArXiv MCP server provides the following tools:
         logger.info("Exporting documentation as JSON")
         return json.dumps(asdict(documentation), indent=2, default=str)
 
-    def save_documentation(self, documentation: APIDocumentation, formats: List[str] = None):
+    def save_documentation(self, documentation: APIDocumentation, formats: list[str] = None):
         """Save documentation in specified formats."""
         if formats is None:
             formats = ["markdown", "json"]
@@ -328,7 +327,7 @@ The ArXiv MCP server provides the following tools:
 
             logger.info(f"Documentation saved to {output_file}")
 
-    def generate_and_save(self, formats: List[str] = None) -> APIDocumentation:
+    def generate_and_save(self, formats: list[str] = None) -> APIDocumentation:
         """Generate and save documentation in one step."""
         documentation = self.generate_documentation()
         self.save_documentation(documentation, formats)
@@ -336,7 +335,7 @@ The ArXiv MCP server provides the following tools:
 
 
 def generate_api_docs(
-    source_path: str = None, output_path: str = None, formats: List[str] = None
+    source_path: str = None, output_path: str = None, formats: list[str] = None
 ) -> APIDocumentation:
     """
     Convenience function to generate API documentation.

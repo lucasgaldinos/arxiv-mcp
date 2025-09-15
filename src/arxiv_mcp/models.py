@@ -4,10 +4,11 @@ Enhanced type safety and validation for all data structures.
 """
 
 from datetime import datetime
-from typing import List, Dict, Any, Optional
 from enum import Enum
-from pydantic import BaseModel, Field, ConfigDict, field_validator
 from pathlib import Path
+from typing import Any
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class ArxivIDFormat(str, Enum):
@@ -60,7 +61,7 @@ class ArxivID(BaseArxivModel):
 
     id: str = Field(..., description="ArXiv paper ID")
     format: ArxivIDFormat = Field(..., description="ID format (new/old)")
-    version: Optional[str] = Field(None, description="Version number if specified")
+    version: str | None = Field(None, description="Version number if specified")
 
     @field_validator("id")
     @classmethod
@@ -73,12 +74,9 @@ class ArxivID(BaseArxivModel):
         # Old format: subject-class/YYMMnnn[vN] (allows dots and hyphens in subject-class)
         old_pattern = r"^([\w.-]+/\d{7})(v\d+)?$"
 
-        if re.match(new_pattern, v):
+        if re.match(new_pattern, v) or re.match(old_pattern, v):
             return v
-        elif re.match(old_pattern, v):
-            return v
-        else:
-            raise ValueError(f"Invalid ArXiv ID format: {v}")
+        raise ValueError(f"Invalid ArXiv ID format: {v}")
 
     @field_validator("format")
     @classmethod
@@ -88,7 +86,7 @@ class ArxivID(BaseArxivModel):
             arxiv_id = info.data["id"]
             if "." in arxiv_id and "/" not in arxiv_id:
                 return ArxivIDFormat.NEW
-            elif "/" in arxiv_id:
+            if "/" in arxiv_id:
                 return ArxivIDFormat.OLD
         return v
 
@@ -97,13 +95,13 @@ class Author(BaseArxivModel):
     """Author information with validation."""
 
     name: str = Field(..., min_length=1, description="Author full name")
-    affiliation: Optional[str] = Field(None, description="Author affiliation")
-    email: Optional[str] = Field(None, description="Author email")
-    orcid: Optional[str] = Field(None, description="Author ORCID ID")
+    affiliation: str | None = Field(None, description="Author affiliation")
+    email: str | None = Field(None, description="Author email")
+    orcid: str | None = Field(None, description="Author ORCID ID")
 
     @field_validator("email")
     @classmethod
-    def validate_email(cls, v: Optional[str]) -> Optional[str]:
+    def validate_email(cls, v: str | None) -> str | None:
         """Basic email validation."""
         if v is None:
             return v
@@ -118,16 +116,16 @@ class Author(BaseArxivModel):
 class Citation(BaseArxivModel):
     """Enhanced citation model with validation."""
 
-    authors: List[str] = Field(default_factory=list, description="Citation authors")
+    authors: list[str] = Field(default_factory=list, description="Citation authors")
     title: str = Field("", description="Citation title")
-    year: Optional[str] = Field(None, description="Publication year")
-    journal: Optional[str] = Field(None, description="Journal name")
-    volume: Optional[str] = Field(None, description="Volume number")
-    issue: Optional[str] = Field(None, description="Issue number")
-    pages: Optional[str] = Field(None, description="Page numbers")
-    doi: Optional[str] = Field(None, description="DOI")
-    arxiv_id: Optional[str] = Field(None, description="ArXiv ID if applicable")
-    url: Optional[str] = Field(None, description="URL")
+    year: str | None = Field(None, description="Publication year")
+    journal: str | None = Field(None, description="Journal name")
+    volume: str | None = Field(None, description="Volume number")
+    issue: str | None = Field(None, description="Issue number")
+    pages: str | None = Field(None, description="Page numbers")
+    doi: str | None = Field(None, description="DOI")
+    arxiv_id: str | None = Field(None, description="ArXiv ID if applicable")
+    url: str | None = Field(None, description="URL")
     raw_text: str = Field("", description="Original citation text")
     confidence: float = Field(0.0, ge=0.0, le=1.0, description="Parsing confidence")
     citation_type: str = Field("unknown", description="Citation type")
@@ -138,22 +136,22 @@ class Paper(BaseArxivModel):
 
     arxiv_id: str = Field(..., description="ArXiv ID")
     title: str = Field(..., min_length=1, description="Paper title")
-    authors: List[Author] = Field(default_factory=list, description="Paper authors")
+    authors: list[Author] = Field(default_factory=list, description="Paper authors")
     abstract: str = Field("", description="Paper abstract")
-    categories: List[str] = Field(default_factory=list, description="ArXiv categories")
-    published_date: Optional[datetime] = Field(None, description="Publication date")
-    updated_date: Optional[datetime] = Field(None, description="Last update date")
-    doi: Optional[str] = Field(None, description="DOI")
-    journal_ref: Optional[str] = Field(None, description="Journal reference")
-    comments: Optional[str] = Field(None, description="Author comments")
-    license: Optional[str] = Field(None, description="License information")
+    categories: list[str] = Field(default_factory=list, description="ArXiv categories")
+    published_date: datetime | None = Field(None, description="Publication date")
+    updated_date: datetime | None = Field(None, description="Last update date")
+    doi: str | None = Field(None, description="DOI")
+    journal_ref: str | None = Field(None, description="Journal reference")
+    comments: str | None = Field(None, description="Author comments")
+    license: str | None = Field(None, description="License information")
 
     # Processing metadata
     status: PaperStatus = Field(PaperStatus.PENDING, description="Processing status")
-    download_url: Optional[str] = Field(None, description="PDF download URL")
-    local_path: Optional[Path] = Field(None, description="Local file path")
-    file_size: Optional[int] = Field(None, ge=0, description="File size in bytes")
-    checksum: Optional[str] = Field(None, description="File checksum")
+    download_url: str | None = Field(None, description="PDF download URL")
+    local_path: Path | None = Field(None, description="Local file path")
+    file_size: int | None = Field(None, ge=0, description="File size in bytes")
+    checksum: str | None = Field(None, description="File checksum")
 
     # Analytics
     downloads: int = Field(0, ge=0, description="Download count")
@@ -173,18 +171,17 @@ class Paper(BaseArxivModel):
 
         if re.match(new_pattern, v) or re.match(old_pattern, v):
             return v
-        else:
-            raise ValueError(f"Invalid ArXiv ID format: {v}")
+        raise ValueError(f"Invalid ArXiv ID format: {v}")
 
 
 class SearchQuery(BaseArxivModel):
     """Enhanced search query with validation."""
 
     query: str = Field(..., min_length=1, description="Search query text")
-    user_id: Optional[str] = Field(None, description="User identifier")
-    filters: Dict[str, Any] = Field(default_factory=dict, description="Search filters")
-    categories: List[str] = Field(default_factory=list, description="ArXiv categories")
-    date_range: Optional[Dict[str, datetime]] = Field(None, description="Date range filter")
+    user_id: str | None = Field(None, description="User identifier")
+    filters: dict[str, Any] = Field(default_factory=dict, description="Search filters")
+    categories: list[str] = Field(default_factory=list, description="ArXiv categories")
+    date_range: dict[str, datetime] | None = Field(None, description="Date range filter")
     max_results: int = Field(50, ge=1, le=1000, description="Maximum results")
     sort_by: str = Field("relevance", description="Sort criteria")
     timestamp: datetime = Field(default_factory=datetime.now, description="Query timestamp")
@@ -196,11 +193,11 @@ class SummaryResult(BaseArxivModel):
     summary_text: str = Field("", description="Generated summary")
     summary_type: SummaryType = Field(SummaryType.EXTRACTIVE, description="Summary type")
     confidence: float = Field(0.0, ge=0.0, le=1.0, description="Summary confidence")
-    key_phrases: List[str] = Field(default_factory=list, description="Extracted key phrases")
+    key_phrases: list[str] = Field(default_factory=list, description="Extracted key phrases")
     word_count: int = Field(0, ge=0, description="Summary word count")
     compression_ratio: float = Field(0.0, ge=0.0, le=1.0, description="Compression ratio")
     processing_time: float = Field(0.0, ge=0.0, description="Processing time in seconds")
-    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+    metadata: dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
 
 
 class Tag(BaseArxivModel):
@@ -216,34 +213,34 @@ class Tag(BaseArxivModel):
 class ReadingList(BaseArxivModel):
     """Reading list with papers and metadata."""
 
-    id: Optional[str] = Field(None, description="List ID")
+    id: str | None = Field(None, description="List ID")
     name: str = Field(..., min_length=1, description="List name")
     description: str = Field("", description="List description")
     user_id: str = Field(..., description="Owner user ID")
-    papers: List[Paper] = Field(default_factory=list, description="Papers in list")
+    papers: list[Paper] = Field(default_factory=list, description="Papers in list")
     created_date: datetime = Field(default_factory=datetime.now, description="Creation date")
     updated_date: datetime = Field(default_factory=datetime.now, description="Last update")
     is_public: bool = Field(False, description="Public visibility")
-    tags: List[str] = Field(default_factory=list, description="List tags")
+    tags: list[str] = Field(default_factory=list, description="List tags")
 
 
 class NotificationRule(BaseArxivModel):
     """Notification rule with validation."""
 
-    id: Optional[str] = Field(None, description="Rule ID")
+    id: str | None = Field(None, description="Rule ID")
     user_id: str = Field(..., description="User ID")
     rule_type: NotificationRuleType = Field(..., description="Rule type")
-    criteria: Dict[str, Any] = Field(..., description="Rule criteria")
+    criteria: dict[str, Any] = Field(..., description="Rule criteria")
     enabled: bool = Field(True, description="Rule enabled status")
     created_date: datetime = Field(default_factory=datetime.now, description="Creation date")
-    last_triggered: Optional[datetime] = Field(None, description="Last trigger time")
+    last_triggered: datetime | None = Field(None, description="Last trigger time")
     trigger_count: int = Field(0, ge=0, description="Number of triggers")
 
 
 class Notification(BaseArxivModel):
     """Notification message with metadata."""
 
-    id: Optional[str] = Field(None, description="Notification ID")
+    id: str | None = Field(None, description="Notification ID")
     user_id: str = Field(..., description="Target user ID")
     rule_id: str = Field(..., description="Source rule ID")
     paper_id: str = Field(..., description="Related paper ID")
@@ -258,17 +255,17 @@ class TrendingPaper(Paper):
 
     trending_score: float = Field(0.0, ge=0.0, description="Trending score")
     velocity: float = Field(0.0, description="Growth velocity")
-    peak_position: Optional[int] = Field(None, ge=1, description="Peak ranking position")
-    trending_categories: List[str] = Field(default_factory=list, description="Trending categories")
+    peak_position: int | None = Field(None, ge=1, description="Peak ranking position")
+    trending_categories: list[str] = Field(default_factory=list, description="Trending categories")
     social_mentions: int = Field(0, ge=0, description="Social media mentions")
 
 
 class BatchOperation(BaseArxivModel):
     """Batch operation configuration."""
 
-    id: Optional[str] = Field(None, description="Operation ID")
+    id: str | None = Field(None, description="Operation ID")
     operation_type: str = Field(..., description="Type of operation")
-    items: List[Any] = Field(..., description="Items to process")
+    items: list[Any] = Field(..., description="Items to process")
     concurrency: int = Field(5, ge=1, le=20, description="Concurrent workers")
     timeout: float = Field(300.0, gt=0, description="Operation timeout")
     retry_count: int = Field(3, ge=0, description="Retry attempts")
@@ -284,8 +281,8 @@ class BatchResult(BaseArxivModel):
     successful_items: int = Field(..., ge=0, description="Successfully processed items")
     failed_items: int = Field(..., ge=0, description="Failed items")
     processing_time: float = Field(..., ge=0, description="Total processing time")
-    results: List[Dict[str, Any]] = Field(default_factory=list, description="Individual results")
-    errors: List[str] = Field(default_factory=list, description="Error messages")
+    results: list[dict[str, Any]] = Field(default_factory=list, description="Individual results")
+    errors: list[str] = Field(default_factory=list, description="Error messages")
     completed_date: datetime = Field(default_factory=datetime.now, description="Completion date")
 
 

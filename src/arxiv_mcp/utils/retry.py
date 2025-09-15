@@ -4,8 +4,10 @@ Simple, low-effort retry mechanisms for failed operations.
 """
 
 import asyncio
+from collections.abc import Callable
 import functools
-from typing import Callable, Any, Union, List, Type
+from typing import Any
+
 from ..utils.logging import structured_logger
 
 
@@ -13,7 +15,7 @@ def async_retry(
     retries: int = 3,
     delay: float = 1.0,
     backoff: float = 2.0,
-    exceptions: Union[Type[Exception], List[Type[Exception]]] = Exception,
+    exceptions: type[Exception] | list[type[Exception]] = Exception,
 ):
     """
     Async retry decorator with exponential backoff.
@@ -47,7 +49,7 @@ def async_retry(
                         await asyncio.sleep(current_delay)
                         current_delay *= backoff
                     else:
-                        logger.error(
+                        logger.exception(
                             f"All {retries + 1} attempts failed for {func.__name__}: {str(e)}"
                         )
 
@@ -62,7 +64,7 @@ def sync_retry(
     retries: int = 3,
     delay: float = 1.0,
     backoff: float = 2.0,
-    exceptions: Union[Type[Exception], List[Type[Exception]]] = Exception,
+    exceptions: type[Exception] | list[type[Exception]] = Exception,
 ):
     """
     Synchronous retry decorator with exponential backoff.
@@ -92,7 +94,7 @@ def sync_retry(
                         time.sleep(current_delay)
                         current_delay *= backoff
                     else:
-                        logger.error(
+                        logger.exception(
                             f"All {retries + 1} attempts failed for {func.__name__}: {str(e)}"
                         )
 

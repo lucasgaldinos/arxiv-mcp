@@ -4,16 +4,17 @@ Provides the fetch_arxiv_paper_content functionality that downloads and extracts
 """
 
 import asyncio
-import aiohttp
-import tarfile
 import gzip
 import io
-from typing import Dict, List, Any, Optional
 from pathlib import Path
+import tarfile
+from typing import Any
 
+import aiohttp
+
+from ..exceptions import ArxivError, DownloadError
 from ..utils.logging import structured_logger
 from ..utils.validation import ArxivValidator
-from ..exceptions import ArxivError, DownloadError
 
 
 class ArxivLatexFetcher:
@@ -28,7 +29,7 @@ class ArxivLatexFetcher:
         arxiv_id: str,
         save_to_disk: bool = True,
         output_dir: str = "./arxiv_papers",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Fetch and extract LaTeX source files from ArXiv.
 
@@ -107,7 +108,7 @@ class ArxivLatexFetcher:
             return result
 
         except Exception as e:
-            self.logger.error(f"Failed to fetch LaTeX content for {arxiv_id}: {str(e)}")
+            self.logger.exception(f"Failed to fetch LaTeX content for {arxiv_id}: {str(e)}")
             return {
                 "arxiv_id": arxiv_id,
                 "success": False,
@@ -122,10 +123,10 @@ class ArxivLatexFetcher:
 
     async def batch_fetch_papers(
         self,
-        arxiv_ids: List[str],
+        arxiv_ids: list[str],
         save_to_disk: bool = True,
         output_dir: str = "./arxiv_papers",
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Fetch multiple papers concurrently.
 
@@ -169,7 +170,7 @@ class ArxivLatexFetcher:
         self.logger.info(f"Batch fetch completed for {len(arxiv_ids)} papers")
         return processed_results
 
-    async def _extract_archive(self, content: bytes, arxiv_id: str) -> Dict[str, bytes]:
+    async def _extract_archive(self, content: bytes, arxiv_id: str) -> dict[str, bytes]:
         """Extract files from various archive formats."""
         files = {}
 
@@ -179,9 +180,7 @@ class ArxivLatexFetcher:
                 with gzip.GzipFile(fileobj=io.BytesIO(content)) as gz_file:
                     decompressed = gz_file.read()
                     # Check if it's a tar file
-                    with tarfile.open(
-                        fileobj=io.BytesIO(decompressed), mode="r"
-                    ) as tar:
+                    with tarfile.open(fileobj=io.BytesIO(decompressed), mode="r") as tar:
                         files = self._extract_tar_files(tar)
                         if files:
                             return files
@@ -201,10 +200,7 @@ class ArxivLatexFetcher:
             try:
                 # Check if content looks like LaTeX
                 text_content = content.decode("utf-8", errors="ignore")
-                if (
-                    "\\documentclass" in text_content
-                    or "\\begin{document}" in text_content
-                ):
+                if "\\documentclass" in text_content or "\\begin{document}" in text_content:
                     files[f"{arxiv_id}.tex"] = content
                     return files
             except Exception:
@@ -215,10 +211,10 @@ class ArxivLatexFetcher:
             return files
 
         except Exception as e:
-            self.logger.error(f"Archive extraction failed for {arxiv_id}: {str(e)}")
+            self.logger.exception(f"Archive extraction failed for {arxiv_id}: {str(e)}")
             raise DownloadError(f"Failed to extract archive for {arxiv_id}: {str(e)}")
 
-    def _extract_tar_files(self, tar: tarfile.TarFile) -> Dict[str, bytes]:
+    def _extract_tar_files(self, tar: tarfile.TarFile) -> dict[str, bytes]:
         """Extract files from tar archive."""
         files = {}
 
@@ -241,9 +237,9 @@ class ArxivLatexFetcher:
 
         return files
 
-    def _find_main_tex_file(self, files: Dict[str, bytes]) -> Optional[str]:
+    def _find_main_tex_file(self, files: dict[str, bytes]) -> str | None:
         """Find the main .tex file in the extracted files."""
-        tex_files = [name for name in files.keys() if name.endswith(".tex")]
+        tex_files = [name for name in files if name.endswith(".tex")]
 
         if not tex_files:
             return None
@@ -269,7 +265,7 @@ class ArxivLatexFetcher:
         return tex_files[0]
 
     async def _save_files_to_disk(
-        self, files: Dict[str, bytes], arxiv_id: str, output_dir: str
+        self, files: dict[str, bytes], arxiv_id: str, output_dir: str
     ) -> str:
         """Save extracted files to disk."""
         paper_dir = Path(output_dir) / arxiv_id
