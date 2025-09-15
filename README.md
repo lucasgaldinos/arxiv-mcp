@@ -5,18 +5,19 @@
  * @FilePath: /arxiv-mcp/README.md
  * @LastEditTime: 2025-06-12 20:03:30
 -->
+
 # ArXiv Enhanced MCP Server
 
-**🚀 Production Status: FULLY OPERATIONAL** | **📊 Tests: 112/112 Passing** | **🔧 MCP Tools: 10/10 Working** | **🧹 Repository: Professionally Organized**
+**🚀 Production Status: FULLY OPERATIONAL** | **📊 Tests: 144/144 Passing** | **🔧 MCP Tools: 11/11 Working** | **🧹 Repository: Enterprise Organized**
 
 A comprehensive Model Context Protocol (MCP) server for downloading, processing, and converting ArXiv papers with advanced LaTeX to Markdown conversion capabilities.
 
 ## 🎯 Production Validation
 
-✅ **All Tools Verified Working** (v2.2.0):
+✅ **All Tools Verified Working** (v2.4.2):
 
 - 🔍 ArXiv paper search with advanced filters
-- 📥 Paper download and LaTeX extraction  
+- 📥 Paper download and LaTeX extraction
 - 📄 Content processing and text extraction
 - 🔗 Citation extraction and bibliography generation
 - 📊 Performance metrics and monitoring
@@ -25,25 +26,51 @@ A comprehensive Model Context Protocol (MCP) server for downloading, processing,
 - ✅ Quality validation and conversion assessment
 - 📁 Output management and file organization
 - 🔧 Complete MCP server integration
+- 🎯 Comprehensive processing tools testing
 
-**Recent Fixes (v2.2.0)**:
+**Recent Enhancements (v2.4.2)**:
 
-- ✅ **Citation Extraction**: Fixed missing dependencies, now fully functional
-- ✅ **Performance Metrics**: Added comprehensive metrics collection and analysis
-- ✅ **Network Analysis**: Enhanced citation network analysis with NetworkX support
-- ✅ **Configuration**: Improved config file discovery (VS Code workspace support)
-- ✅ **Figure Handling**: Better image format conversion (PDF → PNG paths)
+- ✅ **Comprehensive Testing**: 144/144 tests passing with 8 new processing tools tests
+- ✅ **Real Academic Content**: Validation with real transformer/attention mechanism research
+- ✅ **AutoSummarizer Enhancement**: Variable length summaries with confidence scoring
+- ✅ **Citation Parser Improvements**: Real citation extraction (Vaswani et al., Devlin et al.)
+- ✅ **Smart Tagger Implementation**: Academic terminology detection and categorization
+- ✅ **Type Safety**: Enhanced Pydantic 2.11.7 integration with robust validation
+- ✅ **Development Tools**: UV package manager for fast dependency management
 
 [**View Full Production Status Report →**](PRODUCTION_STATUS.md)
 
-## 🗂️ Repository Organization
+## 🗂️ Enterprise Repository Organization
 
 ✅ **Professional Development Standards**:
 
-- **Clean Git History**: Only source code and configs tracked
+- **Clean Git History**: Only source code and configurations tracked
 - **Comprehensive .gitignore**: 160+ patterns for Python, IDE, OS, and cache files
-- **Runtime Data Excluded**: Cache databases, logs, and temporary files properly ignored
+- **Runtime Data Excluded**: Cache databases, logs, and temporary files properly isolated
 - **Team-Ready**: Optimized for collaboration and CI/CD workflows
+- **Documentation Framework**: Diátaxis structure (tutorials, how-to guides, reference, explanations)
+
+## 📚 Documentation Structure
+
+This project follows the **Diátaxis documentation framework** for optimal user experience:
+
+- **[📖 Tutorials](docs/tutorials/)** - Learning-oriented guides for new users
+- **[🛠️ How-To Guides](docs/how-to-guides/)** - Problem-solving guides for specific tasks
+- **[📋 Reference](docs/reference/)** - Information-oriented API documentation
+- **[💡 Explanation](docs/explanation/)** - Understanding-oriented architecture docs
+- **[📦 Legacy](docs/legacy/)** - Historical documentation and migration guides
+
+[**→ Explore Complete Documentation**](docs/README.md)
+
+## 🏗️ Development Environment
+
+✅ **Enterprise Development Standards**:
+
+- **Package Management**: UV (faster than pip, with lockfile support)
+- **Type Safety**: Pydantic 2.11.7 for robust data validation
+- **Testing**: 144/144 tests passing with comprehensive coverage
+- **Code Quality**: Automated linting, formatting, and type checking
+- **Pre-commit Hooks**: Quality gates for consistent code standards
 
 ## 🚀 Features
 
@@ -72,26 +99,34 @@ A comprehensive Model Context Protocol (MCP) server for downloading, processing,
 
 ## 📁 Project Organization
 
-This project follows a "Surgical Organization" approach for optimal development workflow:
+This project follows **enterprise development standards** for optimal workflow:
 
 ```bash
 arxiv-mcp-improved/
-├── src/              # Source code
-├── tests/            # Test files
-├── docs/             # Documentation
-├── examples/         # Usage examples
-├── cache/            # Working cache systems (preserved)
-├── batch_cache/      # Batch processing cache
-├── tag_cache/        # Tag cache system  
-├── network_cache/    # Network cache
-└── .dev/            # Development artifacts
-    ├── build/        # Coverage reports, build outputs
-    ├── runtime/      # Logs, generated outputs
-    ├── temp/         # Temporary files
-    └── artifacts/    # CI/CD artifacts
+├── src/                    # Source code
+├── tests/                  # Test files (unit/integration/legacy/fixtures)
+├── docs/                   # Diátaxis documentation framework
+│   ├── tutorials/          # Learning-oriented guides
+│   ├── how-to-guides/      # Problem-solving guides
+│   ├── reference/          # API documentation
+│   ├── explanation/        # Architecture and design
+│   └── legacy/             # Historical documentation
+├── examples/               # Usage examples and demos
+├── config/                 # Configuration files
+├── scripts/                # Utility and automation scripts
+├── cache/                  # Unified cache systems
+│   ├── arxiv/              # ArXiv API cache
+│   ├── batch/              # Batch processing cache
+│   ├── network/            # Network analysis cache
+│   └── temp/               # Temporary cache
+└── .dev/                  # Development artifacts (excluded from git)
+    ├── build/              # Coverage reports, build outputs
+    ├── runtime/            # Logs, generated outputs
+    ├── temp/               # Temporary files
+    └── artifacts/          # CI/CD artifacts
 ```
 
-See `.dev/ORGANIZATION_GUIDELINES.md` for detailed organization principles.
+See [Development Guidelines](.github/instructions/development-guidelines.instructions.md) for detailed organization principles.
 
 ## 📁 Output Structure
 
@@ -210,18 +245,19 @@ Create `config/arxiv_mcp_production.json`:
 
 ### Requirements
 
-- Python 3.8+
-- `pandoc` (for LaTeX to Markdown conversion)
-- `markitdown` (PDF fallback conversion)
+- **Python 3.11+** (required for modern async features)
+- **UV Package Manager** (for fast dependency management)
+- **Pandoc** (for LaTeX to Markdown conversion)
+- **MarkItDown** (PDF fallback conversion)
 
-### Setup
+### Quick Setup
 
 ```bash
 # Clone the repository
 git clone https://github.com/your-repo/arxiv-mcp-improved
-
-# Install dependencies
 cd arxiv-mcp-improved
+
+# Install dependencies with UV (recommended)
 uv sync
 
 # Install pandoc for LaTeX conversion
@@ -230,6 +266,33 @@ sudo apt-get install pandoc texlive-xetex
 
 # macOS:
 brew install pandoc
+
+# Windows:
+# Install from https://pandoc.org/installing.html
+```
+
+### Verify Installation
+
+```bash
+# Run the test suite to verify installation
+uv run pytest tests/ -v
+
+# Check MCP server functionality
+uv run python -m arxiv_mcp --help
+```
+
+### Development Setup
+
+```bash
+# Install development dependencies
+uv sync --all-extras
+
+# Install pre-commit hooks
+uv run pre-commit install
+
+# Run quality checks
+uv run ruff check src/ tests/
+uv run mypy src/
 ```
 
 ## 🔍 Quality Assessment
@@ -251,20 +314,61 @@ The enhanced conversion system provides quality metrics:
 ## 📝 Conversion Methods
 
 1. **Pandoc Primary**: High-quality conversion with pandoc (recommended)
-2. **Regex Fallback**: Pattern-based conversion for simple documents
-3. **Hybrid Approach**: Combines both methods for optimal results
+1. **Regex Fallback**: Pattern-based conversion for simple documents
+1. **Hybrid Approach**: Combines both methods for optimal results
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality
-4. Update documentation
-5. Submit a pull request
+We welcome contributions! Please follow our enterprise development standards:
+
+### Development Workflow
+
+1. **Fork** the repository and create a feature branch
+1. **Follow** the [Development Guidelines](.github/instructions/development-guidelines.instructions.md)
+1. **Write tests** for new functionality (maintain 85%+ coverage)
+1. **Update documentation** following the Diátaxis framework
+1. **Run quality checks** and ensure all tests pass
+1. **Submit** a pull request with clear description
+
+### Code Quality Standards
+
+- **Type Safety**: Full type hints with Pydantic validation
+- **Testing**: Comprehensive test coverage with unit/integration tests
+- **Documentation**: Clear docstrings and user-facing documentation
+- **Formatting**: Automated code formatting with Black and Ruff
+- **Architecture**: Follow established patterns and SOLID principles
+
+### Getting Started
+
+```bash
+# Setup development environment
+uv sync --all-extras
+uv run pre-commit install
+
+# Run the full test suite
+uv run pytest tests/ -v --cov=src/
+
+# Validate workspace organization
+uv run python scripts/validate_workspace.py
+```
 
 ## 📄 License
 
-MIT License - see LICENSE file for details.
+MIT License - see [LICENSE](LICENSE) file for details.
+
+## 🔗 Links
+
+- **[📖 Documentation](docs/README.md)** - Complete user and developer guides
+- **[🚀 Production Status](PRODUCTION_STATUS.md)** - Current operational status
+- **[📋 TODO](TODO.md)** - Development roadmap and priorities
+- **[📝 Changelog](CHANGELOG.md)** - Version history and changes
+- **[🛠️ Development Guidelines](.github/instructions/development-guidelines.instructions.md)** - Standards and practices
+
+______________________________________________________________________
+
+**Last Updated**: January 2025 - v2.4.2\
+**Maintenance**: Active development with enterprise standards\
+**Support**: See [How-To Guides](docs/how-to-guides/) for troubleshooting
 
 ## 📸 Example
 

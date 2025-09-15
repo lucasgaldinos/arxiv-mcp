@@ -22,5 +22,10 @@
         "coverage.xml",
         "coverage.lcov",
         "coverage/lcov.info"
-    ]
+    ],
+    "ruff.exclude": [],
+    "ruff.interpreter": [
+        "/home/lucas_galdino/repositories/mcp_servers/arxiv-mcp-improved/.venv/bin/ruff"
+    ],
+    "markdownlint.config": {}
 }

@@ -1,0 +1,143 @@
+# Pre-commit configuration for ArXiv MCP Server
+# Based on enterprise development standards and automation best practices
+
+repos:
+  # Basic file quality checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+        args: ["--maxkb=512"]
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: check-toml
+      - id: check-json
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+      - id: check-case-conflict
+      - id: check-docstring-first
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+      - id: detect-private-key
+
+  # Python code formatting with Ruff (replaces black + isort + flake8)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.9
+    hooks:
+      # Linter
+      - id: ruff
+        args: ["--fix", "--exit-non-zero-on-fix"]
+        types_or: [python, pyi]
+      # Formatter  
+      - id: ruff-format
+        types_or: [python, pyi]
+
+  # Type checking with mypy
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.14.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [
+          types-aiofiles,
+          types-PyYAML,
+          types-requests,
+          pydantic,
+          fastmcp,
+          mcp,
+        ]
+        args: ["--strict", "--show-error-codes"]
+        exclude: ^(tests/legacy/|scripts/analyze_dead_code\.py)
+
+  # Security scanning
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.8.1
+    hooks:
+      - id: bandit
+        args: ["-c", "pyproject.toml"]
+        additional_dependencies: ["bandit[toml]"]
+        exclude: ^tests/
+
+  # Markdown linting
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.43.0
+    hooks:
+      - id: markdownlint
+        args: ["--fix"]
+        exclude: ^(\.dev/|logs/|output/|cache/|htmlcov/)
+
+  # YAML formatting
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        types_or: [yaml, markdown]
+        exclude: ^(\.dev/|logs/|output/|cache/|htmlcov/|\.github/\.knowledge_base/)
+
+  # Dead code detection (runs periodically)
+  - repo: local
+    hooks:
+      - id: vulture
+        name: vulture
+        entry: uv run vulture
+        language: system
+        types: [python]
+        args: ["--min-confidence", "80"]
+        stages: [manual]  # Only run when explicitly requested
+
+  # Python package security
+  - repo: https://github.com/pyupio/safety
+    rev: 3.3.1
+    hooks:
+      - id: safety
+        stages: [manual]  # Only run when explicitly requested
+
+  # Jupyter notebook cleaning (if needed)
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.7.1
+    hooks:
+      - id: nbstripout
+        files: \.ipynb$
+        args: ["--extra-keys", "metadata.kernelspec metadata.language_info"]
+
+  # YAML frontmatter validation for documentation
+  - repo: local
+    hooks:
+      - id: yaml-frontmatter-check
+        name: YAML frontmatter check
+        entry: python
+        language: system
+        args: ["-c", "import yaml, sys, re; files = [f for f in sys.argv[1:] if f.endswith('.md')]; [print(f'Invalid YAML frontmatter in {f}') or sys.exit(1) for f in files if (content := open(f).read()) and content.startswith('---') and not yaml.safe_load(re.split(r'^---\\s*$', content, 2, re.MULTILINE)[1]) if len(re.split(r'^---\\s*$', content, 2, re.MULTILINE)) >= 2]"]
+        files: '\.md$'
+        exclude: ^(\.dev/|logs/|output/|cache/|htmlcov/)
+
+  # Custom workspace validation (workspace-agnostic)
+  - repo: local
+    hooks:
+      - id: workspace-validation
+        name: Workspace organization validation
+        entry: uv run python .dev/tools/validate_workspace.py --quiet
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [manual]  # Only run when explicitly requested
+
+# Configuration
+default_install_hook_types: [pre-commit, pre-push]
+default_stages: [pre-commit]
+fail_fast: false
+minimum_pre_commit_version: "3.0.0"
+
+# CI configuration
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit hooks
+
+    for more information, see https://pre-commit.ci
+  autofix_prs: true
+  autoupdate_branch: 'main'
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: [vulture, safety, workspace-validation]  # Skip manual-only hooks in CI
+  submodules: false

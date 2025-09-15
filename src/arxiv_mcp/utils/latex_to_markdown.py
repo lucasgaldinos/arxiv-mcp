@@ -3,10 +3,10 @@ LaTeX to Markdown converter with pandoc integration and fallback.
 Provides comprehensive LaTeX to Markdown conversion with metadata extraction.
 """
 
+from datetime import datetime
 import re
 import subprocess
-from typing import Dict, Any, Optional, List, Match
-from datetime import datetime
+from typing import Any
 
 from ..utils.logging import structured_logger
 
@@ -29,20 +29,16 @@ PANDOC_AVAILABLE = check_pandoc_available()
 class LaTeXToMarkdownConverter:
     """Converts LaTeX content to Markdown with multiple conversion strategies."""
 
-    def __init__(
-        self, use_pandoc: bool = True, pandoc_extra_args: Optional[List[str]] = None
-    ):
+    def __init__(self, use_pandoc: bool = True, pandoc_extra_args: list[str] | None = None):
         self.use_pandoc = use_pandoc and self._check_pandoc_available()
         self.pandoc_extra_args = pandoc_extra_args or []
-        logger.info(
-            f"LaTeX to Markdown converter initialized (pandoc: {self.use_pandoc})"
-        )
+        logger.info(f"LaTeX to Markdown converter initialized (pandoc: {self.use_pandoc})")
 
     def _check_pandoc_available(self) -> bool:
         """Check if pandoc is available on the system."""
         try:
             result = subprocess.run(
-                ["pandoc", "--version"], capture_output=True, text=True, timeout=10
+                ["pandoc", "--version"], check=False, capture_output=True, text=True, timeout=10
             )
             if result.returncode == 0:
                 logger.info("Pandoc available for conversion")
@@ -53,9 +49,7 @@ class LaTeXToMarkdownConverter:
         logger.warning("Pandoc not available, using fallback converter")
         return False
 
-    def convert(
-        self, latex_content: str, metadata: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+    def convert(self, latex_content: str, metadata: dict[str, Any] | None = None) -> dict[str, Any]:
         """Convert LaTeX content to Markdown.
 
         Args:
@@ -67,12 +61,11 @@ class LaTeXToMarkdownConverter:
         """
         if self.use_pandoc:
             return self._convert_with_pandoc(latex_content, metadata)
-        else:
-            return self._convert_with_fallback(latex_content, metadata)
+        return self._convert_with_fallback(latex_content, metadata)
 
     def _convert_with_pandoc(
-        self, latex_content: str, metadata: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        self, latex_content: str, metadata: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """Convert LaTeX to Markdown using pandoc."""
         try:
             # Prepare pandoc command
@@ -87,7 +80,7 @@ class LaTeXToMarkdownConverter:
 
             # Run pandoc conversion
             result = subprocess.run(
-                cmd, input=latex_content, capture_output=True, text=True, timeout=60
+                cmd, check=False, input=latex_content, capture_output=True, text=True, timeout=60
             )
 
             if result.returncode == 0:
@@ -103,21 +96,20 @@ class LaTeXToMarkdownConverter:
                     "success": True,
                     "warnings": result.stderr if result.stderr else None,
                 }
-            else:
-                logger.error(f"Pandoc conversion failed: {result.stderr}")
-                # Fallback to custom converter
-                return self._convert_with_fallback(latex_content, metadata)
+            logger.error(f"Pandoc conversion failed: {result.stderr}")
+            # Fallback to custom converter
+            return self._convert_with_fallback(latex_content, metadata)
 
         except subprocess.TimeoutExpired:
-            logger.error("Pandoc conversion timed out")
+            logger.exception("Pandoc conversion timed out")
             return self._convert_with_fallback(latex_content, metadata)
         except Exception as e:
-            logger.error(f"Pandoc conversion error: {str(e)}")
+            logger.exception(f"Pandoc conversion error: {str(e)}")
             return self._convert_with_fallback(latex_content, metadata)
 
     def _convert_with_fallback(
-        self, latex_content: str, metadata: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        self, latex_content: str, metadata: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """Convert LaTeX to Markdown using custom fallback converter."""
         logger.info("Using fallback LaTeX to Markdown converter")
 
@@ -150,9 +142,7 @@ class LaTeXToMarkdownConverter:
         content = re.sub(r"%.*$", "", content, flags=re.MULTILINE)
 
         # Extract document content (between \\begin{document} and \\end{document})
-        doc_match = re.search(
-            r"\\begin{document}(.*?)\\end{document}", content, re.DOTALL
-        )
+        doc_match = re.search(r"\\begin{document}(.*?)\\end{document}", content, re.DOTALL)
         if doc_match:
             content = doc_match.group(1)
 
@@ -165,9 +155,7 @@ class LaTeXToMarkdownConverter:
         content = re.sub(r"\\subsection\*?\{([^}]+)\}", r"## \\1", content)
         content = re.sub(r"\\subsubsection\*?\{([^}]+)\}", r"### \\1", content)
         content = re.sub(r"\\paragraph\{([^}]+)\}", r"#### \\1", content)
-        content = re.sub(r"\\subparagraph\{([^}]+)\}", r"##### \\1", content)
-
-        return content
+        return re.sub(r"\\subparagraph\{([^}]+)\}", r"##### \\1", content)
 
     def _convert_emphasis(self, content: str) -> str:
         """Convert LaTeX emphasis to Markdown."""
@@ -182,9 +170,7 @@ class LaTeXToMarkdownConverter:
 
         # Typewriter/code
         content = re.sub(r"\\texttt\{([^}]+)\}", r"`\\1`", content)
-        content = re.sub(r"\\verb\|([^|]+)\|", r"`\\1`", content)
-
-        return content
+        return re.sub(r"\\verb\|([^|]+)\|", r"`\\1`", content)
 
     def _convert_lists(self, content: str) -> str:
         """Convert LaTeX lists to Markdown."""
@@ -195,17 +181,15 @@ class LaTeXToMarkdownConverter:
 
         # Enumerate (ordered lists) - simplified
         content = re.sub(r"\\begin\{enumerate\}", "", content)
-        content = re.sub(r"\\end\{enumerate\}", "", content)
+        return re.sub(r"\\end\{enumerate\}", "", content)
         # Note: This is a simplified conversion; proper numbering would require more complex logic
-
-        return content
 
     def _convert_math(self, content: str) -> str:
         """Convert LaTeX math to Markdown-compatible format with enhanced support."""
         # Inline math - handle various forms
-        content = re.sub(r'\$([^$]+)\$', r'$\1$', content)  # Single $ (inline math)
-        content = re.sub(r'\\\(([^)]+)\\\)', r'$\1$', content)  # \( \) (inline math)
-        
+        content = re.sub(r"\$([^$]+)\$", r"$\1$", content)  # Single $ (inline math)
+        content = re.sub(r"\\\(([^)]+)\\\)", r"$\1$", content)  # \( \) (inline math)
+
         # Display math environments - enhanced coverage
         content = re.sub(
             r"\\begin\{equation\*?\}(.*?)\\end\{equation\*?\}",
@@ -214,10 +198,7 @@ class LaTeXToMarkdownConverter:
             flags=re.DOTALL,
         )
         content = re.sub(
-            r"\\begin\{align\*?\}(.*?)\\end\{align\*?\}", 
-            r"$$\1$$", 
-            content, 
-            flags=re.DOTALL
+            r"\\begin\{align\*?\}(.*?)\\end\{align\*?\}", r"$$\1$$", content, flags=re.DOTALL
         )
         content = re.sub(
             r"\\begin\{eqnarray\*?\}(.*?)\\end\{eqnarray\*?\}",
@@ -247,16 +228,16 @@ class LaTeXToMarkdownConverter:
         # Display math with delimiters
         content = re.sub(r"\\\[(.*?)\\\]", r"$$\1$$", content, flags=re.DOTALL)
         content = re.sub(r"\$\$(.*?)\$\$", r"$$\1$$", content, flags=re.DOTALL)  # Clean double $$
-        
+
         # Handle common math commands that need preservation
-        content = re.sub(r"\\displaystyle\s+", "", content)  # Remove displaystyle as it's implied in $$
-        content = re.sub(r"\\textstyle\s+", "", content)     # Remove textstyle 
-        
+        content = re.sub(
+            r"\\displaystyle\s+", "", content
+        )  # Remove displaystyle as it's implied in $$
+        content = re.sub(r"\\textstyle\s+", "", content)  # Remove textstyle
+
         # Clean up alignment characters that don't work in markdown
         content = re.sub(r"&\s*=\s*&", " = ", content)  # Alignment ampersands
-        content = re.sub(r"\\\\\\\\", r"\\\\", content)    # Double newlines in equations
-        
-        return content
+        return re.sub(r"\\\\\\\\", r"\\\\", content)  # Double newlines in equations
 
     def _convert_figures(self, content: str) -> str:
         """Convert LaTeX figures to Markdown with improved format handling."""
@@ -267,13 +248,11 @@ class LaTeXToMarkdownConverter:
             figure_content = match.group(1)
 
             # Extract includegraphics with better pattern matching
-            img_match = re.search(
-                r"\\includegraphics(?:\[([^\]]*)\])?\{([^}]+)\}", figure_content
-            )
+            img_match = re.search(r"\\includegraphics(?:\[([^\]]*)\])?\{([^}]+)\}", figure_content)
             if img_match:
-                options = img_match.group(1) or ""
+                img_match.group(1) or ""
                 img_path = img_match.group(2)
-                
+
                 # Improve image path handling
                 img_path = self._improve_image_path(img_path)
 
@@ -284,20 +263,19 @@ class LaTeXToMarkdownConverter:
                     caption = caption_match.group(1)
                     # Clean up caption LaTeX commands more thoroughly
                     caption = self._clean_latex_commands(caption)
-                
+
                 # Extract label for cross-referencing
                 label_match = re.search(r"\\label\{([^}]+)\}", figure_content)
                 label = label_match.group(1) if label_match else ""
 
                 # Build markdown figure
                 if caption and label:
-                    return f"![{caption}]({img_path})\n<a id=\"{label}\"></a>"
-                elif caption:
+                    return f'![{caption}]({img_path})\n<a id="{label}"></a>'
+                if caption:
                     return f"![{caption}]({img_path})"
-                elif label:
-                    return f"![]({img_path})\n<a id=\"{label}\"></a>"
-                else:
-                    return f"![]({img_path})"
+                if label:
+                    return f'![]({img_path})\n<a id="{label}"></a>'
+                return f"![]({img_path})"
 
             # Handle subfigures
             subfig_pattern = r"\\begin\{subfigure\}.*?\\end\{subfigure\}"
@@ -305,7 +283,7 @@ class LaTeXToMarkdownConverter:
                 subfigs = re.findall(
                     r"\\begin\{subfigure\}.*?\\includegraphics.*?\{([^}]+)\}.*?\\end\{subfigure\}",
                     figure_content,
-                    re.DOTALL
+                    re.DOTALL,
                 )
                 if subfigs:
                     improved_paths = [self._improve_image_path(path) for path in subfigs]
@@ -315,88 +293,87 @@ class LaTeXToMarkdownConverter:
             return "[Figure - Complex figure layout not fully supported]"
 
         content = re.sub(figure_pattern, replace_figure, content, flags=re.DOTALL)
-        
+
         # Handle standalone includegraphics outside figure environments
         standalone_pattern = r"\\includegraphics(?:\[[^\]]*\])?\{([^}]+)\}"
+
         def replace_standalone(match):
             img_path = self._improve_image_path(match.group(1))
             return f"![]({img_path})"
-        
-        content = re.sub(standalone_pattern, replace_standalone, content)
 
-        return content
-        
+        return re.sub(standalone_pattern, replace_standalone, content)
+
     def _improve_image_path(self, img_path: str) -> str:
         """Improve image path for better Markdown compatibility."""
         # Remove file extensions that don't work well in Markdown
-        if img_path.endswith(('.ps', '.eps')):
+        if img_path.endswith((".ps", ".eps")):
             # Suggest PNG alternative
-            base_name = img_path.rsplit('.', 1)[0]
+            base_name = img_path.rsplit(".", 1)[0]
             return f"{base_name}.png"
-        elif img_path.endswith('.pdf'):
+        if img_path.endswith(".pdf"):
             # Convert PDF figures to PNG for better display
-            base_name = img_path.rsplit('.', 1)[0]
+            base_name = img_path.rsplit(".", 1)[0]
             return f"{base_name}.png"
-        
+
         # Keep original path for supported formats
         return img_path
-        
+
     def _clean_latex_commands(self, text: str) -> str:
         """Clean LaTeX commands from text for better Markdown display."""
         # Remove common LaTeX commands that don't translate well
-        text = re.sub(r'\\[a-zA-Z]+\{([^}]*)\}', r'\1', text)  # \command{content} -> content
-        text = re.sub(r'\\[a-zA-Z]+', '', text)  # \command -> empty
-        text = re.sub(r'\s+', ' ', text)  # normalize whitespace
+        text = re.sub(r"\\[a-zA-Z]+\{([^}]*)\}", r"\1", text)  # \command{content} -> content
+        text = re.sub(r"\\[a-zA-Z]+", "", text)  # \command -> empty
+        text = re.sub(r"\s+", " ", text)  # normalize whitespace
         return text.strip()
 
     def _convert_tables(self, content: str) -> str:
         """Convert LaTeX tables to Markdown with improved support."""
+
         # Enhanced table conversion for simple cases
         def replace_tabular(match):
             table_content = match.group(1)
-            
+
             # Extract table specification (column alignment)
-            spec_match = re.search(r'\\begin\{tabular\}\{([^}]+)\}', match.group(0))
+            spec_match = re.search(r"\\begin\{tabular\}\{([^}]+)\}", match.group(0))
             if not spec_match:
                 return "[Table - Complex table conversion not supported]"
-            
+
             # Count columns from specification
             spec = spec_match.group(1)
-            num_cols = len([c for c in spec if c in 'lcr'])
-            
+            num_cols = len([c for c in spec if c in "lcr"])
+
             if num_cols == 0:
                 return "[Table - Invalid table specification]"
-            
+
             # Try to convert simple tables
-            lines = table_content.split('\\\\')
+            lines = table_content.split("\\\\")
             markdown_rows = []
-            
+
             for i, line in enumerate(lines):
                 if not line.strip():
                     continue
-                    
+
                 # Remove LaTeX commands and split by &
-                clean_line = re.sub(r'\\[a-zA-Z]+\{([^}]*)\}', r'\1', line)
-                clean_line = re.sub(r'\\[a-zA-Z]+', '', clean_line)
-                cells = [cell.strip() for cell in clean_line.split('&')]
-                
+                clean_line = re.sub(r"\\[a-zA-Z]+\{([^}]*)\}", r"\1", line)
+                clean_line = re.sub(r"\\[a-zA-Z]+", "", clean_line)
+                cells = [cell.strip() for cell in clean_line.split("&")]
+
                 # Pad or trim to expected number of columns
                 while len(cells) < num_cols:
-                    cells.append('')
+                    cells.append("")
                 cells = cells[:num_cols]
-                
-                markdown_rows.append('| ' + ' | '.join(cells) + ' |')
-                
+
+                markdown_rows.append("| " + " | ".join(cells) + " |")
+
                 # Add header separator after first row
                 if i == 0:
-                    separator = '|' + ''.join([' --- |' for _ in range(num_cols)])
+                    separator = "|" + "".join([" --- |" for _ in range(num_cols)])
                     markdown_rows.append(separator)
-            
+
             if markdown_rows:
-                return '\n'.join(markdown_rows)
-            else:
-                return "[Table - Content extraction failed]"
-        
+                return "\n".join(markdown_rows)
+            return "[Table - Content extraction failed]"
+
         # Handle tabular environments
         content = re.sub(
             r"\\begin\{tabular\}.*?\\end\{tabular\}",
@@ -404,7 +381,7 @@ class LaTeXToMarkdownConverter:
             content,
             flags=re.DOTALL,
         )
-        
+
         # Handle other table environments with simpler fallback
         content = re.sub(
             r"\\begin\{array\}.*?\\end\{array\}",
@@ -412,30 +389,24 @@ class LaTeXToMarkdownConverter:
             content,
             flags=re.DOTALL,
         )
-        content = re.sub(
+        return re.sub(
             r"\\begin\{matrix\}.*?\\end\{matrix\}",
             "[Matrix - LaTeX matrix conversion not fully supported]",
             content,
             flags=re.DOTALL,
         )
 
-        return content
-
     def _convert_citations(self, content: str) -> str:
         """Convert LaTeX citations to Markdown format."""
         # Simple citation conversion
         content = re.sub(r"\\cite\{([^}]+)\}", r"[@\\1]", content)
         content = re.sub(r"\\citep\{([^}]+)\}", r"[@\\1]", content)
-        content = re.sub(r"\\citet\{([^}]+)\}", r"@\\1", content)
-
-        return content
+        return re.sub(r"\\citet\{([^}]+)\}", r"@\\1", content)
 
     def _convert_references(self, content: str) -> str:
         """Convert LaTeX references to Markdown."""
         content = re.sub(r"\\ref\{([^}]+)\}", r"[\\1](#\\1)", content)
-        content = re.sub(r"\\label\{([^}]+)\}", r'<a id="\\1"></a>', content)
-
-        return content
+        return re.sub(r"\\label\{([^}]+)\}", r'<a id="\\1"></a>', content)
 
     def _cleanup_markdown(self, content: str) -> str:
         """Clean up the converted markdown."""
@@ -448,9 +419,7 @@ class LaTeXToMarkdownConverter:
         content = re.sub(r"[ \\t]+", " ", content)
 
         # Remove empty lines at start and end
-        content = content.strip()
-
-        return content
+        return content.strip()
 
     def _post_process_markdown(self, markdown: str) -> str:
         """Post-process pandoc-generated markdown."""
@@ -462,7 +431,7 @@ class LaTeXToMarkdownConverter:
 
         return markdown.strip()
 
-    def extract_metadata_from_latex(self, latex_content: str) -> Dict[str, Any]:
+    def extract_metadata_from_latex(self, latex_content: str) -> dict[str, Any]:
         """Extract metadata from LaTeX content.
 
         Args:
@@ -512,8 +481,8 @@ class LaTeXToMarkdownConverter:
         return metadata
 
     def convert_with_metadata(
-        self, latex_content: str, arxiv_id: Optional[str] = None
-    ) -> Dict[str, Any]:
+        self, latex_content: str, arxiv_id: str | None = None
+    ) -> dict[str, Any]:
         """Convert LaTeX to Markdown and extract metadata.
 
         Args:

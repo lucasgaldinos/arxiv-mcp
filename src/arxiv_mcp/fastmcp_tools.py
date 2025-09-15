@@ -2,17 +2,18 @@
 """
 ArXiv MCP Server using FastMCP - Fixed version for VS Code integration.
 """
-import asyncio
-import sys
+
 from pathlib import Path
+import sys
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 from fastmcp import FastMCP
+
 from arxiv_mcp.clients.arxiv_api import ArxivAPIClient
-from arxiv_mcp.core.pipeline import ArxivPipeline
 from arxiv_mcp.core.config import PipelineConfig
+from arxiv_mcp.core.pipeline import ArxivPipeline
 
 # Create FastMCP server instance
 mcp = FastMCP("arxiv-mcp-improved")
@@ -30,7 +31,7 @@ async def search_arxiv(
         filters = {"max_results": max_results}
         if category:
             filters["category"] = category
-            
+
         results = await client.search(query, **filters)
         return {
             "status": "success",
@@ -65,12 +66,11 @@ async def fetch_arxiv_paper_content(
                 "processing_time": result.get("processing_time"),
                 "metadata": result.get("metadata", {}),
             }
-        else:
-            return {
-                "status": "error",
-                "arxiv_id": arxiv_id,
-                "error": result.get("error", "Unknown error occurred"),
-            }
+        return {
+            "status": "error",
+            "arxiv_id": arxiv_id,
+            "error": result.get("error", "Unknown error occurred"),
+        }
     except Exception as e:
         return {"status": "error", "error": str(e)}
 
@@ -162,8 +162,16 @@ def get_output_structure(output_dir: str = "./output") -> dict:
 
 
 @mcp.tool()
-def validate_conversion_quality(arxiv_id: str, output_dir: str = "./output") -> dict:
-    """Validate the quality of LaTeX to Markdown conversion"""
+def validate_conversion_quality(
+    arxiv_id: str, output_dir: str = "./output", format_type: str = "both"
+) -> dict:
+    """Validate the quality of LaTeX to Markdown conversion with flexible format support
+
+    Args:
+        arxiv_id: ArXiv paper ID to validate
+        output_dir: Output directory path
+        format_type: Validation mode - "both", "latex_only", or "markdown_only"
+    """
     try:
         from arxiv_mcp.core.config import PipelineConfig
         from arxiv_mcp.utils.unified_converter import UnifiedDownloadConverter
@@ -171,7 +179,7 @@ def validate_conversion_quality(arxiv_id: str, output_dir: str = "./output") -> 
         config = PipelineConfig.from_dict({"output_directory": output_dir})
         converter = UnifiedDownloadConverter(config)
 
-        quality_result = converter.validate_conversion_quality(arxiv_id)
+        quality_result = converter.validate_conversion_quality(arxiv_id, format_type)
 
         return {
             "status": "success",
@@ -210,6 +218,60 @@ def cleanup_output(output_dir: str = "./output", days_old: int = 30) -> dict:
 
 
 @mcp.tool()
+def enhanced_cleanup_output(
+    output_dir: str = "./output", time_spec: str = "30d", cleanup_type: str = "comprehensive"
+) -> dict:
+    """
+    Enhanced cleanup with multi-temporal support (seconds to days precision).
+
+    Args:
+        output_dir: Output directory to clean
+        time_spec: Time specification (e.g., '30s', '5m', '2h', '1d', '30d', '1h30m')
+        cleanup_type: Type of cleanup ('files', 'batch', 'notifications', 'comprehensive')
+
+    Returns:
+        Dictionary with cleanup results
+    """
+    try:
+        from arxiv_mcp.core.config import PipelineConfig
+        from arxiv_mcp.enhanced.multi_temporal_cleanup import create_enhanced_adapter
+
+        config = PipelineConfig.from_dict({"output_directory": output_dir})
+        adapter = create_enhanced_adapter(config)
+
+        if cleanup_type == "files":
+            result = adapter.cleanup_files(time_spec, output_dir)
+        elif cleanup_type == "batch":
+            result = adapter.cleanup_batch_operations(time_spec)
+        elif cleanup_type == "notifications":
+            result = adapter.cleanup_notifications(time_spec)
+        elif cleanup_type == "comprehensive":
+            result = adapter.comprehensive_cleanup(time_spec, output_dir)
+        else:
+            return {
+                "status": "error",
+                "tool": "enhanced_cleanup_output",
+                "error": f"Unknown cleanup_type: {cleanup_type}. Must be one of: files, batch, notifications, comprehensive",
+            }
+
+        return {
+            "status": "success",
+            "tool": "enhanced_cleanup_output",
+            "cleanup_type": cleanup_type,
+            **result,
+        }
+
+    except Exception as e:
+        return {
+            "status": "error",
+            "tool": "enhanced_cleanup_output",
+            "error": f"Enhanced cleanup failed: {str(e)}",
+            "time_spec": time_spec,
+            "cleanup_type": cleanup_type,
+        }
+
+
+@mcp.tool()
 def extract_citations(text: str) -> dict:
     """Extract citations from paper text"""
     try:
@@ -241,8 +303,7 @@ def extract_citations(text: str) -> dict:
 def analyze_citation_network(arxiv_ids: list[str]) -> dict:
     """Analyze citation networks and research connections"""
     try:
-        from arxiv_mcp.analyzers.network_analyzer import NetworkAnalyzer
-        from arxiv_mcp.analyzers.network_analyzer import NetworkNode, NetworkEdge, NetworkType
+        from arxiv_mcp.analyzers.network_analyzer import NetworkAnalyzer, NetworkNode, NetworkType
 
         analyzer = NetworkAnalyzer()
 

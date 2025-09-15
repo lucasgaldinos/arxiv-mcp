@@ -5,17 +5,16 @@ This module provides comprehensive network analysis capabilities including
 citation networks, author collaboration networks, and topic relationship analysis.
 """
 
-import json
-import sqlite3
-from datetime import datetime
-from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
+import json
+from pathlib import Path
+import sqlite3
+from typing import Any
 
 from .logging import structured_logger
 from .optional_deps import safe_import
-
 
 logger = structured_logger()
 
@@ -46,8 +45,8 @@ class NetworkNode:
     node_id: str
     node_type: str
     label: str
-    attributes: Dict[str, Any] = None
-    centrality_scores: Dict[str, float] = None
+    attributes: dict[str, Any] = None
+    centrality_scores: dict[str, float] = None
 
     def __post_init__(self):
         if self.attributes is None:
@@ -64,7 +63,7 @@ class NetworkEdge:
     target: str
     weight: float = 1.0
     edge_type: str = "default"
-    attributes: Dict[str, Any] = None
+    attributes: dict[str, Any] = None
 
     def __post_init__(self):
         if self.attributes is None:
@@ -93,9 +92,9 @@ class NetworkAnalysisResult:
 
     network_type: NetworkType
     metrics: NetworkMetrics
-    top_nodes: List[Dict[str, Any]]
-    communities: List[List[str]] = None
-    central_nodes: Dict[str, List[str]] = None
+    top_nodes: list[dict[str, Any]]
+    communities: list[list[str]] = None
+    central_nodes: dict[str, list[str]] = None
     analysis_timestamp: datetime = None
 
     def __post_init__(self):
@@ -117,7 +116,7 @@ class NetworkAnalyzer:
     - Network visualization data preparation
     """
 
-    def __init__(self, cache_dir: Optional[str] = None):
+    def __init__(self, cache_dir: str | None = None):
         """Initialize the network analyzer."""
         self.cache_dir = Path(cache_dir) if cache_dir else Path.cwd() / "network_cache"
         self.cache_dir.mkdir(exist_ok=True)
@@ -196,7 +195,7 @@ class NetworkAnalyzer:
 
             conn.commit()
 
-    def create_citation_network(self, papers: List[Dict[str, Any]]) -> int:
+    def create_citation_network(self, papers: list[dict[str, Any]]) -> int:
         """Create a citation network from paper data."""
         logger.info(f"Creating citation network from {len(papers)} papers")
 
@@ -211,9 +210,7 @@ class NetworkAnalyzer:
                     (
                         NetworkType.CITATION.value,
                         f"citation_network_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
-                        json.dumps(
-                            {"paper_count": len(papers), "created_from": "paper_data"}
-                        ),
+                        json.dumps({"paper_count": len(papers), "created_from": "paper_data"}),
                     ),
                 )
                 network_id = cursor.lastrowid
@@ -282,10 +279,10 @@ class NetworkAnalyzer:
             return network_id
 
         except Exception as e:
-            logger.error(f"Failed to create citation network: {e}")
+            logger.exception(f"Failed to create citation network: {e}")
             return -1
 
-    def create_collaboration_network(self, papers: List[Dict[str, Any]]) -> int:
+    def create_collaboration_network(self, papers: list[dict[str, Any]]) -> int:
         """Create an author collaboration network from paper data."""
         logger.info(f"Creating collaboration network from {len(papers)} papers")
 
@@ -300,9 +297,7 @@ class NetworkAnalyzer:
                     (
                         NetworkType.COLLABORATION.value,
                         f"collaboration_network_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
-                        json.dumps(
-                            {"paper_count": len(papers), "created_from": "paper_data"}
-                        ),
+                        json.dumps({"paper_count": len(papers), "created_from": "paper_data"}),
                     ),
                 )
                 network_id = cursor.lastrowid
@@ -326,9 +321,7 @@ class NetworkAnalyzer:
                     for author2 in authors[i + 1 :]:
                         # Ensure consistent ordering
                         pair = tuple(sorted([author1, author2]))
-                        collaboration_counts[pair] = (
-                            collaboration_counts.get(pair, 0) + 1
-                        )
+                        collaboration_counts[pair] = collaboration_counts.get(pair, 0) + 1
 
             # Create nodes (authors)
             nodes = {}
@@ -362,7 +355,7 @@ class NetworkAnalyzer:
             return network_id
 
         except Exception as e:
-            logger.error(f"Failed to create collaboration network: {e}")
+            logger.exception(f"Failed to create collaboration network: {e}")
             return -1
 
     def analyze_network(self, network_id: int) -> NetworkAnalysisResult:
@@ -387,9 +380,7 @@ class NetworkAnalyzer:
 
             # Add edges
             for edge in edges:
-                G.add_edge(
-                    edge.source, edge.target, weight=edge.weight, **edge.attributes
-                )
+                G.add_edge(edge.source, edge.target, weight=edge.weight, **edge.attributes)
 
             # Calculate basic metrics
             total_nodes = G.number_of_nodes()
@@ -411,9 +402,7 @@ class NetworkAnalyzer:
                 largest_subgraph = G.subgraph(largest_cc)
 
                 if len(largest_cc) > 1:
-                    average_path_length = networkx.average_shortest_path_length(
-                        largest_subgraph
-                    )
+                    average_path_length = networkx.average_shortest_path_length(largest_subgraph)
                     diameter = networkx.diameter(largest_subgraph)
                 else:
                     average_path_length = 0
@@ -431,18 +420,14 @@ class NetworkAnalyzer:
             pagerank = networkx.pagerank(G)
 
             # Find top nodes by different centrality measures
-            top_degree = sorted(
-                degree_centrality.items(), key=lambda x: x[1], reverse=True
-            )[:10]
+            top_degree = sorted(degree_centrality.items(), key=lambda x: x[1], reverse=True)[:10]
             top_betweenness = sorted(
                 betweenness_centrality.items(), key=lambda x: x[1], reverse=True
             )[:10]
-            top_closeness = sorted(
-                closeness_centrality.items(), key=lambda x: x[1], reverse=True
-            )[:10]
-            top_pagerank = sorted(pagerank.items(), key=lambda x: x[1], reverse=True)[
+            top_closeness = sorted(closeness_centrality.items(), key=lambda x: x[1], reverse=True)[
                 :10
             ]
+            top_pagerank = sorted(pagerank.items(), key=lambda x: x[1], reverse=True)[:10]
 
             # Community detection (if possible)
             communities = []
@@ -450,9 +435,7 @@ class NetworkAnalyzer:
                 if hasattr(networkx, "community") and hasattr(
                     networkx.community, "greedy_modularity_communities"
                 ):
-                    communities = list(
-                        networkx.community.greedy_modularity_communities(G)
-                    )
+                    communities = list(networkx.community.greedy_modularity_communities(G))
                     communities = [list(community) for community in communities]
             except Exception:
                 logger.warning("Community detection failed")
@@ -471,16 +454,14 @@ class NetworkAnalyzer:
 
             # Prepare top nodes summary
             top_nodes = []
-            for node_id, score in top_degree[:5]:
+            for node_id, _score in top_degree[:5]:
                 node_data = nodes.get(node_id)
                 top_nodes.append(
                     {
                         "node_id": node_id,
                         "label": node_data.label if node_data else node_id,
                         "degree_centrality": degree_centrality.get(node_id, 0),
-                        "betweenness_centrality": betweenness_centrality.get(
-                            node_id, 0
-                        ),
+                        "betweenness_centrality": betweenness_centrality.get(node_id, 0),
                         "closeness_centrality": closeness_centrality.get(node_id, 0),
                         "pagerank": pagerank.get(node_id, 0),
                     }
@@ -493,19 +474,12 @@ class NetworkAnalyzer:
                 top_nodes=top_nodes,
                 communities=communities,
                 central_nodes={
-                    "degree": [
-                        {"node_id": nid, "score": score} for nid, score in top_degree
-                    ],
+                    "degree": [{"node_id": nid, "score": score} for nid, score in top_degree],
                     "betweenness": [
-                        {"node_id": nid, "score": score}
-                        for nid, score in top_betweenness
+                        {"node_id": nid, "score": score} for nid, score in top_betweenness
                     ],
-                    "closeness": [
-                        {"node_id": nid, "score": score} for nid, score in top_closeness
-                    ],
-                    "pagerank": [
-                        {"node_id": nid, "score": score} for nid, score in top_pagerank
-                    ],
+                    "closeness": [{"node_id": nid, "score": score} for nid, score in top_closeness],
+                    "pagerank": [{"node_id": nid, "score": score} for nid, score in top_pagerank],
                 },
             )
 
@@ -518,7 +492,7 @@ class NetworkAnalyzer:
             return result
 
         except Exception as e:
-            logger.error(f"Failed to analyze network: {e}")
+            logger.exception(f"Failed to analyze network: {e}")
             # Return basic result
             return NetworkAnalysisResult(
                 network_type=NetworkType.CITATION,
@@ -531,8 +505,8 @@ class NetworkAnalyzer:
     def _basic_network_analysis(
         self,
         network_id: int,
-        nodes: Dict[str, NetworkNode],
-        edges: List[NetworkEdge],
+        nodes: dict[str, NetworkNode],
+        edges: list[NetworkEdge],
         network_type: NetworkType,
     ) -> NetworkAnalysisResult:
         """Basic network analysis without NetworkX."""
@@ -542,9 +516,7 @@ class NetworkAnalyzer:
             total_nodes = len(nodes)
             total_edges = len(edges)
             density = (
-                (2 * total_edges) / (total_nodes * (total_nodes - 1))
-                if total_nodes > 1
-                else 0
+                (2 * total_edges) / (total_nodes * (total_nodes - 1)) if total_nodes > 1 else 0
             )
 
             # Basic degree calculation
@@ -554,9 +526,7 @@ class NetworkAnalyzer:
                 degree_count[edge.target] = degree_count.get(edge.target, 0) + 1
 
             # Find top nodes by degree
-            top_by_degree = sorted(
-                degree_count.items(), key=lambda x: x[1], reverse=True
-            )[:10]
+            top_by_degree = sorted(degree_count.items(), key=lambda x: x[1], reverse=True)[:10]
 
             top_nodes = []
             for node_id, degree in top_by_degree[:5]:
@@ -566,9 +536,7 @@ class NetworkAnalyzer:
                         "node_id": node_id,
                         "label": node_data.label if node_data else node_id,
                         "degree": degree,
-                        "degree_centrality": degree / (total_nodes - 1)
-                        if total_nodes > 1
-                        else 0,
+                        "degree_centrality": degree / (total_nodes - 1) if total_nodes > 1 else 0,
                     }
                 )
 
@@ -589,9 +557,7 @@ class NetworkAnalyzer:
                 top_nodes=top_nodes,
                 communities=[],
                 central_nodes={
-                    "degree": [
-                        {"node_id": nid, "score": score} for nid, score in top_by_degree
-                    ]
+                    "degree": [{"node_id": nid, "score": score} for nid, score in top_by_degree]
                 },
             )
 
@@ -603,7 +569,7 @@ class NetworkAnalyzer:
             return result
 
         except Exception as e:
-            logger.error(f"Failed to perform basic network analysis: {e}")
+            logger.exception(f"Failed to perform basic network analysis: {e}")
             return NetworkAnalysisResult(
                 network_type=network_type,
                 metrics=NetworkMetrics(0, 0, 0, 0, 0, 0, 0, 0),
@@ -612,12 +578,10 @@ class NetworkAnalyzer:
                 central_nodes={},
             )
 
-    def get_shortest_path(self, network_id: int, source: str, target: str) -> List[str]:
+    def get_shortest_path(self, network_id: int, source: str, target: str) -> list[str]:
         """Find shortest path between two nodes."""
         if not NETWORKX_AVAILABLE:
-            logger.warning(
-                "NetworkX not available. Shortest path calculation not supported."
-            )
+            logger.warning("NetworkX not available. Shortest path calculation not supported.")
             return []
 
         try:
@@ -630,16 +594,15 @@ class NetworkAnalyzer:
             for edge in edges:
                 G.add_edge(edge.source, edge.target, weight=edge.weight)
 
-            path = networkx.shortest_path(G, source, target)
-            return path
+            return networkx.shortest_path(G, source, target)
 
         except Exception as e:
-            logger.error(f"Failed to find shortest path: {e}")
+            logger.exception(f"Failed to find shortest path: {e}")
             return []
 
     def find_influential_nodes(
         self, network_id: int, top_k: int = 10
-    ) -> Dict[str, List[Dict[str, Any]]]:
+    ) -> dict[str, list[dict[str, Any]]]:
         """Find most influential nodes using various centrality measures."""
         logger.info(f"Finding top {top_k} influential nodes in network {network_id}")
 
@@ -654,15 +617,14 @@ class NetworkAnalyzer:
                     influential[measure] = nodes[:top_k]
 
                 return influential
-            else:
-                return {}
+            return {}
 
         except Exception as e:
-            logger.error(f"Failed to find influential nodes: {e}")
+            logger.exception(f"Failed to find influential nodes: {e}")
             return {}
 
     def _store_network_data(
-        self, network_id: int, nodes: Dict[str, NetworkNode], edges: List[NetworkEdge]
+        self, network_id: int, nodes: dict[str, NetworkNode], edges: list[NetworkEdge]
     ) -> None:
         """Store network data in the database."""
         try:
@@ -705,11 +667,11 @@ class NetworkAnalyzer:
 
                 conn.commit()
         except Exception as e:
-            logger.error(f"Failed to store network data: {e}")
+            logger.exception(f"Failed to store network data: {e}")
 
     def _load_network_data(
         self, network_id: int
-    ) -> Tuple[Dict[str, NetworkNode], List[NetworkEdge], str]:
+    ) -> tuple[dict[str, NetworkNode], list[NetworkEdge], str]:
         """Load network data from the database."""
         try:
             with sqlite3.connect(self.db_path) as conn:
@@ -741,9 +703,7 @@ class NetworkAnalyzer:
                     centrality_str,
                 ) in cursor.fetchall():
                     attributes = json.loads(attributes_str) if attributes_str else {}
-                    centrality_scores = (
-                        json.loads(centrality_str) if centrality_str else {}
-                    )
+                    centrality_scores = json.loads(centrality_str) if centrality_str else {}
 
                     nodes[node_id] = NetworkNode(
                         node_id=node_id,
@@ -785,7 +745,7 @@ class NetworkAnalyzer:
                 return nodes, edges, network_type
 
         except Exception as e:
-            logger.error(f"Failed to load network data: {e}")
+            logger.exception(f"Failed to load network data: {e}")
             return {}, [], "unknown"
 
     def _store_analysis_result(
@@ -822,9 +782,9 @@ class NetworkAnalyzer:
                 )
                 conn.commit()
         except Exception as e:
-            logger.error(f"Failed to store analysis result: {e}")
+            logger.exception(f"Failed to store analysis result: {e}")
 
-    def get_network_list(self) -> List[Dict[str, Any]]:
+    def get_network_list(self) -> list[dict[str, Any]]:
         """Get list of all networks in the database."""
         try:
             with sqlite3.connect(self.db_path) as conn:
@@ -858,13 +818,13 @@ class NetworkAnalyzer:
                 return networks
 
         except Exception as e:
-            logger.error(f"Failed to get network list: {e}")
+            logger.exception(f"Failed to get network list: {e}")
             return []
 
     def create_network(
         self,
-        nodes: List[NetworkNode],
-        edges: List[NetworkEdge],
+        nodes: list[NetworkNode],
+        edges: list[NetworkEdge],
         network_type: NetworkType,
     ) -> Any:
         """
@@ -879,9 +839,7 @@ class NetworkAnalyzer:
             Network object (NetworkX graph if available, else simple dict)
         """
         if not NETWORKX_AVAILABLE:
-            logger.warning(
-                "NetworkX not available. Returning simplified network representation."
-            )
+            logger.warning("NetworkX not available. Returning simplified network representation.")
             return {
                 "nodes": {node.node_id: node for node in nodes},
                 "edges": edges,
@@ -898,9 +856,7 @@ class NetworkAnalyzer:
 
             # Create NetworkX graph
             if network_type in [NetworkType.CITATION, NetworkType.TOPIC]:
-                graph = (
-                    import_result.DiGraph()
-                )  # Directed graph for citations and topics
+                graph = import_result.DiGraph()  # Directed graph for citations and topics
             else:
                 graph = import_result.Graph()  # Undirected graph for collaborations
 
@@ -926,15 +882,15 @@ class NetworkAnalyzer:
             return graph
 
         except Exception as e:
-            logger.error(f"Failed to create network: {e}")
+            logger.exception(f"Failed to create network: {e}")
             return None
 
     def analyze_network_from_data(
         self,
-        nodes: List[NetworkNode],
-        edges: List[NetworkEdge],
+        nodes: list[NetworkNode],
+        edges: list[NetworkEdge],
         network_type: NetworkType,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Analyze a network from direct node/edge input (separate method to avoid conflicts).
 
@@ -975,9 +931,7 @@ class NetworkAnalyzer:
                                     else nx.is_strongly_connected(network)
                                 ),
                                 "average_clustering": (
-                                    nx.average_clustering(network)
-                                    if len(nodes) > 0
-                                    else 0
+                                    nx.average_clustering(network) if len(nodes) > 0 else 0
                                 ),
                             }
                         )
@@ -987,32 +941,31 @@ class NetworkAnalyzer:
             return analysis_result
 
         except Exception as e:
-            logger.error(f"Failed to analyze direct network: {e}")
+            logger.exception(f"Failed to analyze direct network: {e}")
             return {"error": str(e)}
 
 
 # Convenience functions
-def create_network_analyzer(cache_dir: Optional[str] = None) -> NetworkAnalyzer:
+def create_network_analyzer(cache_dir: str | None = None) -> NetworkAnalyzer:
     """Create a network analyzer instance."""
     return NetworkAnalyzer(cache_dir)
 
 
 def quick_citation_network_analysis(
-    papers: List[Dict[str, Any]],
+    papers: list[dict[str, Any]],
 ) -> NetworkAnalysisResult:
     """Quick citation network analysis."""
     analyzer = create_network_analyzer()
     network_id = analyzer.create_citation_network(papers)
     if network_id > 0:
         return analyzer.analyze_network(network_id)
-    else:
-        return NetworkAnalysisResult(
-            network_type=NetworkType.CITATION,
-            metrics=NetworkMetrics(0, 0, 0, 0, 0, 0, 0, 0),
-            top_nodes=[],
-            communities=[],
-            central_nodes={},
-        )
+    return NetworkAnalysisResult(
+        network_type=NetworkType.CITATION,
+        metrics=NetworkMetrics(0, 0, 0, 0, 0, 0, 0, 0),
+        top_nodes=[],
+        communities=[],
+        central_nodes={},
+    )
 
 
 if __name__ == "__main__":

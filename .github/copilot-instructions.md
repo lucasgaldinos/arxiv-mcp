@@ -1,6 +1,8 @@
-<!-- ---
+---
 applyTo: '**'
 ---
+
+
 # Absolute Rules
 
 **[ABSOLUTE] You shall ALWAYS follow these rules in `copilot_instructions.md`, no matter what. If you find any contradictions, you must ALWAYS follow these rules.**
@@ -14,6 +16,11 @@ applyTo: '**'
 - **[MANDATORY] ALWAYS prefer tools that are specialized for the task at hand, rather tha general-purpose tools.**
 - **[MANDATORY] You are obliged to #think and `optimize tool selection`[^1] before executing any task where tools are not explictly set.**
 - **[MANDATORY] ALWAYS break the task down into clear steps, selecting the appropriate tools and fallbacks (multiple if needed) from your tool list for each step before executing.**
+- **[MANDATORY-RESEARCH] You shall ACTIVELY use search and research tools/MCPs WHILE implementing, not just for planning:**
+  - **[MANDATORY] Use #vscode-websearchforcopilot_webSearch for best practices, standards, and current solutions**
+  - **[MANDATORY] Use #semantic_search to understand codebase structure and find relevant patterns**
+  - **[MANDATORY] Use #file_search and #grep_search to locate and analyze existing implementations**
+  - **[MANDATORY] Research before implementing to avoid reinventing wheels and ensure industry standards**
 - **[MANDATORY] When there are steps already broken, you must follow them, unless:
   - **[MANDATORY-CHECK] absurd ordering.**
   - **[MANDATORY-CHECK] user didn't organized**
@@ -26,7 +33,7 @@ applyTo: '**'
 - [MANDATORY] You shall update or create `CHANGELOG.md` or `UPDATE.md` files with a summary of changes made.
 - [MANDATORY] You shall update or create `TODO.md` or `IMPROVEMENTS.md` files with a summary of planned improvements.
 - [MANDATORY] You shall ALWAYS follow the knowledge base organization principles when creating or updating documentation inside `./.github/.knowledge_base/`.
-- [MANDATORY] 
+- [MANDATORY]
 - **[MANDATORY-CHECK] WHEN necessary, recall your prompts, summarize conversations.**
 - **[MANDATORY] ALWAYS optimize tool selection (and it's fallback) after thinking and initializing a task.**
 - **[MANDATORY] ALWAYS update docs over changes made.**
@@ -58,4 +65,4 @@ applyTo: '**'
   - If there is any `TODO.md`, `IMPROVEMENTS.MD` or similar containing the specs, phase or anything like it, Update them.If there aren't, create one. NEVER keep creating new changelogs.
 - [MANDATORY] python should always be used with uv
 - [MANDATORY] use typescript instead of javascript when possible
-- [MANDATORY] use async/await (aiohttp/httpx in python) when possible -->
+- [MANDATORY] use async/await (aiohttp/httpx in python) when possible

@@ -4,14 +4,15 @@ Downloads papers and converts them to both LaTeX and Markdown formats with organ
 """
 
 import asyncio
+from pathlib import Path
 import re
-from typing import Dict, Any, List, Optional
+from typing import Any
 
-from ..core.pipeline import ArxivPipeline
 from ..core.config import PipelineConfig
+from ..core.pipeline import ArxivPipeline
+from ..utils.logging import structured_logger
 from .file_saver import FileSaver
 from .latex_to_markdown import LaTeXToMarkdownConverter
-from ..utils.logging import structured_logger
 
 logger = structured_logger()
 
@@ -19,7 +20,7 @@ logger = structured_logger()
 class UnifiedDownloadConverter:
     """Unified tool for downloading and converting ArXiv papers to multiple formats."""
 
-    def __init__(self, config: Optional[PipelineConfig] = None):
+    def __init__(self, config: PipelineConfig | None = None):
         self.config = config or PipelineConfig.from_dict({})
         self.pipeline = ArxivPipeline(self.config)
         self.file_saver = FileSaver(self.config.output_directory)
@@ -34,7 +35,7 @@ class UnifiedDownloadConverter:
         save_latex: bool = True,
         save_markdown: bool = True,
         include_pdf: bool = False,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Download and convert an ArXiv paper to multiple formats.
 
         Args:
@@ -142,17 +143,17 @@ class UnifiedDownloadConverter:
             return response
 
         except Exception as e:
-            logger.error(f"Unified processing failed for {arxiv_id}: {str(e)}")
+            logger.exception(f"Unified processing failed for {arxiv_id}: {str(e)}")
             return {"arxiv_id": arxiv_id, "success": False, "error": str(e)}
 
     async def batch_download_and_convert(
         self,
-        arxiv_ids: List[str],
+        arxiv_ids: list[str],
         save_latex: bool = True,
         save_markdown: bool = True,
         include_pdf: bool = False,
         max_concurrent: int = 3,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Batch download and convert multiple ArXiv papers.
 
         Args:
@@ -205,7 +206,7 @@ class UnifiedDownloadConverter:
         logger.info(f"Batch processing completed: {len(successful)}/{len(arxiv_ids)} successful")
         return batch_result
 
-    def get_output_structure(self) -> Dict[str, Any]:
+    def get_output_structure(self) -> dict[str, Any]:
         """Get information about the output directory structure.
 
         Returns:
@@ -251,7 +252,7 @@ class UnifiedDownloadConverter:
 
         return structure
 
-    def cleanup_output(self, days_old: int = 30) -> Dict[str, Any]:
+    def cleanup_output(self, days_old: int = 30) -> dict[str, Any]:
         """Clean up old output files.
 
         Args:
@@ -262,85 +263,234 @@ class UnifiedDownloadConverter:
         """
         return self.file_saver.cleanup_old_files(days_old)
 
-    def validate_conversion_quality(self, arxiv_id: str) -> Dict[str, Any]:
-        """Validate the quality of LaTeX to Markdown conversion.
+    def validate_conversion_quality(
+        self, arxiv_id: str, format_type: str = "single"
+    ) -> dict[str, Any]:
+        """Validate the quality of document processing with independent format support.
 
         Args:
             arxiv_id: ArXiv paper ID to validate
+            format_type: Validation mode - "single" (auto-detect), "latex_only", "markdown_only", or "both" (legacy)
 
         Returns:
-            Quality assessment results
+            Quality assessment results with independent format metrics
         """
         try:
-            # Check if both formats exist
+            # Auto-detect available formats for single mode
             latex_dir = self.file_saver.latex_dir / arxiv_id
             markdown_dir = self.file_saver.markdown_dir / arxiv_id
 
-            if not latex_dir.exists():
-                return {"error": f"LaTeX files not found for {arxiv_id}"}
+            latex_available = latex_dir.exists()
+            markdown_available = markdown_dir.exists()
 
-            if not markdown_dir.exists():
+            # Determine actual validation mode
+            if format_type == "single":
+                if markdown_available:
+                    actual_mode = "markdown_only"
+                elif latex_available:
+                    actual_mode = "latex_only"
+                else:
+                    return {"error": f"No processed files found for {arxiv_id}"}
+            else:
+                actual_mode = format_type
+
+            # Validate format availability
+            if actual_mode in ["both", "latex_only"] and not latex_available:
+                return {"error": f"LaTeX files not found for {arxiv_id}"}
+            if actual_mode in ["both", "markdown_only"] and not markdown_available:
                 return {"error": f"Markdown files not found for {arxiv_id}"}
 
-            # Get original LaTeX content
+            # Initialize quality assessment
+            quality_metrics = {
+                "arxiv_id": arxiv_id,
+                "validation_mode": actual_mode,
+                "detected_formats": {"latex": latex_available, "markdown": markdown_available},
+                "timestamp": self._get_current_timestamp(),
+                "independent_quality_scores": {},
+            }
+
+            # Independent LaTeX validation
+            if actual_mode in ["both", "latex_only"]:
+                latex_metrics = self._validate_latex_quality(latex_dir, arxiv_id)
+                quality_metrics["independent_quality_scores"]["latex"] = latex_metrics
+                quality_metrics.update({f"latex_{k}": v for k, v in latex_metrics.items()})
+
+            # Independent Markdown validation
+            if actual_mode in ["both", "markdown_only"]:
+                markdown_metrics = self._validate_markdown_quality(markdown_dir, arxiv_id)
+                quality_metrics["independent_quality_scores"]["markdown"] = markdown_metrics
+                quality_metrics.update({f"markdown_{k}": v for k, v in markdown_metrics.items()})
+
+            # Calculate overall quality score (target: 90%+)
+            scores = []
+            if "latex" in quality_metrics["independent_quality_scores"]:
+                scores.append(
+                    quality_metrics["independent_quality_scores"]["latex"]["quality_score"]
+                )
+            if "markdown" in quality_metrics["independent_quality_scores"]:
+                scores.append(
+                    quality_metrics["independent_quality_scores"]["markdown"]["quality_score"]
+                )
+
+            quality_metrics["overall_quality_score"] = sum(scores) / len(scores) if scores else 0.0
+            quality_metrics["meets_target"] = quality_metrics["overall_quality_score"] >= 0.90
+
+            # Legacy compression ratio if both formats available
+            if actual_mode == "both":
+                latex_len = quality_metrics.get("latex_content_length", 0)
+                markdown_len = quality_metrics.get("markdown_content_length", 0)
+                if latex_len > 0:
+                    quality_metrics["compression_ratio"] = markdown_len / latex_len
+
+            return quality_metrics
+
+        except Exception as e:
+            return {"error": f"Quality validation failed: {str(e)}"}
+
+    def _validate_latex_quality(self, latex_dir: Path, arxiv_id: str) -> dict[str, Any]:
+        """Independent LaTeX quality validation."""
+        try:
+            # Load manifest and content
             manifest_path = latex_dir / "manifest.json"
             if not manifest_path.exists():
-                return {"error": f"Manifest not found for {arxiv_id}"}
+                return {"error": "Manifest not found", "quality_score": 0.0}
 
             import json
 
-            with open(manifest_path, "r") as f:
+            with open(manifest_path) as f:
                 manifest = json.load(f)
 
             main_tex_file = manifest["main_tex_file"]
             latex_path = latex_dir / main_tex_file
 
             if not latex_path.exists():
-                return {"error": f"Main LaTeX file not found: {main_tex_file}"}
+                return {
+                    "error": f"Main LaTeX file not found: {main_tex_file}",
+                    "quality_score": 0.0,
+                }
 
-            with open(latex_path, "r", encoding="utf-8", errors="ignore") as f:
-                latex_content = f.read()
+            with open(latex_path, encoding="utf-8", errors="ignore") as f:
+                content = f.read()
 
-            # Get converted markdown
-            markdown_path = markdown_dir / f"{arxiv_id}.md"
-            if not markdown_path.exists():
-                return {"error": f"Markdown file not found for {arxiv_id}"}
-
-            with open(markdown_path, "r", encoding="utf-8") as f:
-                markdown_content = f.read()
-
-            # Basic quality metrics
-            quality_metrics = {
-                "arxiv_id": arxiv_id,
-                "latex_length": len(latex_content),
-                "markdown_length": len(markdown_content),
-                "compression_ratio": (
-                    len(markdown_content) / len(latex_content) if latex_content else 0
+            # LaTeX-specific quality metrics
+            metrics = {
+                "content_length": len(content),
+                "has_document_structure": bool(
+                    re.search(r"\\documentclass|\\begin{document}", content)
                 ),
-                "has_yaml_frontmatter": markdown_content.startswith("---"),
-                "sections_preserved": len(re.findall(r"^#+ ", markdown_content, re.MULTILINE)),
-                "math_expressions": len(re.findall(r"\$.*?\$", markdown_content)),
-                "conversion_date": manifest.get("saved_at"),
+                "section_count": len(re.findall(r"\\(sub)*section\{", content)),
+                "math_environments": len(re.findall(r"\\begin{(equation|align|math)", content)),
+                "citation_count": len(re.findall(r"\\cite{", content)),
+                "figure_count": len(re.findall(r"\\begin{figure}", content)),
+                "table_count": len(re.findall(r"\\begin{table}", content)),
+                "is_main_content": len(content) >= 1000,
+                "saved_at": manifest.get("saved_at"),
+                "issues": [],
             }
 
-            # Check for common conversion issues
-            issues = []
-            if quality_metrics["compression_ratio"] < 0.1:
-                issues.append("Very low compression ratio - possible conversion loss")
-            if quality_metrics["sections_preserved"] == 0:
-                issues.append("No section headers found in markdown")
-            if "\\begin{" in markdown_content:
-                issues.append("Unconverted LaTeX environments detected")
-            if re.search(r"\\[a-zA-Z]+", markdown_content):
-                issues.append("Unconverted LaTeX commands detected")
+            # LaTeX quality issues detection
+            if not metrics["has_document_structure"]:
+                metrics["issues"].append("Missing document structure")
+            if metrics["content_length"] < 1000:
+                metrics["issues"].append("Content appears unusually short")
+            if metrics["section_count"] == 0:
+                metrics["issues"].append("No sections found")
 
-            quality_metrics["issues"] = issues
-            quality_metrics["quality_score"] = max(0, 1.0 - (len(issues) * 0.2))
+            # Calculate LaTeX quality score (0.0 - 1.0)
+            score = 0.0
+            if metrics["has_document_structure"]:
+                score += 0.3
+            if metrics["is_main_content"]:
+                score += 0.2
+            if metrics["section_count"] > 0:
+                score += 0.2
+            if metrics["math_environments"] > 0:
+                score += 0.1
+            if metrics["citation_count"] > 0:
+                score += 0.1
+            if len(metrics["issues"]) == 0:
+                score += 0.1
 
-            return quality_metrics
+            metrics["quality_score"] = min(score, 1.0)
+
+            return metrics
 
         except Exception as e:
-            return {"error": f"Quality validation failed: {str(e)}"}
+            return {"error": f"LaTeX validation failed: {str(e)}", "quality_score": 0.0}
+
+    def _validate_markdown_quality(self, markdown_dir: Path, arxiv_id: str) -> dict[str, Any]:
+        """Independent Markdown quality validation."""
+        try:
+            markdown_path = markdown_dir / f"{arxiv_id}.md"
+            if not markdown_path.exists():
+                return {"error": "Markdown file not found", "quality_score": 0.0}
+
+            with open(markdown_path, encoding="utf-8") as f:
+                content = f.read()
+
+            # Markdown-specific quality metrics
+            metrics = {
+                "content_length": len(content),
+                "has_yaml_frontmatter": content.startswith("---"),
+                "section_count": len(re.findall(r"^#+\s", content, re.MULTILINE)),
+                "math_expressions": len(re.findall(r"\$.*?\$", content)),
+                "code_blocks": len(re.findall(r"```", content)) // 2,
+                "links_count": len(re.findall(r"\[.*?\]\(.*?\)", content)),
+                "images_count": len(re.findall(r"!\[.*?\]\(.*?\)", content)),
+                "tables_count": len(re.findall(r"^\|.*\|", content, re.MULTILINE)),
+                "conversion_artifacts": 0,
+                "issues": [],
+            }
+
+            # Conversion quality analysis
+            artifacts = [
+                (r"\\begin{", "Unconverted LaTeX environments"),
+                (r"\\[a-zA-Z]+(?![a-zA-Z])", "Unconverted LaTeX commands"),
+                (r"&[a-zA-Z]+;", "HTML entities"),
+                (r"<[^>]+>", "Unconverted HTML tags"),
+            ]
+
+            for pattern, issue_desc in artifacts:
+                matches = re.findall(pattern, content)
+                if matches:
+                    metrics["conversion_artifacts"] += len(matches)
+                    metrics["issues"].append(f"{issue_desc}: {len(matches)} found")
+
+            # Markdown quality issues detection
+            if metrics["content_length"] < 500:
+                metrics["issues"].append("Content appears unusually short")
+            if metrics["section_count"] == 0:
+                metrics["issues"].append("No section headers found")
+            if metrics["conversion_artifacts"] > 10:
+                metrics["issues"].append("High number of conversion artifacts")
+
+            # Calculate Markdown quality score (0.0 - 1.0)
+            score = 0.0
+            if metrics["content_length"] >= 500:
+                score += 0.2
+            if metrics["section_count"] > 0:
+                score += 0.3
+            if metrics["has_yaml_frontmatter"]:
+                score += 0.1
+            if metrics["math_expressions"] > 0:
+                score += 0.1
+            if metrics["conversion_artifacts"] == 0:
+                score += 0.2
+            if len(metrics["issues"]) == 0:
+                score += 0.1
+
+            metrics["quality_score"] = min(score, 1.0)
+
+            return metrics
+
+        except Exception as e:
+            return {"error": f"Markdown validation failed: {str(e)}", "quality_score": 0.0}
+
+    def _get_current_timestamp(self) -> str:
+        """Get current timestamp for validation."""
+        from datetime import datetime
+
+        return datetime.now().isoformat()
 
 
 # Convenience function for direct use
@@ -349,7 +499,7 @@ async def download_and_convert_paper(
     output_dir: str = "./output",
     save_latex: bool = True,
     save_markdown: bool = True,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Convenience function to download and convert a single paper.
 
     Args:

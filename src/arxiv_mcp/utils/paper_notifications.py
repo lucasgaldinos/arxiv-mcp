@@ -6,15 +6,16 @@ This module provides monitoring and notification capabilities for research paper
 including update tracking, version monitoring, and alert systems.
 """
 
-import json
-import sqlite3
-from typing import List, Dict, Any, Optional, Callable
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from pathlib import Path
 from datetime import datetime, timedelta
-import uuid
-import hashlib
 from enum import Enum
+import hashlib
+import json
+from pathlib import Path
+import sqlite3
+from typing import Any
+import uuid
 
 from .logging import get_logger
 
@@ -39,12 +40,12 @@ class NotificationRule:
     id: str
     name: str
     notification_type: NotificationType
-    conditions: Dict[str, Any]
+    conditions: dict[str, Any]
     is_active: bool = True
     frequency: str = "immediate"  # immediate, daily, weekly
-    last_triggered: Optional[datetime] = None
+    last_triggered: datetime | None = None
     created_date: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -60,7 +61,7 @@ class Notification:
     priority: str = "normal"  # low, normal, high, urgent
     is_read: bool = False
     created_date: datetime = field(default_factory=datetime.now)
-    data: Dict[str, Any] = field(default_factory=dict)
+    data: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -69,7 +70,7 @@ class PaperMonitor:
 
     paper_id: str
     title: str
-    authors: List[str]
+    authors: list[str]
     version: str
     last_check: datetime
     content_hash: str
@@ -85,11 +86,11 @@ class NotificationStats:
 
     total_notifications: int
     unread_notifications: int
-    notifications_by_type: Dict[str, int]
-    notifications_by_priority: Dict[str, int]
+    notifications_by_type: dict[str, int]
+    notifications_by_priority: dict[str, int]
     active_rules: int
     monitored_papers: int
-    last_check: Optional[datetime]
+    last_check: datetime | None
 
 
 class PaperNotificationSystem:
@@ -110,7 +111,7 @@ class PaperNotificationSystem:
     PRIORITY_LEVELS = ["low", "normal", "high", "urgent"]
     FREQUENCY_OPTIONS = ["immediate", "daily", "weekly"]
 
-    def __init__(self, cache_dir: Optional[str] = None, db_path: Optional[str] = None):
+    def __init__(self, cache_dir: str | None = None, db_path: str | None = None):
         """Initialize the notification system.
 
         Args:
@@ -123,16 +124,14 @@ class PaperNotificationSystem:
             self.cache_dir = self.db_path.parent
         else:
             # Use cache_dir approach (legacy)
-            self.cache_dir = (
-                Path(cache_dir) if cache_dir else Path.cwd() / "notification_cache"
-            )
+            self.cache_dir = Path(cache_dir) if cache_dir else Path.cwd() / "notification_cache"
             self.db_path = self.cache_dir / "notifications.db"
 
         self.cache_dir.mkdir(exist_ok=True)
         self._init_database()
 
         # Notification handlers
-        self._handlers: Dict[NotificationType, List[Callable]] = {
+        self._handlers: dict[NotificationType, list[Callable]] = {
             notification_type: [] for notification_type in NotificationType
         }
 
@@ -213,7 +212,7 @@ class PaperNotificationSystem:
         self,
         name: str,
         notification_type: NotificationType,
-        conditions: Dict[str, Any],
+        conditions: dict[str, Any],
         frequency: str = "immediate",
     ) -> NotificationRule:
         """Create a new notification rule."""
@@ -252,9 +251,7 @@ class PaperNotificationSystem:
         logger.info(f"Created notification rule: {name} ({rule_id})")
         return rule
 
-    def get_notification_rules(
-        self, active_only: bool = True
-    ) -> List[NotificationRule]:
+    def get_notification_rules(self, active_only: bool = True) -> list[NotificationRule]:
         """Get all notification rules."""
         with sqlite3.connect(self.db_path) as conn:
             query = "SELECT * FROM notification_rules"
@@ -273,12 +270,8 @@ class PaperNotificationSystem:
                     conditions=json.loads(result[3]),
                     is_active=bool(result[4]),
                     frequency=result[5],
-                    last_triggered=datetime.fromisoformat(result[6])
-                    if result[6]
-                    else None,
-                    created_date=datetime.fromisoformat(result[7])
-                    if result[7]
-                    else datetime.now(),
+                    last_triggered=datetime.fromisoformat(result[6]) if result[6] else None,
+                    created_date=datetime.fromisoformat(result[7]) if result[7] else datetime.now(),
                     metadata=json.loads(result[8]) if result[8] else {},
                 )
                 rules.append(rule)
@@ -289,7 +282,7 @@ class PaperNotificationSystem:
         self,
         paper_id: str,
         title: str,
-        authors: List[str],
+        authors: list[str],
         version: str = "1",
         check_frequency: timedelta = None,
     ) -> PaperMonitor:
@@ -299,9 +292,7 @@ class PaperNotificationSystem:
 
         # Calculate initial hashes
         content_hash = hashlib.md5(f"{title}{authors}{version}".encode()).hexdigest()
-        metadata_hash = hashlib.md5(
-            f"{title}{json.dumps(authors)}".encode()
-        ).hexdigest()
+        metadata_hash = hashlib.md5(f"{title}{json.dumps(authors)}".encode()).hexdigest()
 
         monitor = PaperMonitor(
             paper_id=paper_id,
@@ -336,8 +327,8 @@ class PaperNotificationSystem:
         return monitor
 
     def check_paper_updates(
-        self, paper_id: str, current_data: Dict[str, Any]
-    ) -> List[Notification]:
+        self, paper_id: str, current_data: dict[str, Any]
+    ) -> list[Notification]:
         """Check for updates to a monitored paper."""
         notifications = []
 
@@ -360,9 +351,7 @@ class PaperNotificationSystem:
                 stored_content_hash,
                 stored_metadata_hash,
             ) = monitor_result
-            stored_authors = (
-                json.loads(stored_authors_json) if stored_authors_json else []
-            )
+            stored_authors = json.loads(stored_authors_json) if stored_authors_json else []
 
             # Check for version changes
             current_version = current_data.get("version", "1")
@@ -391,9 +380,7 @@ class PaperNotificationSystem:
             if current_metadata_hash != stored_metadata_hash:
                 changes = []
                 if current_title != stored_title:
-                    changes.append(
-                        f"Title changed: '{stored_title}' → '{current_title}'"
-                    )
+                    changes.append(f"Title changed: '{stored_title}' → '{current_title}'")
                 if current_authors != stored_authors:
                     changes.append("Authors updated")
 
@@ -448,7 +435,7 @@ class PaperNotificationSystem:
         notification_type: NotificationType,
         message: str,
         priority: str = "normal",
-        data: Dict[str, Any] = None,
+        data: dict[str, Any] = None,
         rule_id: str = None,
     ) -> Notification:
         """Create and store a notification."""
@@ -494,9 +481,7 @@ class PaperNotificationSystem:
 
         return notification
 
-    def create_keyword_alert(
-        self, keywords: List[str], name: str = None
-    ) -> NotificationRule:
+    def create_keyword_alert(self, keywords: list[str], name: str = None) -> NotificationRule:
         """Create a keyword-based alert rule."""
         name = name or f"Keyword Alert: {', '.join(keywords[:3])}"
 
@@ -514,9 +499,7 @@ class PaperNotificationSystem:
             frequency="daily",
         )
 
-    def create_author_alert(
-        self, authors: List[str], name: str = None
-    ) -> NotificationRule:
+    def create_author_alert(self, authors: list[str], name: str = None) -> NotificationRule:
         """Create an author-based alert rule."""
         name = name or f"Author Alert: {', '.join(authors[:2])}"
 
@@ -533,9 +516,7 @@ class PaperNotificationSystem:
             frequency="immediate",
         )
 
-    def create_category_alert(
-        self, categories: List[str], name: str = None
-    ) -> NotificationRule:
+    def create_category_alert(self, categories: list[str], name: str = None) -> NotificationRule:
         """Create a category-based alert rule."""
         name = name or f"Category Alert: {', '.join(categories)}"
 
@@ -552,7 +533,7 @@ class PaperNotificationSystem:
             frequency="daily",
         )
 
-    def check_keyword_matches(self, paper_data: Dict[str, Any]) -> List[Notification]:
+    def check_keyword_matches(self, paper_data: dict[str, Any]) -> list[Notification]:
         """Check if a paper matches any keyword alert rules."""
         notifications = []
         rules = [
@@ -570,7 +551,7 @@ class PaperNotificationSystem:
 
                 # Extract text to search
                 text_to_search = ""
-                for notification_field in fields:
+                for _notification_field in fields:
                     if field in paper_data:
                         text_to_search += f" {paper_data[field]}"
 
@@ -586,9 +567,12 @@ class PaperNotificationSystem:
 
                 # Determine if rule is triggered
                 triggered = False
-                if match_type == "any" and matches:
-                    triggered = True
-                elif match_type == "all" and len(matches) == len(keywords):
+                if (
+                    match_type == "any"
+                    and matches
+                    or match_type == "all"
+                    and len(matches) == len(keywords)
+                ):
                     triggered = True
 
                 if triggered:
@@ -626,12 +610,12 @@ class PaperNotificationSystem:
         now = datetime.now()
         time_since_last = now - rule.last_triggered
 
-        if rule.frequency == "daily" and time_since_last >= timedelta(days=1):
-            return True
-        elif rule.frequency == "weekly" and time_since_last >= timedelta(weeks=1):
-            return True
-
-        return False
+        return bool(
+            rule.frequency == "daily"
+            and time_since_last >= timedelta(days=1)
+            or rule.frequency == "weekly"
+            and time_since_last >= timedelta(weeks=1)
+        )
 
     def _update_rule_trigger_time(self, rule_id: str) -> None:
         """Update the last triggered time for a rule."""
@@ -643,9 +627,7 @@ class PaperNotificationSystem:
                 (datetime.now().isoformat(), rule_id),
             )
 
-    def get_notifications(
-        self, unread_only: bool = False, limit: int = 50
-    ) -> List[Notification]:
+    def get_notifications(self, unread_only: bool = False, limit: int = 50) -> list[Notification]:
         """Get notifications."""
         with sqlite3.connect(self.db_path) as conn:
             query = "SELECT * FROM notifications"
@@ -666,9 +648,7 @@ class PaperNotificationSystem:
                     notification_type=NotificationType(result[5]),
                     priority=result[6],
                     is_read=bool(result[7]),
-                    created_date=datetime.fromisoformat(result[8])
-                    if result[8]
-                    else datetime.now(),
+                    created_date=datetime.fromisoformat(result[8]) if result[8] else datetime.now(),
                     data=json.loads(result[9]) if result[9] else {},
                 )
                 notifications.append(notification)
@@ -689,15 +669,13 @@ class PaperNotificationSystem:
             logger.info(f"Marked notification {notification_id} as read")
             return True
         except Exception as e:
-            logger.error(f"Failed to mark notification as read: {e}")
+            logger.exception(f"Failed to mark notification as read: {e}")
             return False
 
     def mark_all_read(self) -> int:
         """Mark all notifications as read."""
         with sqlite3.connect(self.db_path) as conn:
-            cursor = conn.execute(
-                "UPDATE notifications SET is_read = 1 WHERE is_read = 0"
-            )
+            cursor = conn.execute("UPDATE notifications SET is_read = 1 WHERE is_read = 0")
             count = cursor.rowcount
 
         logger.info(f"Marked {count} notifications as read")
@@ -746,9 +724,7 @@ class PaperNotificationSystem:
             last_check_result = conn.execute(
                 "SELECT MAX(last_check) FROM paper_monitors"
             ).fetchone()[0]
-            last_check = (
-                datetime.fromisoformat(last_check_result) if last_check_result else None
-            )
+            last_check = datetime.fromisoformat(last_check_result) if last_check_result else None
 
             return NotificationStats(
                 total_notifications=total,
@@ -776,9 +752,7 @@ class PaperNotificationSystem:
             try:
                 handler(notification)
             except Exception as e:
-                logger.error(
-                    f"Handler error for {notification.notification_type.value}: {e}"
-                )
+                logger.exception(f"Handler error for {notification.notification_type.value}: {e}")
 
     async def run_monitoring_cycle(self) -> int:
         """Run a complete monitoring cycle for all active monitors."""
@@ -796,9 +770,7 @@ class PaperNotificationSystem:
             for monitor in monitors:
                 paper_id, title, check_frequency_seconds, last_check_str = monitor
                 last_check = (
-                    datetime.fromisoformat(last_check_str)
-                    if last_check_str
-                    else datetime.now()
+                    datetime.fromisoformat(last_check_str) if last_check_str else datetime.now()
                 )
                 check_frequency = timedelta(seconds=check_frequency_seconds)
 
@@ -816,9 +788,7 @@ class PaperNotificationSystem:
                     notifications = self.check_paper_updates(paper_id, current_data)
                     notifications_created += len(notifications)
 
-        logger.info(
-            f"Monitoring cycle completed: {notifications_created} notifications created"
-        )
+        logger.info(f"Monitoring cycle completed: {notifications_created} notifications created")
         return notifications_created
 
     def cleanup_old_notifications(self, days: int = 30) -> int:
@@ -841,7 +811,7 @@ class PaperNotificationSystem:
 
 # Convenience functions
 def create_notification_system(
-    cache_dir: Optional[str] = None,
+    cache_dir: str | None = None,
 ) -> PaperNotificationSystem:
     """Create a configured PaperNotificationSystem instance."""
     return PaperNotificationSystem(cache_dir=cache_dir)

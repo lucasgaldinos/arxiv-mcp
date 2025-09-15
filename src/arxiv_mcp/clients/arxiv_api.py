@@ -4,15 +4,16 @@ Implements the missing search functionality identified in TODO.md.
 """
 
 import asyncio
-import aiohttp
-import xml.etree.ElementTree as ET
-from typing import Dict, List, Any, Optional, Tuple
-from urllib.parse import urlencode, quote
 from datetime import datetime
+from typing import Any
+from urllib.parse import quote, urlencode
+import xml.etree.ElementTree as ET
 
+import aiohttp
+
+from ..exceptions import ArxivError
 from ..utils.logging import structured_logger
 from ..utils.retry import async_retry
-from ..exceptions import ArxivError
 
 
 class ArxivAPIClient:
@@ -46,13 +47,13 @@ class ArxivAPIClient:
         query: str,
         max_results: int = 10,
         start: int = 0,
-        categories: List[str] = None,
-        authors: List[str] = None,
+        categories: list[str] = None,
+        authors: list[str] = None,
         date_from: str = None,
         date_to: str = None,
         sort_by: str = "relevance",
         sort_order: str = "descending",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Search ArXiv papers using the API.
 
@@ -88,24 +89,23 @@ class ArxivAPIClient:
             url = f"{self.BASE_URL}?{urlencode(params)}"
             self.logger.info(f"Searching ArXiv API: {url}")
 
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url) as response:
-                    if response.status != 200:
-                        raise ArxivError(f"ArXiv API request failed: {response.status}")
+            async with aiohttp.ClientSession() as session, session.get(url) as response:
+                if response.status != 200:
+                    raise ArxivError(f"ArXiv API request failed: {response.status}")
 
-                    content = await response.text()
-                    return self._parse_response(content)
+                content = await response.text()
+                return self._parse_response(content)
 
         except Exception as e:
-            self.logger.error(f"ArXiv API search failed: {str(e)}")
+            self.logger.exception(f"ArXiv API search failed: {str(e)}")
             raise ArxivError(f"Search failed: {str(e)}")
 
     def _build_search_query(
         self,
         query: str,
-        categories: Optional[List[str]] = None,
-        authors: Optional[List[str]] = None,
-        date_range: Optional[Tuple[Optional[str], Optional[str]]] = None,
+        categories: list[str] | None = None,
+        authors: list[str] | None = None,
+        date_range: tuple[str | None, str | None] | None = None,
     ) -> str:
         """Build ArXiv API search query string."""
         query_parts = []
@@ -140,7 +140,7 @@ class ArxivAPIClient:
         self.logger.info(f"Built search query: {final_query}")
         return final_query
 
-    def _parse_response(self, xml_content: str) -> Dict[str, Any]:
+    def _parse_response(self, xml_content: str) -> dict[str, Any]:
         """Parse ArXiv API XML response."""
         try:
             root = ET.fromstring(xml_content)
@@ -169,10 +169,10 @@ class ArxivAPIClient:
             }
 
         except ET.ParseError as e:
-            self.logger.error(f"Failed to parse ArXiv API response: {str(e)}")
+            self.logger.exception(f"Failed to parse ArXiv API response: {str(e)}")
             raise ArxivError(f"Invalid XML response from ArXiv API: {str(e)}")
 
-    def _parse_paper_entry(self, entry) -> Dict[str, Any]:
+    def _parse_paper_entry(self, entry) -> dict[str, Any]:
         """Parse individual paper entry from XML."""
         paper = {}
 
@@ -235,7 +235,7 @@ class ArxivAPIClient:
 
         return paper
 
-    async def get_paper_metadata(self, arxiv_id: str) -> Dict[str, Any]:
+    async def get_paper_metadata(self, arxiv_id: str) -> dict[str, Any]:
         """Get metadata for a specific ArXiv paper."""
         result = await self.search(query="", max_results=1)
         # Build query for specific paper
@@ -243,29 +243,28 @@ class ArxivAPIClient:
 
         await self._rate_limit()
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as response:
-                if response.status != 200:
-                    raise ArxivError(f"Failed to fetch paper {arxiv_id}: {response.status}")
+        async with aiohttp.ClientSession() as session, session.get(url) as response:
+            if response.status != 200:
+                raise ArxivError(f"Failed to fetch paper {arxiv_id}: {response.status}")
 
-                content = await response.text()
-                result = self._parse_response(content)
+            content = await response.text()
+            result = self._parse_response(content)
 
-                if not result["papers"]:
-                    raise ArxivError(f"Paper {arxiv_id} not found")
+            if not result["papers"]:
+                raise ArxivError(f"Paper {arxiv_id} not found")
 
-                return result["papers"][0]
+            return result["papers"][0]
 
 
 # Helper functions for common search patterns
-async def search_by_title(title: str, max_results: int = 5) -> List[Dict[str, Any]]:
+async def search_by_title(title: str, max_results: int = 5) -> list[dict[str, Any]]:
     """Search papers by title."""
     client = ArxivAPIClient()
     result = await client.search(query=title, max_results=max_results)
     return result["papers"]
 
 
-async def search_by_author(author: str, max_results: int = 10) -> List[Dict[str, Any]]:
+async def search_by_author(author: str, max_results: int = 10) -> list[dict[str, Any]]:
     """Search papers by author."""
     client = ArxivAPIClient()
     result = await client.search(query="", authors=[author], max_results=max_results)
@@ -274,7 +273,7 @@ async def search_by_author(author: str, max_results: int = 10) -> List[Dict[str,
 
 async def search_recent_papers(
     category: str, days: int = 7, max_results: int = 20
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """Search recent papers in a category."""
     from datetime import datetime, timedelta
 

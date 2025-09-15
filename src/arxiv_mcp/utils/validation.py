@@ -3,8 +3,8 @@ Comprehensive input validation and sanitization.
 Extracted from the main __init__.py for better modularity.
 """
 
-import re
 from pathlib import Path
+import re
 
 
 class ArxivValidator:

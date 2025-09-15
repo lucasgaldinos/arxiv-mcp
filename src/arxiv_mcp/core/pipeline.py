@@ -4,15 +4,15 @@ Extracted from the main __init__.py for better modularity.
 """
 
 import asyncio
-from typing import Dict, Any, List
+from typing import Any
 
-from .config import PipelineConfig
 from ..clients import AsyncArxivDownloader
-from ..processors import LaTeXProcessor, PDFProcessor, DocumentProcessor
+from ..exceptions import ArxivError, ProcessingError
+from ..processors import DocumentProcessor, LaTeXProcessor, PDFProcessor
 from ..utils.logging import structured_logger
 from ..utils.metrics import MetricsCollector
 from ..utils.validation import ArxivValidator
-from ..exceptions import ArxivError, ProcessingError
+from .config import PipelineConfig
 
 
 class ArxivPipeline:
@@ -41,7 +41,7 @@ class ArxivPipeline:
         self.extraction_semaphore = asyncio.Semaphore(config.max_extractions)
         self.compilation_semaphore = asyncio.Semaphore(config.max_compilations)
 
-    async def process_paper(self, arxiv_id: str, include_pdf: bool = True) -> Dict[str, Any]:
+    async def process_paper(self, arxiv_id: str, include_pdf: bool = True) -> dict[str, Any]:
         """Process a single ArXiv paper through the complete pipeline."""
         self.logger.info(f"Starting pipeline processing for {arxiv_id}")
 
@@ -116,12 +116,12 @@ class ArxivPipeline:
 
         except Exception as e:
             self.metrics.increment_counter("pipeline_error", {"arxiv_id": arxiv_id})
-            self.logger.error(f"Pipeline processing failed for {arxiv_id}: {str(e)}")
+            self.logger.exception(f"Pipeline processing failed for {arxiv_id}: {str(e)}")
             return {"arxiv_id": arxiv_id, "success": False, "error": str(e)}
 
     async def process_multiple_papers(
-        self, arxiv_ids: List[str], include_pdf: bool = True
-    ) -> List[Dict[str, Any]]:
+        self, arxiv_ids: list[str], include_pdf: bool = True
+    ) -> list[dict[str, Any]]:
         """Process multiple ArXiv papers concurrently."""
         self.logger.info(f"Starting batch processing for {len(arxiv_ids)} papers")
 
@@ -144,7 +144,7 @@ class ArxivPipeline:
         self.logger.info(f"Batch processing completed for {len(arxiv_ids)} papers")
         return processed_results
 
-    def get_pipeline_status(self) -> Dict[str, Any]:
+    def get_pipeline_status(self) -> dict[str, Any]:
         """Get current pipeline status and metrics."""
         return {
             "config": {
@@ -161,7 +161,7 @@ class ArxivPipeline:
             "metrics": self.metrics.get_all_metrics(),
         }
 
-    async def process_document(self, content: bytes, filename: str = None) -> Dict[str, Any]:
+    async def process_document(self, content: bytes, filename: str = None) -> dict[str, Any]:
         """Process a document in various formats (ODT, RTF, DOCX, etc.)."""
         self.logger.info(f"Starting document processing for {filename or 'unnamed file'}")
 
@@ -192,7 +192,7 @@ class ArxivPipeline:
             }
 
         except Exception as e:
-            self.logger.error(f"Document processing failed: {str(e)}")
+            self.logger.exception(f"Document processing failed: {str(e)}")
             return {
                 "success": False,
                 "error": str(e),

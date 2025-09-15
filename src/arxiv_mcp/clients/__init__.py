@@ -3,13 +3,15 @@ Clients module for external service interactions.
 Extracted from the main __init__.py for better modularity.
 """
 
-from typing import Dict, Any
 import asyncio
-import aiohttp
 from io import BytesIO
+from typing import Any, Dict
+
+import aiohttp
+
+from ..exceptions import ArxivMCPError
 from ..utils.logging import structured_logger
 from ..utils.metrics import MetricsCollector
-from ..exceptions import ArxivMCPError
 
 
 class AsyncArxivDownloader:
@@ -48,34 +50,31 @@ class AsyncArxivDownloader:
             self.logger.info(f"Downloading ArXiv paper {arxiv_id} from {url}")
 
             try:
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(
-                        url, timeout=aiohttp.ClientTimeout(total=timeout)
-                    ) as response:
-                        if response.status == 200:
-                            content = await response.read()
-                            self.metrics.increment_counter(
-                                "downloads", {"arxiv_id": arxiv_id, "status": "success"}
-                            )
-                            self.logger.info(
-                                f"Successfully downloaded paper {arxiv_id}, size: {len(content)} bytes"
-                            )
-                            return BytesIO(content)
-                        else:
-                            self.metrics.increment_counter(
-                                "downloads", {"arxiv_id": arxiv_id, "status": "error"}
-                            )
-                            raise ArxivMCPError(
-                                f"Failed to download {arxiv_id}: HTTP {response.status}"
-                            )
+                async with (
+                    aiohttp.ClientSession() as session,
+                    session.get(url, timeout=aiohttp.ClientTimeout(total=timeout)) as response,
+                ):
+                    if response.status == 200:
+                        content = await response.read()
+                        self.metrics.increment_counter(
+                            "downloads", {"arxiv_id": arxiv_id, "status": "success"}
+                        )
+                        self.logger.info(
+                            f"Successfully downloaded paper {arxiv_id}, size: {len(content)} bytes"
+                        )
+                        return BytesIO(content)
+                    self.metrics.increment_counter(
+                        "downloads", {"arxiv_id": arxiv_id, "status": "error"}
+                    )
+                    raise ArxivMCPError(f"Failed to download {arxiv_id}: HTTP {response.status}")
             except Exception as e:
                 self.metrics.increment_counter(
                     "downloads", {"arxiv_id": arxiv_id, "status": "error"}
                 )
-                self.logger.error(f"Error downloading {arxiv_id}: {str(e)}")
+                self.logger.exception(f"Error downloading {arxiv_id}: {str(e)}")
                 raise ArxivMCPError(f"Download failed for {arxiv_id}: {str(e)}")
 
-    async def get_metadata(self, arxiv_id: str) -> Dict[str, Any]:
+    async def get_metadata(self, arxiv_id: str) -> dict[str, Any]:
         """Get metadata for an ArXiv paper."""
         # Placeholder for metadata retrieval
         # In a real implementation, this would query the ArXiv API

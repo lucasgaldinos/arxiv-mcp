@@ -3,12 +3,13 @@ Enhanced configuration management with YAML, JSON, and environment variable supp
 Addresses the critic's recommendation for moving beyond hardcoded configuration.
 """
 
-import os
-import yaml
+from dataclasses import asdict, dataclass
 import json
-from typing import Dict, Any, Optional, Union
+import os
 from pathlib import Path
-from dataclasses import dataclass, asdict
+from typing import Any
+
+import yaml
 
 from ..exceptions import ArxivMCPError
 
@@ -48,12 +49,12 @@ class PipelineConfig:
     # Logging configuration
     log_level: str = "INFO"
     log_format: str = "json"
-    log_file: Optional[str] = None
+    log_file: str | None = None
 
     # External service configuration
-    openai_api_key: Optional[str] = None
-    anthropic_api_key: Optional[str] = None
-    firecrawl_api_key: Optional[str] = None
+    openai_api_key: str | None = None
+    anthropic_api_key: str | None = None
+    firecrawl_api_key: str | None = None
 
     def __post_init__(self):
         """Validate configuration after initialization."""
@@ -80,7 +81,7 @@ class PipelineConfig:
             raise ArxivMCPError(f"Invalid log_format: {self.log_format}")
 
     @classmethod
-    def from_dict(cls, config_dict: Dict[str, Any]) -> "PipelineConfig":
+    def from_dict(cls, config_dict: dict[str, Any]) -> "PipelineConfig":
         """Create a PipelineConfig instance from a dictionary with validation."""
         # Filter only known fields to avoid TypeError
         known_fields = {field.name for field in cls.__dataclass_fields__.values()}
@@ -88,11 +89,11 @@ class PipelineConfig:
 
         return cls(**filtered_dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert configuration to dictionary."""
         return asdict(self)
 
-    def merge_with(self, other_config: Dict[str, Any]) -> "PipelineConfig":
+    def merge_with(self, other_config: dict[str, Any]) -> "PipelineConfig":
         """Create a new config by merging with another config dictionary."""
         current_dict = self.to_dict()
         current_dict.update(other_config)
@@ -123,7 +124,7 @@ class ConfigurationManager:
     ENV_PREFIX = "ARXIV_MCP_"
 
     @classmethod
-    def load_config(cls, config_path: Optional[Union[str, Path]] = None) -> PipelineConfig:
+    def load_config(cls, config_path: str | Path | None = None) -> PipelineConfig:
         """
         Load configuration from multiple sources with priority order:
         1. Explicit config file path
@@ -146,7 +147,7 @@ class ConfigurationManager:
         return PipelineConfig.from_dict(config_dict)
 
     @classmethod
-    def _get_default_config(cls) -> Dict[str, Any]:
+    def _get_default_config(cls) -> dict[str, Any]:
         """Get default configuration values."""
         return {
             "max_downloads": 5,
@@ -174,9 +175,7 @@ class ConfigurationManager:
         }
 
     @classmethod
-    def _load_from_file(
-        cls, config_path: Optional[Union[str, Path]] = None
-    ) -> Optional[Dict[str, Any]]:
+    def _load_from_file(cls, config_path: str | Path | None = None) -> dict[str, Any] | None:
         """Load configuration from YAML or JSON file."""
         if config_path:
             # Use explicit path
@@ -197,9 +196,9 @@ class ConfigurationManager:
         return None
 
     @classmethod
-    def _parse_config_file(cls, path: Path) -> Dict[str, Any]:
+    def _parse_config_file(cls, path: Path) -> dict[str, Any]:
         """Parse YAML or JSON configuration file."""
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             content = f.read()
 
         # Determine file format from extension
@@ -219,7 +218,7 @@ class ConfigurationManager:
             raise ArxivMCPError(f"Unsupported config file format: {path.suffix}")
 
     @classmethod
-    def _load_from_environment(cls) -> Dict[str, Any]:
+    def _load_from_environment(cls) -> dict[str, Any]:
         """Load configuration from environment variables."""
         config = {}
 
@@ -268,13 +267,12 @@ class ConfigurationManager:
         lower_value = value.lower().strip()
         if lower_value in ("true", "1", "yes", "on", "enable", "enabled"):
             return True
-        elif lower_value in ("false", "0", "no", "off", "disable", "disabled"):
+        if lower_value in ("false", "0", "no", "off", "disable", "disabled"):
             return False
-        else:
-            raise ValueError(f"Cannot parse '{value}' as boolean")
+        raise ValueError(f"Cannot parse '{value}' as boolean")
 
     @classmethod
-    def save_config(cls, config: PipelineConfig, path: Union[str, Path]) -> None:
+    def save_config(cls, config: PipelineConfig, path: str | Path) -> None:
         """Save configuration to file."""
         path = Path(path)
         config_dict = config.to_dict()
@@ -295,12 +293,12 @@ class ConfigurationManager:
 
 
 # Backward compatibility functions
-def load_config(config_path: Optional[Union[str, Path]] = None) -> Dict[str, Any]:
+def load_config(config_path: str | Path | None = None) -> dict[str, Any]:
     """Legacy function for backward compatibility."""
     config = ConfigurationManager.load_config(config_path)
     return config.to_dict()
 
 
-def get_pipeline_config(config_path: Optional[Union[str, Path]] = None) -> PipelineConfig:
+def get_pipeline_config(config_path: str | Path | None = None) -> PipelineConfig:
     """Get typed pipeline configuration."""
     return ConfigurationManager.load_config(config_path)

@@ -6,14 +6,14 @@ This module provides trending analysis and popularity tracking capabilities
 for research papers, including download metrics, citation trends, and topic analysis.
 """
 
-import json
-import sqlite3
-from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass, field
-from pathlib import Path
 from datetime import datetime, timedelta
+import json
 import math
+from pathlib import Path
+import sqlite3
 import statistics
+from typing import Any
 
 from .logging import get_logger
 
@@ -26,8 +26,8 @@ class TrendingPaper:
 
     arxiv_id: str
     title: str
-    authors: List[str]
-    categories: List[str]
+    authors: list[str]
+    categories: list[str]
     submitted_date: datetime
     trend_score: float
     download_count: int = 0
@@ -36,7 +36,7 @@ class TrendingPaper:
     social_mentions: int = 0
     velocity: float = 0.0  # Rate of change
     rank_change: int = 0  # Position change from previous period
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -49,7 +49,7 @@ class TrendingCategory:
     average_citations: float
     trend_score: float
     growth_rate: float
-    top_papers: List[str] = field(default_factory=list)
+    top_papers: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -60,8 +60,8 @@ class TrendingKeyword:
     frequency: int
     papers_count: int
     trend_score: float
-    related_terms: List[str] = field(default_factory=list)
-    categories: List[str] = field(default_factory=list)
+    related_terms: list[str] = field(default_factory=list)
+    categories: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -70,10 +70,10 @@ class TrendingStats:
 
     total_papers_analyzed: int
     trending_threshold: float
-    top_categories: List[TrendingCategory]
-    top_keywords: List[TrendingKeyword]
-    viral_papers: List[TrendingPaper]  # Papers with exceptional growth
-    emerging_topics: List[str]
+    top_categories: list[TrendingCategory]
+    top_keywords: list[TrendingKeyword]
+    viral_papers: list[TrendingPaper]  # Papers with exceptional growth
+    emerging_topics: list[str]
     analysis_date: datetime = field(default_factory=datetime.now)
 
 
@@ -101,7 +101,7 @@ class TrendingAnalyzer:
         "recency": 0.1,
     }
 
-    def __init__(self, cache_dir: Optional[str] = None, db_path: Optional[str] = None):
+    def __init__(self, cache_dir: str | None = None, db_path: str | None = None):
         """Initialize the trending analyzer.
 
         Args:
@@ -114,9 +114,7 @@ class TrendingAnalyzer:
             self.cache_dir = self.db_path.parent
         else:
             # Use cache_dir approach (legacy)
-            self.cache_dir = (
-                Path(cache_dir) if cache_dir else Path.cwd() / "trending_cache"
-            )
+            self.cache_dir = Path(cache_dir) if cache_dir else Path.cwd() / "trending_cache"
             self.db_path = self.cache_dir / "trending.db"
 
         self.cache_dir.mkdir(exist_ok=True)
@@ -190,21 +188,15 @@ class TrendingAnalyzer:
             )
 
             # Create indexes
-            conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_metrics_date ON paper_metrics(date)"
-            )
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_metrics_date ON paper_metrics(date)")
             conn.execute(
                 "CREATE INDEX IF NOT EXISTS idx_metrics_score ON paper_metrics(trend_score)"
             )
-            conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_category_date ON category_trends(date)"
-            )
-            conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_keyword_date ON keyword_trends(date)"
-            )
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_category_date ON category_trends(date)")
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_keyword_date ON keyword_trends(date)")
 
     def record_paper_metrics(
-        self, arxiv_id: str, metrics: Dict[str, int], date: datetime = None
+        self, arxiv_id: str, metrics: dict[str, int], date: datetime = None
     ) -> None:
         """Record metrics for a paper."""
         if date is None:
@@ -239,7 +231,7 @@ class TrendingAnalyzer:
 
         logger.debug(f"Recorded metrics for {arxiv_id}: score {trend_score:.2f}")
 
-    def _calculate_trend_score(self, metrics: Dict[str, int], date: datetime) -> float:
+    def _calculate_trend_score(self, metrics: dict[str, int], date: datetime) -> float:
         """Calculate trending score for a paper."""
         # Normalize metrics (using log scale for large numbers)
         downloads = math.log1p(metrics.get("downloads", 0))
@@ -266,7 +258,7 @@ class TrendingAnalyzer:
 
     def get_trending_papers(
         self, limit: int = 20, days: int = 7, category: str = None
-    ) -> List[TrendingPaper]:
+    ) -> list[TrendingPaper]:
         """Get currently trending papers."""
         end_date = datetime.now().date()
         start_date = end_date - timedelta(days=days)
@@ -303,7 +295,7 @@ class TrendingAnalyzer:
             results = conn.execute(query, params).fetchall()
 
             trending_papers = []
-            for i, result in enumerate(results):
+            for _i, result in enumerate(results):
                 arxiv_id = result[0]
                 avg_score = result[1]
 
@@ -394,7 +386,7 @@ class TrendingAnalyzer:
 
             return previous_rank - current_rank
 
-    def analyze_category_trends(self, days: int = 30) -> List[TrendingCategory]:
+    def analyze_category_trends(self, days: int = 30) -> list[TrendingCategory]:
         """Analyze trending categories."""
         # Mock category analysis (would need actual category data)
         categories = ["cs.AI", "cs.LG", "physics.comp-ph", "math.OC", "stat.ML"]
@@ -433,9 +425,7 @@ class TrendingAnalyzer:
         )
         return round(base_score * category_multiplier, 3)
 
-    def analyze_keyword_trends(
-        self, limit: int = 20, days: int = 14
-    ) -> List[TrendingKeyword]:
+    def analyze_keyword_trends(self, limit: int = 20, days: int = 14) -> list[TrendingKeyword]:
         """Analyze trending keywords and topics."""
         end_date = datetime.now().date()
         start_date = end_date - timedelta(days=days)
@@ -485,8 +475,8 @@ class TrendingAnalyzer:
         self,
         keyword: str,
         frequency: int,
-        related_terms: List[str] = None,
-        categories: List[str] = None,
+        related_terms: list[str] = None,
+        categories: list[str] = None,
         date: datetime = None,
     ) -> None:
         """Record keyword trend data."""
@@ -539,7 +529,7 @@ class TrendingAnalyzer:
 
     def identify_viral_papers(
         self, threshold_multiplier: float = 3.0, days: int = 7
-    ) -> List[TrendingPaper]:
+    ) -> list[TrendingPaper]:
         """Identify papers with exceptional growth (viral papers)."""
         trending_papers = self.get_trending_papers(limit=100, days=days)
 
@@ -560,14 +550,10 @@ class TrendingAnalyzer:
         # Sort by trend score and velocity
         viral_papers.sort(key=lambda x: (x.trend_score, x.velocity), reverse=True)
 
-        logger.info(
-            f"Identified {len(viral_papers)} viral papers (threshold: {threshold:.2f})"
-        )
+        logger.info(f"Identified {len(viral_papers)} viral papers (threshold: {threshold:.2f})")
         return viral_papers
 
-    def detect_emerging_topics(
-        self, days: int = 30, growth_threshold: float = 2.0
-    ) -> List[str]:
+    def detect_emerging_topics(self, days: int = 30, growth_threshold: float = 2.0) -> list[str]:
         """Detect emerging topics based on keyword growth."""
         current_keywords = self.analyze_keyword_trends(limit=50, days=days // 2)
         past_keywords = self.analyze_keyword_trends(limit=50, days=days)
@@ -606,9 +592,7 @@ class TrendingAnalyzer:
 
         # Calculate trending threshold
         if trending_papers:
-            trending_threshold = statistics.median(
-                paper.trend_score for paper in trending_papers
-            )
+            trending_threshold = statistics.median(paper.trend_score for paper in trending_papers)
         else:
             trending_threshold = 0.0
 
@@ -634,7 +618,7 @@ class TrendingAnalyzer:
         )
 
     def save_trending_snapshot(
-        self, snapshot_type: str, data: Dict[str, Any], date: datetime = None
+        self, snapshot_type: str, data: dict[str, Any], date: datetime = None
     ) -> None:
         """Save a snapshot of trending data."""
         if date is None:
@@ -654,9 +638,7 @@ class TrendingAnalyzer:
                 ),
             )
 
-    def get_historical_trends(
-        self, arxiv_id: str, days: int = 30
-    ) -> List[Tuple[datetime, float]]:
+    def get_historical_trends(self, arxiv_id: str, days: int = 30) -> list[tuple[datetime, float]]:
         """Get historical trend data for a paper."""
         end_date = datetime.now().date()
         start_date = end_date - timedelta(days=days)
@@ -673,9 +655,7 @@ class TrendingAnalyzer:
 
             return [(datetime.fromisoformat(row[0]).date(), row[1]) for row in results]
 
-    def compare_papers(
-        self, arxiv_ids: List[str], days: int = 30
-    ) -> Dict[str, Dict[str, float]]:
+    def compare_papers(self, arxiv_ids: list[str], days: int = 30) -> dict[str, dict[str, float]]:
         """Compare trending metrics between papers."""
         comparison = {}
 
@@ -704,9 +684,7 @@ class TrendingAnalyzer:
 
         return comparison
 
-    def export_trending_data(
-        self, output_path: str, format: str = "json", days: int = 30
-    ) -> bool:
+    def export_trending_data(self, output_path: str, format: str = "json", days: int = 30) -> bool:
         """Export trending analysis data."""
         try:
             report = self.generate_trending_report(days=days)
@@ -757,9 +735,7 @@ class TrendingAnalyzer:
                 # Export papers data as CSV
                 with open(output_file, "w", newline="") as f:
                     writer = csv.writer(f)
-                    writer.writerow(
-                        ["Type", "Name", "Score", "Frequency", "Additional"]
-                    )
+                    writer.writerow(["Type", "Name", "Score", "Frequency", "Additional"])
 
                     # Add categories
                     for cat in report.top_categories:
@@ -775,9 +751,7 @@ class TrendingAnalyzer:
 
                     # Add keywords
                     for kw in report.top_keywords:
-                        writer.writerow(
-                            ["Keyword", kw.keyword, kw.trend_score, kw.frequency, ""]
-                        )
+                        writer.writerow(["Keyword", kw.keyword, kw.trend_score, kw.frequency, ""])
             else:
                 raise ValueError(f"Unsupported format: {format}")
 
@@ -785,12 +759,12 @@ class TrendingAnalyzer:
             return True
 
         except Exception as e:
-            logger.error(f"Failed to export trending data: {e}")
+            logger.exception(f"Failed to export trending data: {e}")
             return False
 
 
 # Convenience functions
-def create_trending_analyzer(cache_dir: Optional[str] = None) -> TrendingAnalyzer:
+def create_trending_analyzer(cache_dir: str | None = None) -> TrendingAnalyzer:
     """Create a configured TrendingAnalyzer instance."""
     return TrendingAnalyzer(cache_dir=cache_dir)
 

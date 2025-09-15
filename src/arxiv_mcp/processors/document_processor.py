@@ -3,18 +3,18 @@ Enhanced document processor supporting multiple formats beyond PDF/LaTeX.
 This extends the existing processing pipeline to support OpenDocument (.odt) and RTF formats.
 """
 
-from typing import Dict, Any, Optional, List, Union
-import re
-from pathlib import Path
-from io import BytesIO
-import zipfile
 from dataclasses import dataclass
 from enum import Enum
+from io import BytesIO
+from pathlib import Path
+import re
+from typing import Any
+import zipfile
 
+from ..exceptions import ProcessingError
 from ..utils.logging import structured_logger
 from ..utils.metrics import MetricsCollector
 from ..utils.validation import ArxivValidator
-from ..exceptions import ProcessingError
 
 
 class DocumentFormat(Enum):
@@ -33,15 +33,15 @@ class DocumentMetadata:
     """Metadata extracted from documents."""
 
     format: DocumentFormat
-    title: Optional[str] = None
-    author: Optional[str] = None
-    subject: Optional[str] = None
-    creator: Optional[str] = None
-    pages: Optional[int] = None
-    word_count: Optional[int] = None
-    language: Optional[str] = None
-    created_date: Optional[str] = None
-    modified_date: Optional[str] = None
+    title: str | None = None
+    author: str | None = None
+    subject: str | None = None
+    creator: str | None = None
+    pages: int | None = None
+    word_count: int | None = None
+    language: str | None = None
+    created_date: str | None = None
+    modified_date: str | None = None
 
 
 @dataclass
@@ -52,8 +52,8 @@ class ProcessingResult:
     extracted_text: str
     metadata: DocumentMetadata
     format: DocumentFormat
-    error: Optional[str] = None
-    warnings: List[str] = None
+    error: str | None = None
+    warnings: list[str] = None
 
 
 class DocumentProcessor:
@@ -64,9 +64,7 @@ class DocumentProcessor:
         self.metrics = MetricsCollector()
         self.validator = ArxivValidator()
 
-    def detect_format(
-        self, content: Union[bytes, str], filename: Optional[str] = None
-    ) -> DocumentFormat:
+    def detect_format(self, content: bytes | str, filename: str | None = None) -> DocumentFormat:
         """Detect document format from content or filename."""
 
         # Try filename extension first
@@ -90,13 +88,13 @@ class DocumentProcessor:
         # Check magic bytes
         if content.startswith(b"%PDF-"):
             return DocumentFormat.PDF
-        elif content.startswith(b"PK\x03\x04"):
+        if content.startswith(b"PK\x03\x04"):
             # ZIP-based formats (ODT, DOCX)
             try:
                 with zipfile.ZipFile(BytesIO(content), "r") as zf:
                     if "META-INF/manifest.xml" in zf.namelist():
                         return DocumentFormat.ODT
-                    elif "[Content_Types].xml" in zf.namelist():
+                    if "[Content_Types].xml" in zf.namelist():
                         return DocumentFormat.DOCX
             except zipfile.BadZipFile:
                 pass
@@ -108,9 +106,7 @@ class DocumentProcessor:
         # Default to plain text
         return DocumentFormat.TXT
 
-    def process_document(
-        self, content: bytes, filename: Optional[str] = None
-    ) -> ProcessingResult:
+    def process_document(self, content: bytes, filename: str | None = None) -> ProcessingResult:
         """Process document and extract text and metadata."""
 
         format_type = self.detect_format(content, filename)
@@ -118,25 +114,22 @@ class DocumentProcessor:
         try:
             if format_type == DocumentFormat.ODT:
                 return self._process_odt(content)
-            elif format_type == DocumentFormat.RTF:
+            if format_type == DocumentFormat.RTF:
                 return self._process_rtf(content)
-            elif format_type == DocumentFormat.DOCX:
+            if format_type == DocumentFormat.DOCX:
                 return self._process_docx(content)
-            elif format_type == DocumentFormat.TXT:
+            if format_type == DocumentFormat.TXT:
                 return self._process_txt(content)
-            else:
-                return ProcessingResult(
-                    success=False,
-                    extracted_text="",
-                    metadata=DocumentMetadata(format=format_type),
-                    format=format_type,
-                    error=f"Format {format_type.value} not implemented in DocumentProcessor",
-                )
+            return ProcessingResult(
+                success=False,
+                extracted_text="",
+                metadata=DocumentMetadata(format=format_type),
+                format=format_type,
+                error=f"Format {format_type.value} not implemented in DocumentProcessor",
+            )
 
         except Exception as e:
-            self.logger.error(
-                f"Document processing failed for {format_type.value}: {str(e)}"
-            )
+            self.logger.exception(f"Document processing failed for {format_type.value}: {str(e)}")
             return ProcessingResult(
                 success=False,
                 extracted_text="",
@@ -207,8 +200,9 @@ class DocumentProcessor:
         try:
             # Try python-docx first, fallback to manual parsing
             try:
-                from docx import Document
                 from io import BytesIO
+
+                from docx import Document
 
                 doc = Document(BytesIO(content))
 
@@ -227,14 +221,10 @@ class DocumentProcessor:
                     author=doc.core_properties.author,
                     subject=doc.core_properties.subject,
                     created_date=(
-                        str(doc.core_properties.created)
-                        if doc.core_properties.created
-                        else None
+                        str(doc.core_properties.created) if doc.core_properties.created else None
                     ),
                     modified_date=(
-                        str(doc.core_properties.modified)
-                        if doc.core_properties.modified
-                        else None
+                        str(doc.core_properties.modified) if doc.core_properties.modified else None
                     ),
                 )
 
@@ -267,9 +257,7 @@ class DocumentProcessor:
                 text = content.decode("utf-8", errors="ignore")
 
             # Basic metadata
-            metadata = DocumentMetadata(
-                format=DocumentFormat.TXT, word_count=len(text.split())
-            )
+            metadata = DocumentMetadata(format=DocumentFormat.TXT, word_count=len(text.split()))
 
             return ProcessingResult(
                 success=True,
@@ -288,9 +276,7 @@ class DocumentProcessor:
         text = re.sub(r"<[^>]+>", " ", xml_content)
 
         # Clean up whitespace
-        text = re.sub(r"\s+", " ", text).strip()
-
-        return text
+        return re.sub(r"\s+", " ", text).strip()
 
     def _extract_odt_metadata(self, meta_xml: str) -> DocumentMetadata:
         """Extract metadata from ODT meta.xml."""
@@ -322,9 +308,7 @@ class DocumentProcessor:
         text = re.sub(r"[{}]", " ", text)
 
         # Clean up whitespace
-        text = re.sub(r"\s+", " ", text).strip()
-
-        return text
+        return re.sub(r"\s+", " ", text).strip()
 
     def _extract_rtf_metadata(self, rtf_content: str) -> DocumentMetadata:
         """Extract metadata from RTF content."""
@@ -350,9 +334,7 @@ class DocumentProcessor:
             with zipfile.ZipFile(BytesIO(content), "r") as zf:
                 # Extract document.xml which contains the text
                 if "word/document.xml" not in zf.namelist():
-                    raise ProcessingError(
-                        "Invalid DOCX file: word/document.xml not found"
-                    )
+                    raise ProcessingError("Invalid DOCX file: word/document.xml not found")
 
                 document_xml = zf.read("word/document.xml").decode("utf-8")
 
@@ -368,19 +350,17 @@ class DocumentProcessor:
                     extracted_text=text,
                     metadata=metadata,
                     format=DocumentFormat.DOCX,
-                    warnings=[
-                        "Used manual parsing: install python-docx for better support"
-                    ],
+                    warnings=["Used manual parsing: install python-docx for better support"],
                 )
 
         except zipfile.BadZipFile:
             raise ProcessingError("Invalid DOCX file: not a valid ZIP archive")
 
-    def get_supported_formats(self) -> List[DocumentFormat]:
+    def get_supported_formats(self) -> list[DocumentFormat]:
         """Get list of supported document formats."""
         return list(DocumentFormat)
 
-    def get_format_info(self, format_type: DocumentFormat) -> Dict[str, Any]:
+    def get_format_info(self, format_type: DocumentFormat) -> dict[str, Any]:
         """Get information about a specific format."""
 
         format_info = {

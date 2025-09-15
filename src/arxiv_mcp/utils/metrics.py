@@ -3,21 +3,21 @@ Comprehensive metrics collection for observability.
 Extracted from the main __init__.py for better modularity.
 """
 
-import time
 from collections import defaultdict
-from typing import Dict, Any, Optional, Union, List
+import time
+from typing import Any
 
 
 class MetricsCollector:
     """Comprehensive metrics collection for observability"""
 
     def __init__(self):
-        self.counters: Dict[str, int] = defaultdict(int)
-        self.timers: Dict[str, List[float]] = defaultdict(list)
-        self.gauges: Dict[str, float] = defaultdict(float)
-        self.start_times: Dict[str, float] = {}
+        self.counters: dict[str, int] = defaultdict(int)
+        self.timers: dict[str, list[float]] = defaultdict(list)
+        self.gauges: dict[str, float] = defaultdict(float)
+        self.start_times: dict[str, float] = {}
 
-    def start_timer(self, operation: str, identifier: Optional[str] = None) -> str:
+    def start_timer(self, operation: str, identifier: str | None = None) -> str:
         """Start timing an operation"""
         key = f"{operation}:{identifier}" if identifier else operation
         self.start_times[key] = time.time()
@@ -36,8 +36,8 @@ class MetricsCollector:
     def increment_counter(
         self,
         name: str,
-        value: Union[int, Dict[str, Any]] = 1,
-        tags: Optional[Dict[str, Any]] = None,
+        value: int | dict[str, Any] = 1,
+        tags: dict[str, Any] | None = None,
     ):
         """
         Increment a counter metric.
@@ -89,22 +89,22 @@ class MetricsCollector:
 
 class PerformanceMetrics:
     """Performance metrics aggregation and analysis"""
-    
+
     def __init__(self):
         self.collector = MetricsCollector()
-        
-    def get_performance_summary(self, time_range: str = "24h") -> Dict[str, Any]:
+
+    def get_performance_summary(self, time_range: str = "24h") -> dict[str, Any]:
         """
         Get performance summary for the specified time range.
-        
+
         Args:
             time_range: Time range for metrics (e.g., "1h", "24h", "7d")
-            
+
         Returns:
             Dictionary containing performance metrics
         """
         metrics = self.collector.get_metrics()
-        
+
         # Calculate summary statistics
         summary = {
             "time_range": time_range,
@@ -113,7 +113,7 @@ class PerformanceMetrics:
             "counters": metrics["counters"],
             "gauges": metrics["gauges"],
         }
-        
+
         # Process timer statistics
         for timer_name, durations in metrics["timers"].items():
             if durations:
@@ -124,30 +124,34 @@ class PerformanceMetrics:
                     "max_duration": max(durations),
                     "total_duration": sum(durations),
                 }
-        
+
         # Add performance insights
         summary["insights"] = self._generate_insights(summary)
-        
+
         return summary
-        
-    def _generate_insights(self, summary: Dict[str, Any]) -> List[str]:
+
+    def _generate_insights(self, summary: dict[str, Any]) -> list[str]:
         """Generate performance insights from metrics"""
         insights = []
-        
+
         # Check for slow operations
         for timer_name, stats in summary["timer_stats"].items():
             if stats["avg_duration"] > 30:  # Slow if > 30 seconds average
-                insights.append(f"Operation '{timer_name}' is running slowly (avg: {stats['avg_duration']:.2f}s)")
-                
+                insights.append(
+                    f"Operation '{timer_name}' is running slowly (avg: {stats['avg_duration']:.2f}s)"
+                )
+
         # Check for high error rates
         for counter_name, count in summary["counters"].items():
             if "failure" in counter_name and count > 0:
-                total_ops = summary["counters"].get(counter_name.replace("failure", "success"), 0) + count
+                total_ops = (
+                    summary["counters"].get(counter_name.replace("failure", "success"), 0) + count
+                )
                 error_rate = (count / total_ops) * 100 if total_ops > 0 else 0
                 if error_rate > 10:  # Error rate > 10%
                     insights.append(f"High error rate for '{counter_name}': {error_rate:.1f}%")
-        
+
         if not insights:
             insights.append("Performance looks good - no issues detected")
-            
+
         return insights

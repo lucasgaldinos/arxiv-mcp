@@ -3,13 +3,13 @@ Search analytics for tracking query patterns, popular searches, and usage statis
 Extends the existing metrics system with specialized search tracking.
 """
 
-import json
-import sqlite3
-from datetime import datetime, timedelta
-from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from collections import defaultdict, Counter
+from collections import Counter, defaultdict
 from dataclasses import dataclass
+from datetime import datetime, timedelta
+import json
+from pathlib import Path
+import sqlite3
+from typing import Any
 
 from .logging import structured_logger
 from .metrics import MetricsCollector
@@ -21,19 +21,19 @@ class SearchQuery:
 
     query: str
     timestamp: datetime
-    categories: Optional[List[str]] = None
-    authors: Optional[List[str]] = None
-    date_range: Optional[Tuple[Optional[str], Optional[str]]] = None
+    categories: list[str] | None = None
+    authors: list[str] | None = None
+    date_range: tuple[str | None, str | None] | None = None
     results_count: int = 0
     response_time: float = 0.0
-    user_id: Optional[str] = None
+    user_id: str | None = None
     success: bool = True
 
 
 class SearchAnalytics:
     """Analytics engine for tracking and analyzing search patterns."""
 
-    def __init__(self, db_path: Optional[Path] = None):
+    def __init__(self, db_path: Path | None = None):
         """Initialize search analytics with optional database path."""
         self.logger = structured_logger(__name__)
         self.metrics = MetricsCollector()
@@ -98,7 +98,7 @@ class SearchAnalytics:
             self.logger.info(f"Search analytics database initialized at {self.db_path}")
 
         except Exception as e:
-            self.logger.error(f"Failed to initialize analytics database: {e}")
+            self.logger.exception(f"Failed to initialize analytics database: {e}")
             raise
 
     def track_search(self, search_query: SearchQuery):
@@ -147,7 +147,7 @@ class SearchAnalytics:
             self.logger.debug(f"Tracked search query: {search_query.query[:50]}...")
 
         except Exception as e:
-            self.logger.error(f"Failed to track search query: {e}")
+            self.logger.exception(f"Failed to track search query: {e}")
 
     def _update_popular_terms(self, query: str):
         """Extract and update popular search terms."""
@@ -171,7 +171,7 @@ class SearchAnalytics:
             except Exception as e:
                 self.logger.warning(f"Failed to update popular term {term}: {e}")
 
-    def get_query_patterns(self, days: int = 30) -> Dict[str, Any]:
+    def get_query_patterns(self, days: int = 30) -> dict[str, Any]:
         """Get query pattern analysis for the specified number of days."""
         try:
             cutoff_date = datetime.now() - timedelta(days=days)
@@ -235,10 +235,10 @@ class SearchAnalytics:
             }
 
         except Exception as e:
-            self.logger.error(f"Failed to get query patterns: {e}")
+            self.logger.exception(f"Failed to get query patterns: {e}")
             return {}
 
-    def get_popular_searches(self, limit: int = 50) -> List[Dict[str, Any]]:
+    def get_popular_searches(self, limit: int = 50) -> list[dict[str, Any]]:
         """Get most popular search terms."""
         try:
             with sqlite3.connect(self.db_path) as conn:
@@ -255,10 +255,10 @@ class SearchAnalytics:
                 return [{"term": row[0], "count": row[1], "last_seen": row[2]} for row in results]
 
         except Exception as e:
-            self.logger.error(f"Failed to get popular searches: {e}")
+            self.logger.exception(f"Failed to get popular searches: {e}")
             return []
 
-    def get_usage_statistics(self, days: int = 30) -> Dict[str, Any]:
+    def get_usage_statistics(self, days: int = 30) -> dict[str, Any]:
         """Get comprehensive usage statistics."""
         try:
             cutoff_date = datetime.now() - timedelta(days=days)
@@ -322,10 +322,10 @@ class SearchAnalytics:
             }
 
         except Exception as e:
-            self.logger.error(f"Failed to get usage statistics: {e}")
+            self.logger.exception(f"Failed to get usage statistics: {e}")
             return {}
 
-    def get_trending_queries(self, hours: int = 24) -> List[Dict[str, Any]]:
+    def get_trending_queries(self, hours: int = 24) -> list[dict[str, Any]]:
         """Get trending queries in the specified time period."""
         try:
             cutoff_time = datetime.now() - timedelta(hours=hours)
@@ -357,10 +357,10 @@ class SearchAnalytics:
                 ]
 
         except Exception as e:
-            self.logger.error(f"Failed to get trending queries: {e}")
+            self.logger.exception(f"Failed to get trending queries: {e}")
             return []
 
-    def export_analytics(self, days: int = 30) -> Dict[str, Any]:
+    def export_analytics(self, days: int = 30) -> dict[str, Any]:
         """Export comprehensive analytics data."""
         return {
             "query_patterns": self.get_query_patterns(days),

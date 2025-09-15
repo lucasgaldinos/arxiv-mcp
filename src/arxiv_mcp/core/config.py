@@ -5,12 +5,15 @@ This module provides backward compatibility while the enhanced_config module
 provides the full-featured configuration management.
 """
 
-from typing import Dict, Any, Optional
+from typing import Any
+
+from .enhanced_config import (
+    ConfigurationManager,
+)
 
 # Import enhanced configuration components
 from .enhanced_config import (
     PipelineConfig as EnhancedPipelineConfig,
-    ConfigurationManager,
 )
 
 
@@ -90,12 +93,12 @@ class PipelineConfig:
         return self._enhanced_config.max_files_per_archive
 
     @classmethod
-    def from_dict(cls, config_dict: Dict[str, Any]) -> "PipelineConfig":
+    def from_dict(cls, config_dict: dict[str, Any]) -> "PipelineConfig":
         """Create PipelineConfig from dictionary."""
         return cls(**config_dict)
 
 
-def load_config(config_path: Optional[str] = None) -> Dict[str, Any]:
+def load_config(config_path: str | None = None) -> dict[str, Any]:
     """
     Load configuration from file or use defaults.
     This function provides backward compatibility while using the enhanced configuration system.

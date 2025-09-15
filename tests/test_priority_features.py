@@ -2,17 +2,19 @@
 Test suite for the new priority features: citation parsing, optional dependencies, and docs generation.
 """
 
+import os
+import sys
+from unittest.mock import patch
+
+import pytest
+
+from arxiv_mcp.utils.citations import Citation, CitationFormat, CitationParser
 from arxiv_mcp.utils.docs_generator import DocGenerator, generate_api_docs
 from arxiv_mcp.utils.optional_deps import (
     OptionalDependency,
-    optional_import,
     get_available_features,
+    optional_import,
 )
-from arxiv_mcp.utils.citations import CitationParser, Citation, CitationFormat
-import os
-import sys
-import pytest
-from unittest.mock import patch, MagicMock
 
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
@@ -118,14 +120,12 @@ class TestOptionalDependencies:
         try:
             dep = optional_import("matplotlib")
             if dep.available:
-                module = dep.module
+                dep.module
             else:
                 # Test that fallback works
                 assert dep.module is None
         except Exception as e:
-            pytest.fail(
-                f"Optional dependency handling should not raise exceptions: {e}"
-            )
+            pytest.fail(f"Optional dependency handling should not raise exceptions: {e}")
 
 
 class TestDocsGenerator:
@@ -204,10 +204,6 @@ class TestIntegrationFeatures:
     def test_tools_import(self):
         """Test that tools module can import all new utilities."""
         try:
-            from arxiv_mcp.tools import app
-            from arxiv_mcp.utils.citations import CitationParser
-            from arxiv_mcp.utils.docs_generator import generate_api_docs
-            from arxiv_mcp.utils.optional_deps import get_available_features
 
             # If we get here, imports are working
             assert True
@@ -218,9 +214,7 @@ class TestIntegrationFeatures:
     def test_graceful_degradation(self):
         """Test that system works even when optional dependencies fail."""
         # Mock a failing optional dependency
-        with patch(
-            "arxiv_mcp.utils.optional_deps.importlib.import_module"
-        ) as mock_import:
+        with patch("arxiv_mcp.utils.optional_deps.importlib.import_module") as mock_import:
             mock_import.side_effect = ImportError("Mocked import failure")
 
             # This should not crash

@@ -117,14 +117,11 @@ class CitationParser:
 
         citations = []
 
-        # First, try to extract inline citations (e.g., "(Author et al., Year)")
-        inline_citations = self._extract_inline_citations(text)
-        citations.extend(inline_citations)
-
-        # Look for references section
+        # Look for references section first
         ref_text = self._extract_references_section(text)
+
         if ref_text:
-            # Split into individual citations
+            # If we have a formal references section, extract from it
             citation_strings = self._split_citations(ref_text)
 
             for i, citation_str in enumerate(citation_strings):
@@ -132,6 +129,29 @@ class CitationParser:
                 if citation and (citation.authors or citation.title):
                     citation.confidence = self._calculate_confidence(citation)
                     citations.append(citation)
+
+            # For inline citations, only extract from text OUTSIDE the references section
+            # Find the position of the references section
+            ref_patterns = [
+                r"\n\s*(?:REFERENCES?|BIBLIOGRAPHY|WORKS?\s+CITED)\s*\n",
+                r"\n\s*\d+\.?\s*(?:References?|Bibliography)\s*\n",
+                r"\n\s*(?:\[\d+\]|\d+\.)\s*[A-Z]",  # Numbered references
+            ]
+
+            main_text = text
+            for pattern in ref_patterns:
+                match = re.search(pattern, text, re.IGNORECASE | re.MULTILINE)
+                if match:
+                    main_text = text[: match.start()]  # Text before references section
+                    break
+
+            # Extract inline citations only from main text (not references section)
+            inline_citations = self._extract_inline_citations(main_text)
+            citations.extend(inline_citations)
+        else:
+            # No formal references section found, extract inline citations from entire text
+            inline_citations = self._extract_inline_citations(text)
+            citations.extend(inline_citations)
 
         self.logger.info(f"Extracted {len(citations)} citations from text")
         return citations
@@ -196,7 +216,6 @@ class CitationParser:
         ref_patterns = [
             r"\n\s*(?:REFERENCES?|BIBLIOGRAPHY|WORKS?\s+CITED)\s*\n",
             r"\n\s*\d+\.?\s*(?:References?|Bibliography)\s*\n",
-            r"\n\s*(?:\[\d+\]|\d+\.)\s*[A-Z]",  # Numbered references
         ]
 
         for pattern in ref_patterns:
@@ -213,18 +232,79 @@ class CitationParser:
                 end = next_section.start() + start if next_section else len(text)
                 return text[start:end]
 
+        # If no formal header found, look for numbered references pattern
+        # but be more careful about the extraction
+        numbered_pattern = r"\n\s*(?:\[\d+\]|\d+\.)\s*[A-Z]"
+        match = re.search(numbered_pattern, text, re.IGNORECASE | re.MULTILINE)
+        if match:
+            # Start from the beginning of the line that contains the numbered reference
+            line_start = text.rfind("\n", 0, match.start()) + 1
+            start = line_start
+            # Look for next major section
+            next_section = re.search(
+                r"\n\s*(?:APPENDIX|ACKNOWLEDGMENTS?|FIGURES?|TABLES?)\s*\n",
+                text[start:],
+                re.IGNORECASE,
+            )
+            end = next_section.start() + start if next_section else len(text)
+            return text[start:end]
+
         return None
 
     def _split_citations(self, text: str) -> List[str]:
         """Split reference text into individual citations."""
         citations = []
 
-        # Try numbered format first [1], [2], etc.
-        numbered_pattern = r"\[(\d+)\]\s*([^[]*?)(?=\[\d+\]|$)"
-        numbered_matches = re.findall(numbered_pattern, text, re.DOTALL)
+        # Try numbered format first [1], [2], etc. - enhanced boundary detection
+        # Split text by numbered citation markers, then reconstruct
+        if re.search(r"\[\d+\]", text):
+            # Find all numbered citation positions
+            citation_positions = []
+            for match in re.finditer(r"\[\d+\]", text):
+                citation_positions.append((match.start(), match.end(), match.group()))
 
-        if numbered_matches:
-            return [match[1].strip() for match in numbered_matches]
+            if citation_positions:
+                citations_raw = []
+
+                for i, (start, end, marker) in enumerate(citation_positions):
+                    # Find the end position for this citation
+                    if i + 1 < len(citation_positions):
+                        next_start = citation_positions[i + 1][0]
+                        citation_end = next_start
+                    else:
+                        citation_end = len(text)
+
+                    # Extract citation content including the marker
+                    citation_content = text[start:citation_end].strip()
+                    if citation_content:
+                        citations_raw.append(citation_content)
+
+                # Filter and clean citations
+                cleaned_citations = []
+                for citation_text in citations_raw:
+                    if not citation_text:
+                        continue
+
+                    # Clean up citation by removing lines that don't look like citation content
+                    citation_lines = citation_text.split("\n")
+                    cleaned_lines = []
+
+                    for line in citation_lines:
+                        line = line.strip()
+                        if not line:
+                            continue
+
+                        # Stop if we hit text that clearly isn't part of the citation
+                        if self._is_non_citation_text(line):
+                            break
+
+                        cleaned_lines.append(line)
+
+                    if cleaned_lines:
+                        cleaned_citations.append(" ".join(cleaned_lines))
+
+                if cleaned_citations:
+                    return cleaned_citations
 
         # Try parenthetical numbering (1), (2), etc.
         paren_pattern = r"\((\d+)\)\s*([^(]*?)(?=\(\d+\)|$)"
@@ -268,6 +348,128 @@ class CitationParser:
 
         return False
 
+    def _is_non_citation_text(self, line: str) -> bool:
+        """Determine if a line of text is likely not part of a citation."""
+        line = line.strip()
+        if not line:
+            return False
+
+        # Lines that start with common non-citation phrases
+        non_citation_starters = [
+            "this is",
+            "that is",
+            "these are",
+            "those are",
+            "another",
+            "the following",
+            "as shown",
+            "for example",
+            "note that",
+            "it should be",
+            "we can see",
+            "in addition",
+            "furthermore",
+            "moreover",
+            "however",
+            "therefore",
+            "thus",
+            "hence",
+            "consequently",
+        ]
+
+        line_lower = line.lower()
+        for starter in non_citation_starters:
+            if line_lower.startswith(starter):
+                return True
+
+        # Lines that don't contain typical citation elements
+        has_year = bool(re.search(r"\b(19|20)\d{2}\b", line))
+        has_author_pattern = bool(re.search(r"[A-Z][a-z]+,?\s+[A-Z]", line))
+        has_title_pattern = bool(re.search(r"[A-Z][a-z].*[a-z]", line))
+        has_journal_pattern = bool(
+            re.search(
+                r"Journal|Review|Letters|Transactions|Conference|Proceedings", line, re.IGNORECASE
+            )
+        )
+
+        # If line has none of the typical citation elements, it's likely not a citation
+        citation_indicators = sum(
+            [has_year, has_author_pattern, has_title_pattern, has_journal_pattern]
+        )
+
+        # Lines with too few citation indicators are likely non-citation text
+        # BUT be less aggressive - require very clear non-citation signals
+        # Don't filter out lines that could be title continuations
+        if citation_indicators == 0 and len(line) > 20:
+            # Additional checks for title-like content
+            # Allow lines that contain common title words
+            title_words = [
+                "research",
+                "study",
+                "analysis",
+                "method",
+                "approach",
+                "system",
+                "algorithm",
+                "model",
+                "technique",
+                "framework",
+                "theory",
+                "design",
+                "development",
+                "investigation",
+                "experiment",
+                "results",
+                "findings",
+                "application",
+                "implementation",
+                "evaluation",
+                "assessment",
+                "review",
+                "survey",
+                "comprehensive",
+                "novel",
+                "innovative",
+                "advanced",
+                "improved",
+                "effective",
+                "efficient",
+                "optimal",
+                "robust",
+                "scalable",
+                "automated",
+                "machine",
+                "learning",
+                "neural",
+                "network",
+                "data",
+                "artificial",
+                "intelligence",
+                "computer",
+                "software",
+                "hardware",
+                "technology",
+                "methodology",
+                "technical",
+                "scientific",
+                "academic",
+                "detailed",
+                "descriptions",
+                "terms",
+            ]
+
+            line_words = line_lower.split()
+            has_title_words = any(word in title_words for word in line_words)
+
+            # Don't filter if line contains title-like words
+            if has_title_words:
+                return False
+
+            # Filter out if line is very long and has no citation or title indicators
+            return len(line) > 50
+
+        return False
+
     def _parse_single_citation(self, citation_str: str) -> Optional[Citation]:
         """Parse a single citation string."""
         if not citation_str.strip():
@@ -293,22 +495,46 @@ class CitationParser:
         """Extract author names from citation text."""
         authors = []
 
-        # Pattern for "LastName, FirstName" format
-        author_pattern = (
-            r"([A-Z][a-z]+(?:\s+[A-Z]\.?)*),?\s+([A-Z]\.?(?:\s+[A-Z]\.?)*|[A-Z][a-z]+)"
-        )
-        matches = re.findall(author_pattern, text)
+        # Normalize whitespace for better parsing
+        text = re.sub(r"\s+", " ", text.strip())
 
-        for last, first in matches:
-            # Clean up and format
-            author = f"{first.strip()} {last.strip()}"
-            authors.append(author)
+        # First, try to extract the author section (everything before the year)
+        year_match = re.search(r"\((?:19|20)\d{2}\)", text)
+        if year_match:
+            author_section = text[: year_match.start()].strip()
+        else:
+            # If no year found, take first part (heuristic)
+            author_section = text.split(".")[0] if "." in text else text
 
-        # If no structured authors found, try simple pattern
+        # Remove citation numbering at start
+        author_section = re.sub(r"^\[\d+\]\s*", "", author_section)
+
+        # Pattern for comma-separated authors with initials
+        # Handles: "Author0, A., Author1, B., Author2, C." etc.
+        comma_sep_pattern = r"([\w\u00C0-\u017F\u4e00-\u9fff']+),\s*([\w\u00C0-\u017F\u4e00-\u9fff]\.?(?:\s*[\w\u00C0-\u017F\u4e00-\u9fff]\.?)*)"
+        comma_matches = re.findall(comma_sep_pattern, author_section, re.UNICODE)
+
+        if comma_matches:
+            for last, first in comma_matches:
+                # Preserve original "Last, First" format when found in comma-separated style
+                author = f"{last.strip()}, {first.strip()}"
+                authors.append(author)
+        else:
+            # Fallback: Pattern for "LastName, FirstName" format - enhanced for Unicode names
+            # Supports ASCII, Latin extended, Chinese, and other Unicode letters
+            author_pattern = r"([\w\u00C0-\u017F\u4e00-\u9fff']+(?:\s+[\w\u00C0-\u017F\u4e00-\u9fff]\.?)*),?\s+([\w\u00C0-\u017F\u4e00-\u9fff]\.?(?:\s+[\w\u00C0-\u017F\u4e00-\u9fff]\.?)*|[\w\u00C0-\u017F\u4e00-\u9fff']+)"
+            matches = re.findall(author_pattern, author_section, re.UNICODE)
+
+            for last, first in matches:
+                # Preserve original "Last, First" format when structured this way
+                author = f"{last.strip()}, {first.strip()}"
+                authors.append(author)
+
+        # If still no structured authors found, try simple pattern
         if not authors:
-            # Look for "and" separated names
-            and_pattern = r"([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+and\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)"
-            and_matches = re.findall(and_pattern, text)
+            # Look for "and" separated names - enhanced for Unicode
+            and_pattern = r"([\w\u00C0-\u017F\u4e00-\u9fff']+(?:\s+[\w\u00C0-\u017F\u4e00-\u9fff']+)*)\s+and\s+([\w\u00C0-\u017F\u4e00-\u9fff']+(?:\s+[\w\u00C0-\u017F\u4e00-\u9fff']+)*)"
+            and_matches = re.findall(and_pattern, author_section, re.UNICODE)
             authors.extend([match[0] for match in and_matches])
             authors.extend([match[1] for match in and_matches])
 
@@ -316,25 +542,79 @@ class CitationParser:
 
     def _extract_title(self, text: str) -> str:
         """Extract paper title from citation text."""
+        # Normalize whitespace and line breaks
+        text = re.sub(r"\s+", " ", text.strip())
+
         # Title often in quotes or after author/year
         quote_pattern = r'["""]([^"""]+)["""]'
         quote_match = re.search(quote_pattern, text)
         if quote_match:
             return quote_match.group(1).strip()
 
-        # Title often follows year in parentheses
-        year_title_pattern = r"\((?:19|20)\d{2}\)\.?\s*([^.]+?)\.?\s*(?:In\s|[A-Z][a-z]+\s+Journal|Nature|Science)"
-        year_match = re.search(year_title_pattern, text, re.IGNORECASE)
+        # Find the year marker to locate title
+        year_match = re.search(r"\((?:19|20)\d{2}\)", text)
         if year_match:
-            return year_match.group(1).strip()
+            # Extract text after (year).
+            title_start = year_match.end()
+            title_text = text[title_start:].strip()
 
-        # Fallback: take text after authors and before journal
-        # This is heuristic and may not always work
+            # Remove leading period and whitespace
+            title_text = re.sub(r"^\.\s*", "", title_text)
+
+            # Extract title until next major section (journal, venue, etc.)
+            title_patterns = [
+                # Stop at journal/venue indicators - but capture everything until the period before them
+                r"^(.*?)\.?\s*(?:In\s|Advances\s|[A-Z][\w\s&]*(?:Journal|Review|Report|Letters|Transactions|Conference|Proceedings)|Nature|Science|Cell)",
+                # Stop at volume/page indicators
+                r"^([^.]+?)\.?\s*(?:\d+\(\d+\)|vol\.?\s*\d+|pp?\.?\s*\d+)",
+                # Fallback: take everything until first period (if reasonable length)
+                r"^([^.]{10,}?)\.(?:\s|$)",
+                # Last resort: take first substantial chunk
+                r"^([^.]{5,}?)(?:\.|$)",
+            ]
+
+            for pattern in title_patterns:
+                match = re.search(pattern, title_text, re.IGNORECASE | re.UNICODE)
+                if match:
+                    title = match.group(1).strip()
+                    # Validate title length and content
+                    if 3 <= len(title) <= 500 and not re.match(r"^Author\d+", title):
+                        return title
+
+            # If patterns failed, take text up to first reasonable break
+            words = title_text.split()
+            if words:
+                # Take words until we hit something that looks like a journal/venue
+                title_words = []
+                for word in words:
+                    if re.match(
+                        r"^(Journal|Review|Letters|Transactions|Conference|Proceedings|Nature|Science|Cell)$",
+                        word,
+                        re.IGNORECASE,
+                    ):
+                        break
+                    title_words.append(word)
+
+                if title_words:
+                    potential_title = " ".join(title_words).rstrip(".,;:")
+                    if 3 <= len(potential_title) <= 500:
+                        return potential_title
+
+        # Fallback: Look for patterns without year dependency
+        # This should rarely be used with the improved year-based extraction above
         parts = text.split(".")
-        if len(parts) > 1:
-            potential_title = parts[1].strip()
-            if 20 < len(potential_title) < 200:  # Reasonable title length
-                return potential_title
+        if len(parts) >= 2:
+            for i in range(1, min(len(parts), 4)):  # Check first few parts
+                potential_title = parts[i].strip()
+                # Remove leading punctuation and whitespace
+                potential_title = re.sub(r"^[\s.:;,]+", "", potential_title)
+                # Skip parts that look like author names
+                if (
+                    potential_title
+                    and not re.match(r"^Author\d+", potential_title)
+                    and 5 <= len(potential_title) <= 200
+                ):
+                    return potential_title
 
         return ""
 
@@ -568,9 +848,7 @@ class CitationParser:
             # Take first significant word from title
             title_words = citation.title.lower().split()
             significant_words = [
-                w
-                for w in title_words
-                if len(w) > 3 and w not in ["the", "and", "for", "with"]
+                w for w in title_words if len(w) > 3 and w not in ["the", "and", "for", "with"]
             ]
             if significant_words:
                 key_parts.append(significant_words[0])
