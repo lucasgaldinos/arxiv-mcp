@@ -114,10 +114,23 @@ arxiv-mcp-improved/
 ├── examples/               # Usage examples and demos
 ├── config/                 # Configuration files
 ├── scripts/                # Utility and automation scripts
-├── cache/                  # Performance-critical cache systems (root level)
-│   ├── arxiv/              # ArXiv API cache
-│   ├── dependencies/       # Package dependency cache
-│   ├── network/            # Network analysis cache
+├── .dev/                   # Enterprise development environment  
+│   ├── build/              # Build artifacts and tool caches
+│   ├── cache/              # Application cache directories
+│   │   ├── batch/          # Batch processing cache
+│   │   ├── dependency/     # Dependency analysis cache
+│   │   ├── network/        # Network analysis cache
+│   │   ├── notification/   # Notification system cache  
+│   │   ├── tag/            # Smart tagging cache
+│   │   ├── trending/       # Trending analysis cache
+│   │   ├── reading/        # Reading lists cache
+│   │   └── search_analytics/ # Search analytics cache
+│   ├── runtime/            # Runtime data and outputs
+│   │   ├── logs/           # Application logs  
+│   │   └── output/         # Processing outputs
+│   ├── artifacts/          # Test reports and metrics
+│   └── temp/               # Temporary working files
+├── cache@ -> .dev/cache/   # Backwards compatibility symlink
 │   ├── notifications/      # Paper notification cache
 │   ├── reading/            # Reading list cache
 │   ├── tags/               # Smart tagging cache
