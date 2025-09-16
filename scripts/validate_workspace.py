@@ -18,34 +18,35 @@ class WorkspaceValidator:
         self.warnings = []
 
     def validate_cache_organization(self) -> bool:
-        """Validate cache directory organization following PRINCIPLE 6: Cache System Preservation."""
+        """Validate cache directory organization following current .dev/cache/ strategy."""
         print("🔍 Validating cache organization...")
 
-        # According to PRINCIPLE 6: Existing cache directories MUST be preserved
-        # These are COMPLIANT and should remain at root level:
-        preserved_cache_dirs = [
-            "cache",  # General cache (PRESERVED)
-            "batch_cache",  # Batch processing cache (PRESERVED)
-            "tag_cache",  # Tag-specific cache (PRESERVED)
-            "network_cache",  # Network request cache (PRESERVED)
+        # According to current strategy: Caches should be in .dev/cache/ with symlinks at root for compatibility
+        cache_base = self.workspace_path / ".dev" / "cache"
+        
+        if not cache_base.exists():
+            self.violations.append("CRITICAL: .dev/cache/ directory does not exist")
+            return False
+
+        # Expected cache directories in .dev/cache/
+        expected_caches = [
+            "batch",      # Batch processing cache
+            "tag",        # Tag-specific cache  
+            "network",    # Network request cache
+            "dependency", # Dependency cache
+            "notification", # Notification cache
         ]
 
-        # Validate that preserved caches exist and are not moved
         all_good = True
-        for cache_dir in preserved_cache_dirs:
-            cache_path = self.workspace_path / cache_dir
-            if cache_path.exists():
-                # This is GOOD - cache is preserved as required
-                continue
-            # Check if it was incorrectly moved to .dev/
-            dev_cache_path = (
-                self.workspace_path / ".dev" / "cache" / cache_dir.replace("_cache", "")
-            )
-            if dev_cache_path.exists():
-                self.violations.append(
-                    f"VIOLATION: {cache_dir}/ moved to .dev/ - should remain at root for performance"
-                )
-                all_good = False
+        for cache_name in expected_caches:
+            cache_path = cache_base / cache_name
+            if not cache_path.exists():
+                self.warnings.append(f"Cache directory missing: .dev/cache/{cache_name}")
+            
+            # Check for proper symlink at root (compatibility requirement)
+            root_symlink = self.workspace_path / f"{cache_name}_cache"
+            if cache_path.exists() and not root_symlink.exists():
+                self.warnings.append(f"Missing compatibility symlink: {cache_name}_cache -> .dev/cache/{cache_name}")
 
         return all_good
 
@@ -53,34 +54,42 @@ class WorkspaceValidator:
         """Validate output directory organization."""
         print("🔍 Validating output organization...")
 
+        # Check for primary output directory (should be symlink to .dev/runtime/output)
         output_dir = self.workspace_path / "output"
-        if not output_dir.exists():
-            self.violations.append("CRITICAL: output/ directory does not exist")
+        runtime_output = self.workspace_path / ".dev" / "runtime" / "output"
+        
+        if not output_dir.exists() and not runtime_output.exists():
+            self.violations.append("CRITICAL: No output directory found (neither output/ nor .dev/runtime/output/)")
             return False
+        
+        # Verify proper organization: either direct .dev/runtime/output or symlink
+        if output_dir.exists() and output_dir.is_symlink():
+            # Good: symlink setup for compatibility
+            target = output_dir.resolve()
+            if target != runtime_output.resolve():
+                self.violations.append(f"VIOLATION: output/ symlink points to wrong location: {target}")
+        elif runtime_output.exists():
+            # Good: direct .dev/runtime/output setup
+            pass
+        else:
+            self.violations.append("VIOLATION: output/ exists but is not properly organized")
 
-        # Required environment directories
-        required_envs = {"test", "production", "dev"}
+        # Check that the actual output directory has proper structure
+        actual_output = runtime_output if runtime_output.exists() else output_dir
+        
+        # Required subdirectories for ArXiv MCP
         required_subdirs = {"latex", "markdown", "metadata"}
-
-        existing_envs = {d.name for d in output_dir.iterdir() if d.is_dir()}
-        missing_envs = required_envs - existing_envs
-
-        if missing_envs:
-            self.violations.append(f"Missing output environments: {missing_envs}")
-
-        # Check each environment has required subdirectories
-        for env in required_envs:
-            env_path = output_dir / env
-            if env_path.exists():
-                existing_subs = {d.name for d in env_path.iterdir() if d.is_dir()}
-                missing_subs = required_subdirs - existing_subs
-                if missing_subs:
-                    self.warnings.append(f"Missing {env} subdirectories: {missing_subs}")
+        
+        if actual_output.exists():
+            existing_subs = {d.name for d in actual_output.iterdir() if d.is_dir()}
+            missing_subs = required_subdirs - existing_subs
+            if missing_subs:
+                self.warnings.append(f"Missing output subdirectories: {missing_subs}")
 
         # Check for scattered output directories
         scattered_output_patterns = [
             "test_output",
-            "arxiv_mcp_test_output",
+            "arxiv_mcp_test_output", 
             "test_fixed_tools",
             "nonexistent",
             "arxiv-mcp-dev",
@@ -250,11 +259,17 @@ class WorkspaceValidator:
 
 def main():
     """Main validation entry point."""
-    workspace_path = sys.argv[1] if len(sys.argv) > 1 else os.getcwd()
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="Validate workspace organization")
+    parser.add_argument("--fix", action="store_true", help="Attempt to automatically fix violations")
+    parser.add_argument("workspace_path", nargs="?", default=os.getcwd(), help="Path to workspace to validate")
+    
+    args = parser.parse_args()
+    
+    print(f"🔍 Validating workspace: {args.workspace_path}")
 
-    print(f"🔍 Validating workspace: {workspace_path}")
-
-    validator = WorkspaceValidator(workspace_path)
+    validator = WorkspaceValidator(args.workspace_path)
     is_compliant = validator.run_full_validation()
 
     if is_compliant:
@@ -262,7 +277,9 @@ def main():
         sys.exit(0)
     else:
         print("\n💥 Workspace has COMPLIANCE VIOLATIONS!")
-        print("\nRefer to .github/instructions/ABSOLUTE-RULE-WORKSPACE.instruction.md for rules")
+        print("\nRefer to .github/instructions/FIXED-WORKSPACE-ORGANIZATION-RULES.instructions.md for rules")
+        if args.fix:
+            print("🔧 Auto-fix functionality not yet implemented")
         sys.exit(1)
 
 
