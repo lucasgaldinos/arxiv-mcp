@@ -32,8 +32,21 @@ applyTo: '**'
 - [MANDATORY] You shall ALWAYS follow best practices for code and documentation generation.
 - [MANDATORY] You shall update or create `CHANGELOG.md` or `UPDATE.md` files with a summary of changes made.
 - [MANDATORY] You shall update or create `TODO.md` or `IMPROVEMENTS.md` files with a summary of planned improvements.
+- **[MANDATORY] TODO.md vs TASKS.md DISTINCTION:**
+  - **TODO.md Format**: Simple priority-based checkboxes only
+    ```markdown
+    - [ ] PRIORITY | simple task description
+      - subtask or description of how to do the task
+      - subtask or description of how to do the task
+    ```
+  - **TASKS.md Format**: Detailed descriptive tasks similar to quality_enhancement_plan
+    - Comprehensive breakdown of implementation process
+    - Research findings and strategic approaches
+    - Technical specifications and success criteria
+    - Implementation timelines and resource requirements
+  - **[MANDATORY] NEVER mix formats**: TODO.md stays simple, TASKS.md stays detailed
+  - **[MANDATORY] Cross-reference**: TODO.md must reference TASKS.md for detailed breakdowns
 - [MANDATORY] You shall ALWAYS follow the knowledge base organization principles when creating or updating documentation inside `./.github/.knowledge_base/`.
-- [MANDATORY]
 - **[MANDATORY-CHECK] WHEN necessary, recall your prompts, summarize conversations.**
 - **[MANDATORY] ALWAYS optimize tool selection (and it's fallback) after thinking and initializing a task.**
 - **[MANDATORY] ALWAYS update docs over changes made.**

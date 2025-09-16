@@ -4,7 +4,6 @@ Test suite for network analyzer module.
 This module tests the network_analyzer wrapper functionality and imports.
 """
 
-import pytest
 
 
 class TestNetworkAnalyzer:
@@ -27,11 +26,7 @@ class TestNetworkAnalyzer:
     def test_network_components_import(self):
         """Test that all network components can be imported."""
         # This exercises all the import and re-export statements
-        from arxiv_mcp.analyzers.network_analyzer import (
-            NetworkNode,
-            NetworkEdge,
-            NetworkType
-        )
+        from arxiv_mcp.analyzers.network_analyzer import NetworkEdge, NetworkNode, NetworkType
         assert NetworkNode is not None
         assert NetworkEdge is not None
         assert NetworkType is not None
@@ -42,11 +37,11 @@ class TestNetworkAnalyzer:
         analyzer = NetworkAnalyzer()
         # Verify it has expected methods from the wrapped implementation
         assert hasattr(analyzer, 'create_citation_network')
-        assert callable(getattr(analyzer, 'create_citation_network'))
+        assert callable(analyzer.create_citation_network)
 
     def test_network_analyzer_all_exports(self):
         """Test that __all__ exports are correctly defined."""
-        import arxiv_mcp.analyzers.network_analyzer as network_analyzer
+        from arxiv_mcp.analyzers import network_analyzer
         assert hasattr(network_analyzer, '__all__')
         expected_exports = ['NetworkAnalyzer', 'NetworkNode', 'NetworkEdge', 'NetworkType']
         for export in expected_exports:
@@ -59,7 +54,7 @@ class TestNetworkAnalyzer:
         assert NetworkType is not None
         # Basic verification that it behaves like an enum
         assert hasattr(NetworkType, '__members__')
-        
+
     def test_network_analyzer_module_imports(self):
         """Test that all module-level imports work correctly."""
         # Import the module to execute all its lines

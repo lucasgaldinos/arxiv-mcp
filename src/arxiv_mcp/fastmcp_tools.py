@@ -86,12 +86,21 @@ async def download_and_convert_paper(
     """Download and convert an ArXiv paper to multiple formats"""
     try:
         from arxiv_mcp.utils.unified_converter import download_and_convert_paper
+        import os
+
+        # Resolve output directory relative to current working directory (client's directory)
+        if not os.path.isabs(output_dir):
+            cwd = os.getcwd()
+            resolved_output_dir = os.path.join(cwd, output_dir)
+        else:
+            resolved_output_dir = output_dir
 
         result = await download_and_convert_paper(
             arxiv_id=arxiv_id,
-            output_dir=output_dir,
+            output_dir=resolved_output_dir,
             save_latex=save_latex,
             save_markdown=save_markdown,
+            include_pdf=include_pdf,
         )
 
         return {"status": "success", "tool": "download_and_convert_paper", **result}
@@ -117,8 +126,18 @@ async def batch_download_and_convert(
     try:
         from arxiv_mcp.core.config import PipelineConfig
         from arxiv_mcp.utils.unified_converter import UnifiedDownloadConverter
+        import os
 
-        config = PipelineConfig.from_dict({"output_directory": output_dir})
+        # Resolve output directory relative to current working directory (client's directory)
+        # If output_dir is relative, make it relative to the VS Code workspace, not the MCP server location
+        if not os.path.isabs(output_dir):
+            # Get the current working directory from where VS Code is running
+            cwd = os.getcwd()
+            resolved_output_dir = os.path.join(cwd, output_dir)
+        else:
+            resolved_output_dir = output_dir
+
+        config = PipelineConfig.from_dict({"output_directory": resolved_output_dir})
         converter = UnifiedDownloadConverter(config)
 
         result = await converter.batch_download_and_convert(

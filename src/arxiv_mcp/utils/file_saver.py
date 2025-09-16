@@ -21,13 +21,14 @@ class FileSaver:
         self.latex_dir = self.output_directory / "latex"
         self.markdown_dir = self.output_directory / "markdown"
         self.metadata_dir = self.output_directory / "metadata"
+        self.pdf_dir = self.output_directory / "pdf"
 
         # Create directories if they don't exist
         self._ensure_directories()
 
     def _ensure_directories(self):
         """Create output directories if they don't exist."""
-        for directory in [self.latex_dir, self.markdown_dir, self.metadata_dir]:
+        for directory in [self.latex_dir, self.markdown_dir, self.metadata_dir, self.pdf_dir]:
             directory.mkdir(parents=True, exist_ok=True)
         logger.info(f"Output directories ensured: {self.output_directory}")
 
@@ -113,6 +114,28 @@ class FileSaver:
 
         logger.info(f"Saved markdown file for {arxiv_id} to {markdown_path}")
         return str(markdown_path)
+
+    def save_pdf_file(self, arxiv_id: str, pdf_content: bytes) -> str:
+        """Save PDF file to the pdf directory.
+
+        Args:
+            arxiv_id: ArXiv paper ID
+            pdf_content: PDF file content as bytes
+
+        Returns:
+            Path to saved PDF file
+        """
+        paper_dir = self.pdf_dir / arxiv_id
+        paper_dir.mkdir(parents=True, exist_ok=True)
+
+        pdf_path = paper_dir / f"{arxiv_id}.pdf"
+
+        # Save PDF file
+        with open(pdf_path, "wb") as f:
+            f.write(pdf_content)
+
+        logger.info(f"Saved PDF file for {arxiv_id} to {pdf_path}")
+        return str(pdf_path)
 
     def save_metadata(self, arxiv_id: str, metadata: dict[str, Any]) -> str:
         """Save paper metadata as JSON file.

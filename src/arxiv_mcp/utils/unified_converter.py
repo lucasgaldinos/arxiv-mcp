@@ -130,6 +130,23 @@ class UnifiedDownloadConverter:
                         "warnings", "Conversion failed"
                     )
 
+            # Save PDF if requested and available
+            if include_pdf and result.get("pdf_content"):
+                try:
+                    pdf_path = self.file_saver.save_pdf_file(
+                        arxiv_id, result["pdf_content"]
+                    )
+                    response["formats"].append("pdf")
+                    response["files"]["pdf"] = {
+                        "file": pdf_path,
+                        "compilation_method": "latex",
+                    }
+                    logger.info(f"Saved PDF file for {arxiv_id}")
+                except Exception as e:
+                    logger.error(f"PDF saving failed for {arxiv_id}: {str(e)}")
+                    response["formats"].append("pdf_failed")
+                    response["pdf_error"] = str(e)
+
             # Add processing summary
             response["summary"] = {
                 "total_files": len(files),
@@ -220,6 +237,7 @@ class UnifiedDownloadConverter:
                 "latex": str(self.file_saver.latex_dir),
                 "markdown": str(self.file_saver.markdown_dir),
                 "metadata": str(self.file_saver.metadata_dir),
+                "pdf": str(self.file_saver.pdf_dir),
             },
             "saved_papers": saved_papers,
             "directory_exists": self.file_saver.output_directory.exists(),
@@ -247,6 +265,19 @@ class UnifiedDownloadConverter:
                     ),
                 }
                 for d in self.file_saver.markdown_dir.iterdir()
+                if d.is_dir()
+            ]
+
+        if self.file_saver.pdf_dir.exists():
+            structure["pdf_papers"] = [
+                {
+                    "arxiv_id": d.name,
+                    "path": str(d),
+                    "pdf_file": (
+                        str(d / f"{d.name}.pdf") if (d / f"{d.name}.pdf").exists() else None
+                    ),
+                }
+                for d in self.file_saver.pdf_dir.iterdir()
                 if d.is_dir()
             ]
 
@@ -499,6 +530,7 @@ async def download_and_convert_paper(
     output_dir: str = "./output",
     save_latex: bool = True,
     save_markdown: bool = True,
+    include_pdf: bool = False,
 ) -> dict[str, Any]:
     """Convenience function to download and convert a single paper.
 
@@ -507,13 +539,23 @@ async def download_and_convert_paper(
         output_dir: Output directory path
         save_latex: Whether to save LaTeX files
         save_markdown: Whether to convert and save markdown
+        include_pdf: Whether to include PDF compilation
 
     Returns:
         Processing results
     """
-    config = PipelineConfig.from_dict({"output_directory": output_dir})
+    import os
+    
+    # Resolve output directory relative to current working directory (client's directory)
+    if not os.path.isabs(output_dir):
+        cwd = os.getcwd()
+        resolved_output_dir = os.path.join(cwd, output_dir)
+    else:
+        resolved_output_dir = output_dir
+
+    config = PipelineConfig.from_dict({"output_directory": resolved_output_dir})
     converter = UnifiedDownloadConverter(config)
 
     return await converter.download_and_convert(
-        arxiv_id, save_latex=save_latex, save_markdown=save_markdown
+        arxiv_id, save_latex=save_latex, save_markdown=save_markdown, include_pdf=include_pdf
     )

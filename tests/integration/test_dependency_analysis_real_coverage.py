@@ -3,18 +3,19 @@ Minimal integration tests for dependency_analysis.py - Focused on actual API
 Target: 255 statements, currently 23% coverage
 """
 
-import pytest
-import tempfile
 from pathlib import Path
+import tempfile
+
+import pytest
 
 from arxiv_mcp.utils.dependency_analysis import (
-    DependencyAnalyzer,
-    DependencyType, 
     Dependency,
-    DependencyNode,
+    DependencyAnalyzer,
     DependencyGraph,
+    DependencyNode,
+    DependencyType,
     create_dependency_analyzer,
-    quick_package_analysis
+    quick_package_analysis,
 )
 
 
@@ -41,7 +42,7 @@ class TestDependencyAnalyzerIntegration:
     def test_package_dependencies_basic(self, dependency_analyzer):
         """Test basic package dependency analysis."""
         result = dependency_analyzer.analyze_package_dependencies()
-        
+
         assert 'available_dependencies' in result
         assert 'missing_dependencies' in result
         assert 'total_analyzed' in result
@@ -50,14 +51,14 @@ class TestDependencyAnalyzerIntegration:
     def test_package_dependencies_specific(self, dependency_analyzer):
         """Test specific package analysis."""
         result = dependency_analyzer.analyze_package_dependencies("requests")
-        
+
         assert 'available_dependencies' in result
         assert 'total_analyzed' in result
 
     def test_paper_dependencies(self, dependency_analyzer):
         """Test paper dependency analysis."""
         result = dependency_analyzer.analyze_paper_dependencies("test_paper", ["cite1", "cite2"])
-        
+
         assert 'paper_id' in result
         assert 'direct_dependencies' in result
         assert 'dependency_graph' in result
@@ -67,10 +68,10 @@ class TestDependencyAnalyzerIntegration:
         # Create circular dependencies
         dep1 = Dependency("A", "B", DependencyType.PACKAGE)
         dep2 = Dependency("B", "A", DependencyType.PACKAGE)
-        
+
         dependency_analyzer._store_dependency(dep1)
         dependency_analyzer._store_dependency(dep2)
-        
+
         circular = dependency_analyzer.detect_circular_dependencies(DependencyType.PACKAGE)
         assert isinstance(circular, list)
 
@@ -79,9 +80,9 @@ class TestDependencyAnalyzerIntegration:
         # Store test dependency first
         dep = Dependency("root", "child", DependencyType.PACKAGE)
         dependency_analyzer._store_dependency(dep)
-        
+
         impact = dependency_analyzer.get_dependency_impact("root")
-        
+
         assert 'node_id' in impact
         assert 'direct_dependencies' in impact
         assert 'impact_score' in impact
@@ -91,12 +92,12 @@ class TestDependencyAnalyzerIntegration:
         # Add dependencies
         dep1 = Dependency("A", "B", DependencyType.PACKAGE)
         dep2 = Dependency("B", "C", DependencyType.PACKAGE)
-        
+
         dependency_analyzer._store_dependency(dep1)
         dependency_analyzer._store_dependency(dep2)
-        
+
         graph = dependency_analyzer.build_dependency_graph(DependencyType.PACKAGE)
-        
+
         assert isinstance(graph, DependencyGraph)
         assert hasattr(graph, 'nodes')
         assert hasattr(graph, 'edges')
@@ -105,7 +106,7 @@ class TestDependencyAnalyzerIntegration:
         """Test analysis result storage."""
         test_results = {"metric": 42}
         dependency_analyzer._store_analysis_result("test", "target", test_results)
-        
+
         history = dependency_analyzer.get_analysis_history("test", "target")
         assert isinstance(history, list)
 
@@ -115,12 +116,12 @@ class TestDependencyAnalyzerIntegration:
         dep = Dependency("src", "tgt", DependencyType.PACKAGE)
         assert dep.source == "src"
         assert dep.target == "tgt"
-        
+
         # Test DependencyNode
         node = DependencyNode("id1", "type1", "name1")
         assert node.node_id == "id1"
         assert node.node_type == "type1"
-        
+
         # Test DependencyGraph
         from datetime import datetime
         graph = DependencyGraph({}, [], "test", datetime.now())
@@ -131,7 +132,7 @@ class TestDependencyAnalyzerIntegration:
         # Test create_dependency_analyzer
         analyzer = create_dependency_analyzer(cache_dir=temp_cache_dir)
         assert isinstance(analyzer, DependencyAnalyzer)
-        
+
         # Test quick_package_analysis
         result = quick_package_analysis()
         assert isinstance(result, dict)
@@ -141,7 +142,7 @@ class TestDependencyAnalyzerIntegration:
         # Store dependency
         dep = Dependency("persist_test", "target", DependencyType.PACKAGE)
         dependency_analyzer._store_dependency(dep)
-        
+
         # Create new analyzer with same cache
         new_analyzer = DependencyAnalyzer(cache_dir=dependency_analyzer.cache_dir)
         impact = new_analyzer.get_dependency_impact("persist_test")

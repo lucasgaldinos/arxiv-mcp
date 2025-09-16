@@ -100,6 +100,7 @@ class ArxivPipeline:
                     result.update(
                         {
                             "pdf_compiled": True,
+                            "pdf_content": pdf_content,
                             "pdf_text": pdf_text,
                             "pdf_metadata": pdf_metadata,
                             "pdf_size": len(pdf_content),
