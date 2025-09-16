@@ -123,8 +123,14 @@ class PaperNotificationSystem:
             self.db_path = Path(db_path)
             self.cache_dir = self.db_path.parent
         else:
-            # Use cache_dir approach (legacy)
-            self.cache_dir = Path(cache_dir) if cache_dir else Path.cwd() / "notification_cache"
+            # Use cache_dir approach with configuration support
+            if cache_dir:
+                self.cache_dir = Path(cache_dir)
+            else:
+                # Import here to avoid circular imports
+                from ..core.enhanced_config import ConfigurationManager
+                config = ConfigurationManager.load_config()
+                self.cache_dir = Path(config.notification_cache_dir)
             self.db_path = self.cache_dir / "notifications.db"
 
         self.cache_dir.mkdir(exist_ok=True)

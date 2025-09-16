@@ -16,8 +16,14 @@ logger = structured_logger()
 class FileSaver:
     """Handles saving ArXiv papers in organized directory structure."""
 
-    def __init__(self, output_directory: str = "./output"):
-        self.output_directory = Path(output_directory)
+    def __init__(self, output_directory: str | None = None):
+        if output_directory:
+            self.output_directory = Path(output_directory)
+        else:
+            # Import here to avoid circular imports
+            from ..core.enhanced_config import ConfigurationManager
+            config = ConfigurationManager.load_config()
+            self.output_directory = Path(config.output_directory)
         self.latex_dir = self.output_directory / "latex"
         self.markdown_dir = self.output_directory / "markdown"
         self.metadata_dir = self.output_directory / "metadata"
@@ -100,8 +106,12 @@ class FileSaver:
 
         markdown_path = paper_dir / f"{arxiv_id}.md"
 
-        # Prepare content with YAML frontmatter if metadata provided
-        if metadata:
+        # Check if markdown already has YAML frontmatter (from pandoc)
+        if markdown_content.strip().startswith('---') and metadata:
+            # Enhance existing YAML frontmatter instead of duplicating
+            full_content = self._enhance_existing_yaml(markdown_content, metadata, arxiv_id)
+        elif metadata:
+            # Generate new YAML frontmatter
             yaml_content = self._generate_yaml_frontmatter(metadata)
             full_content = f"{yaml_content}\n\n{markdown_content}"
         else:
@@ -175,6 +185,63 @@ class FileSaver:
         )
 
         return f"---\n{yaml_str}---"
+
+    def _enhance_existing_yaml(self, markdown_content: str, metadata: dict[str, Any], arxiv_id: str) -> str:
+        """Enhance existing YAML frontmatter with additional metadata.
+        
+        Args:
+            markdown_content: Markdown content with existing YAML frontmatter
+            metadata: Additional metadata to merge
+            arxiv_id: ArXiv paper ID
+            
+        Returns:
+            Enhanced markdown content with merged YAML frontmatter
+        """
+        import yaml
+        
+        # Split the content into YAML and body
+        parts = markdown_content.split('---', 2)
+        if len(parts) < 3:
+            # No valid YAML frontmatter found, fall back to adding new one
+            yaml_content = self._generate_yaml_frontmatter(metadata)
+            return f"{yaml_content}\n\n{markdown_content}"
+        
+        yaml_section = parts[1].strip()
+        body_section = parts[2]
+        
+        try:
+            # Parse existing YAML
+            existing_yaml = yaml.safe_load(yaml_section) or {}
+            
+            # Add ArXiv ID and processing metadata
+            existing_yaml['arxiv_id'] = arxiv_id
+            existing_yaml['processed_at'] = datetime.now().isoformat()
+            existing_yaml['source'] = 'arxiv-mcp-improved'
+            
+            # Add categories if available in metadata
+            if 'categories' in metadata and metadata['categories']:
+                existing_yaml['categories'] = metadata['categories']
+            
+            # Add keywords if available
+            if 'keywords' in metadata and metadata['keywords']:
+                existing_yaml['keywords'] = metadata['keywords']
+            
+            # Add submission date if available
+            if 'submitted' in metadata and metadata['submitted']:
+                existing_yaml['submitted'] = metadata['submitted']
+                
+            # Convert back to YAML
+            enhanced_yaml = yaml.dump(
+                existing_yaml, default_flow_style=False, allow_unicode=True, sort_keys=False
+            )
+            
+            return f"---\n{enhanced_yaml}---{body_section}"
+            
+        except yaml.YAMLError as e:
+            logger.warning(f"Failed to parse existing YAML frontmatter: {e}")
+            # Fall back to generating new YAML
+            yaml_content = self._generate_yaml_frontmatter(metadata)
+            return f"{yaml_content}\n\n{body_section}"
 
     def get_saved_papers(self) -> dict[str, list[str]]:
         """Get list of saved papers by format.

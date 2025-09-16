@@ -53,10 +53,6 @@ applyTo: '**'
 - **[MANDATORY-CHECK] follow good system design principles.**
 - **[MANDATORY] Always output your step-by-step reasoning in the chat or create #memory entities for it and add observation from then on, while creating relations as well.**
   - **[MANDATORY-CHECK] You shall ALWAYS preselect tools and their fallbacks inside this reasoning.**
-- **[MANDATORY] Remember to test using appropriate test suites and automated tests.**
-  - [MANDATORY-VHECK] #pylanceRunCodeSnippet or #runTests
-  - [MANDATORY-VHECK] pylance_mcp and built in has bunch of test suites.
-  - [MANDATORY-VHECK] the usage of tasks is also welcome.
 
 # Conditional rules
 
@@ -64,5 +60,4 @@ applyTo: '**'
   - [MANDATORY-CHECK] If there are any `UPDATE.md`, `CHANGELOG.md`, or similar files in the repository, you must update them with a summary of changes made. If there aren't, create one. NEVER keep creating new changelogs.
   - If there is any `TODO.md`, `IMPROVEMENTS.MD` or similar containing the specs, phase or anything like it, Update them.If there aren't, create one. NEVER keep creating new changelogs.
 - [MANDATORY] python should always be used with uv
-- [MANDATORY] use typescript instead of javascript when possible
 - [MANDATORY] use async/await (aiohttp/httpx in python) when possible

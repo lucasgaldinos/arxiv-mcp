@@ -100,8 +100,14 @@ class DependencyAnalyzer:
 
     def __init__(self, cache_dir: str | None = None):
         """Initialize the dependency analyzer."""
-        self.cache_dir = Path(cache_dir) if cache_dir else Path.cwd() / "dependency_cache"
-        self.cache_dir.mkdir(exist_ok=True)
+        if cache_dir:
+            self.cache_dir = Path(cache_dir)
+        else:
+            # Import here to avoid circular imports
+            from ..core.enhanced_config import ConfigurationManager
+            config = ConfigurationManager.load_config()
+            self.cache_dir = Path(config.dependency_cache_dir)
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
 
         self.db_path = self.cache_dir / "dependencies.db"
         self._init_database()

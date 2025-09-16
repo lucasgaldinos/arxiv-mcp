@@ -78,14 +78,20 @@ async def fetch_arxiv_paper_content(
 @mcp.tool()
 async def download_and_convert_paper(
     arxiv_id: str,
-    output_dir: str = "./output",
+    output_dir: str = None,
     save_latex: bool = True,
     save_markdown: bool = True,
     include_pdf: bool = False,
 ) -> dict:
     """Download and convert an ArXiv paper to multiple formats"""
     try:
+        from arxiv_mcp.core.enhanced_config import get_pipeline_config
         from arxiv_mcp.utils.unified_converter import download_and_convert_paper
+        
+        # Use enhanced configuration if no output_dir provided
+        if output_dir is None:
+            config = get_pipeline_config()
+            output_dir = config.output_directory
 
         result = await download_and_convert_paper(
             arxiv_id=arxiv_id,
@@ -107,7 +113,7 @@ async def download_and_convert_paper(
 @mcp.tool()
 async def batch_download_and_convert(
     arxiv_ids: list[str],
-    output_dir: str = "./output",
+    output_dir: str = None,
     save_latex: bool = True,
     save_markdown: bool = True,
     include_pdf: bool = False,
@@ -115,8 +121,14 @@ async def batch_download_and_convert(
 ) -> dict:
     """Batch download and convert multiple ArXiv papers"""
     try:
+        from arxiv_mcp.core.enhanced_config import get_pipeline_config
         from arxiv_mcp.core.config import PipelineConfig
         from arxiv_mcp.utils.unified_converter import UnifiedDownloadConverter
+
+        # Use enhanced configuration if no output_dir provided
+        if output_dir is None:
+            enhanced_config = get_pipeline_config()
+            output_dir = enhanced_config.output_directory
 
         config = PipelineConfig.from_dict({"output_directory": output_dir})
         converter = UnifiedDownloadConverter(config)
@@ -140,11 +152,17 @@ async def batch_download_and_convert(
 
 
 @mcp.tool()
-def get_output_structure(output_dir: str = "./output") -> dict:
+def get_output_structure(output_dir: str = None) -> dict:
     """Get information about the output directory structure"""
     try:
+        from arxiv_mcp.core.enhanced_config import get_pipeline_config
         from arxiv_mcp.core.config import PipelineConfig
         from arxiv_mcp.utils.unified_converter import UnifiedDownloadConverter
+
+        # Use enhanced configuration if no output_dir provided
+        if output_dir is None:
+            enhanced_config = get_pipeline_config()
+            output_dir = enhanced_config.output_directory
 
         config = PipelineConfig.from_dict({"output_directory": output_dir})
         converter = UnifiedDownloadConverter(config)
@@ -163,7 +181,7 @@ def get_output_structure(output_dir: str = "./output") -> dict:
 
 @mcp.tool()
 def validate_conversion_quality(
-    arxiv_id: str, output_dir: str = "./output", format_type: str = "both"
+    arxiv_id: str, output_dir: str = None, format_type: str = "both"
 ) -> dict:
     """Validate the quality of LaTeX to Markdown conversion with flexible format support
 
@@ -173,8 +191,14 @@ def validate_conversion_quality(
         format_type: Validation mode - "both", "latex_only", or "markdown_only"
     """
     try:
+        from arxiv_mcp.core.enhanced_config import get_pipeline_config
         from arxiv_mcp.core.config import PipelineConfig
         from arxiv_mcp.utils.unified_converter import UnifiedDownloadConverter
+
+        # Use enhanced configuration if no output_dir provided
+        if output_dir is None:
+            enhanced_config = get_pipeline_config()
+            output_dir = enhanced_config.output_directory
 
         config = PipelineConfig.from_dict({"output_directory": output_dir})
         converter = UnifiedDownloadConverter(config)
@@ -196,11 +220,17 @@ def validate_conversion_quality(
 
 
 @mcp.tool()
-def cleanup_output(output_dir: str = "./output", days_old: int = 30) -> dict:
+def cleanup_output(output_dir: str = None, days_old: int = 30) -> dict:
     """Clean up old output files"""
     try:
+        from arxiv_mcp.core.enhanced_config import get_pipeline_config
         from arxiv_mcp.core.config import PipelineConfig
         from arxiv_mcp.utils.unified_converter import UnifiedDownloadConverter
+
+        # Use enhanced configuration if no output_dir provided
+        if output_dir is None:
+            enhanced_config = get_pipeline_config()
+            output_dir = enhanced_config.output_directory
 
         config = PipelineConfig.from_dict({"output_directory": output_dir})
         converter = UnifiedDownloadConverter(config)
@@ -219,7 +249,7 @@ def cleanup_output(output_dir: str = "./output", days_old: int = 30) -> dict:
 
 @mcp.tool()
 def enhanced_cleanup_output(
-    output_dir: str = "./output", time_spec: str = "30d", cleanup_type: str = "comprehensive"
+    output_dir: str = None, time_spec: str = "30d", cleanup_type: str = "comprehensive"
 ) -> dict:
     """
     Enhanced cleanup with multi-temporal support (seconds to days precision).
@@ -233,8 +263,14 @@ def enhanced_cleanup_output(
         Dictionary with cleanup results
     """
     try:
+        from arxiv_mcp.core.enhanced_config import get_pipeline_config
         from arxiv_mcp.core.config import PipelineConfig
         from arxiv_mcp.enhanced.multi_temporal_cleanup import create_enhanced_adapter
+
+        # Use enhanced configuration if no output_dir provided
+        if output_dir is None:
+            enhanced_config = get_pipeline_config()
+            output_dir = enhanced_config.output_directory
 
         config = PipelineConfig.from_dict({"output_directory": output_dir})
         adapter = create_enhanced_adapter(config)

@@ -15,6 +15,7 @@ import sqlite3
 from typing import Any
 import uuid
 
+from ..core.enhanced_config import get_pipeline_config
 from .logging import get_logger
 
 logger = get_logger(__name__)
@@ -114,11 +115,16 @@ class ReadingListManager:
             self.db_path = Path(db_path)
             self.cache_dir = self.db_path.parent
         else:
-            # Use cache_dir approach (legacy)
-            self.cache_dir = Path(cache_dir) if cache_dir else Path.cwd() / "reading_cache"
+            # Use cache_dir approach or enhanced configuration
+            if cache_dir:
+                self.cache_dir = Path(cache_dir)
+            else:
+                # Use enhanced configuration
+                config = get_pipeline_config()
+                self.cache_dir = Path(config.reading_cache_dir)
             self.db_path = self.cache_dir / "reading_lists.db"
 
-        self.cache_dir.mkdir(exist_ok=True)
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
         self._init_database()
 
         logger.info(f"ReadingListManager initialized with cache: {self.cache_dir}")

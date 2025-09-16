@@ -114,16 +114,29 @@ arxiv-mcp-improved/
 ├── examples/               # Usage examples and demos
 ├── config/                 # Configuration files
 ├── scripts/                # Utility and automation scripts
-├── cache/                  # Unified cache systems
+├── cache/                  # Performance-critical cache systems (root level)
 │   ├── arxiv/              # ArXiv API cache
-│   ├── batch/              # Batch processing cache
+│   ├── dependencies/       # Package dependency cache
 │   ├── network/            # Network analysis cache
+│   ├── notifications/      # Paper notification cache
+│   ├── reading/            # Reading list cache
+│   ├── tags/               # Smart tagging cache
+│   ├── trending/           # Trending analysis cache
 │   └── temp/               # Temporary cache
+├── batch_cache/            # Batch processing cache (performance-critical)
+├── dependency_cache/       # Dependency tracking cache (performance-critical) 
+├── network_cache/          # Network request cache (performance-critical)
+├── notification_cache/     # Notification system cache (performance-critical)
+├── tag_cache/              # Tag analysis cache (performance-critical)
 └── .dev/                  # Development artifacts (excluded from git)
-    ├── build/              # Coverage reports, build outputs
-    ├── runtime/            # Logs, generated outputs
-    ├── temp/               # Temporary files
-    └── artifacts/          # CI/CD artifacts
+    ├── build/              # Tool caches (pytest, mypy, ruff, coverage, rope)
+    ├── runtime/            # Runtime data (logs → logs/, output → output/)
+    │   ├── logs/           # Application logs (symlinked as logs/)
+    │   └── output/         # Generated outputs (symlinked as output/)
+    ├── cache/              # Development cache overflow
+    ├── artifacts/          # Test outputs and reports  
+    ├── temp/               # True temporary files (__pycache__, scratch)
+    └── debug/              # Debugging and investigation tools
 ```
 
 See [Development Guidelines](.github/instructions/development-guidelines.instructions.md) for detailed organization principles.

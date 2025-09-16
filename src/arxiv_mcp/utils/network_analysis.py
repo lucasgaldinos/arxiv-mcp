@@ -118,8 +118,14 @@ class NetworkAnalyzer:
 
     def __init__(self, cache_dir: str | None = None):
         """Initialize the network analyzer."""
-        self.cache_dir = Path(cache_dir) if cache_dir else Path.cwd() / "network_cache"
-        self.cache_dir.mkdir(exist_ok=True)
+        if cache_dir:
+            self.cache_dir = Path(cache_dir)
+        else:
+            # Import here to avoid circular imports
+            from ..core.enhanced_config import ConfigurationManager
+            config = ConfigurationManager.load_config()
+            self.cache_dir = Path(config.network_cache_dir)
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
 
         self.db_path = self.cache_dir / "networks.db"
         self._init_database()

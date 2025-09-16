@@ -43,13 +43,23 @@ class PipelineConfig:
 
     # Output configuration
     generate_tex_files: bool = True
-    output_directory: str = "./output"
+    output_directory: str = ".dev/runtime/output"
     preserve_intermediates: bool = False
+
+    # Cache configuration - All cache goes to .dev/cache/
+    batch_cache_dir: str = ".dev/cache/batch"
+    dependency_cache_dir: str = ".dev/cache/dependency"
+    network_cache_dir: str = ".dev/cache/network"
+    notification_cache_dir: str = ".dev/cache/notification"
+    tag_cache_dir: str = ".dev/cache/tag"
+    trending_cache_dir: str = ".dev/cache/trending"
+    reading_cache_dir: str = ".dev/cache/reading"
+    search_analytics_cache_dir: str = ".dev/cache/search_analytics"
 
     # Logging configuration
     log_level: str = "INFO"
     log_format: str = "json"
-    log_file: str | None = None
+    log_file: str | None = ".dev/runtime/logs/arxiv_mcp.log"
 
     # External service configuration
     openai_api_key: str | None = None
@@ -164,11 +174,19 @@ class ConfigurationManager:
             "max_files_per_archive": 1000,
             "enable_sandboxing": True,
             "generate_tex_files": True,
-            "output_directory": "./output",
+            "output_directory": ".dev/runtime/output",
             "preserve_intermediates": False,
+            "batch_cache_dir": ".dev/cache/batch",
+            "dependency_cache_dir": ".dev/cache/dependency", 
+            "network_cache_dir": ".dev/cache/network",
+            "notification_cache_dir": ".dev/cache/notification",
+            "tag_cache_dir": ".dev/cache/tag",
+            "trending_cache_dir": ".dev/cache/trending",
+            "reading_cache_dir": ".dev/cache/reading",
+            "search_analytics_cache_dir": ".dev/cache/search_analytics",
             "log_level": "INFO",
             "log_format": "json",
-            "log_file": None,
+            "log_file": ".dev/runtime/logs/arxiv_mcp.log",
             "openai_api_key": None,
             "anthropic_api_key": None,
             "firecrawl_api_key": None,
@@ -240,6 +258,15 @@ class ConfigurationManager:
             f"{cls.ENV_PREFIX}GENERATE_TEX_FILES": ("generate_tex_files", cls._parse_bool),
             f"{cls.ENV_PREFIX}OUTPUT_DIRECTORY": ("output_directory", str),
             f"{cls.ENV_PREFIX}PRESERVE_INTERMEDIATES": ("preserve_intermediates", cls._parse_bool),
+            # Cache directory environment variables
+            f"{cls.ENV_PREFIX}BATCH_CACHE_DIR": ("batch_cache_dir", str),
+            f"{cls.ENV_PREFIX}DEPENDENCY_CACHE_DIR": ("dependency_cache_dir", str),
+            f"{cls.ENV_PREFIX}NETWORK_CACHE_DIR": ("network_cache_dir", str),
+            f"{cls.ENV_PREFIX}NOTIFICATION_CACHE_DIR": ("notification_cache_dir", str),
+            f"{cls.ENV_PREFIX}TAG_CACHE_DIR": ("tag_cache_dir", str),
+            f"{cls.ENV_PREFIX}TRENDING_CACHE_DIR": ("trending_cache_dir", str),
+            f"{cls.ENV_PREFIX}READING_CACHE_DIR": ("reading_cache_dir", str),
+            f"{cls.ENV_PREFIX}SEARCH_ANALYTICS_CACHE_DIR": ("search_analytics_cache_dir", str),
             f"{cls.ENV_PREFIX}LOG_LEVEL": ("log_level", str),
             f"{cls.ENV_PREFIX}LOG_FORMAT": ("log_format", str),
             f"{cls.ENV_PREFIX}LOG_FILE": ("log_file", str),

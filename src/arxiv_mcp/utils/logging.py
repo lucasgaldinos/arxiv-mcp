@@ -7,13 +7,22 @@ import json
 import logging
 from logging.handlers import RotatingFileHandler
 import os
+from pathlib import Path
+
+from ..core.enhanced_config import get_pipeline_config
 
 
 def setup_logging():
     """Configures structured JSON logging."""
-    log_directory = "logs"
-    os.makedirs(log_directory, exist_ok=True)
-    log_file = os.path.join(log_directory, "arxiv_mcp_server.log")
+    config = get_pipeline_config()
+    
+    if config.log_file:
+        log_file = Path(config.log_file)
+        log_directory = log_file.parent
+        os.makedirs(log_directory, exist_ok=True)
+    else:
+        # Fallback to console only if no log file specified
+        log_file = None
 
     # Custom JSON Formatter
     class JsonFormatter(logging.Formatter):
@@ -35,20 +44,29 @@ def setup_logging():
 
     # Get root logger
     logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
+    logger.setLevel(getattr(logging, config.log_level.upper()))
 
     # Remove existing handlers to avoid duplication
     if logger.hasHandlers():
         logger.handlers.clear()
 
-    # Create a rotating file handler
-    file_handler = RotatingFileHandler(log_file, maxBytes=10 * 1024 * 1024, backupCount=5)
-    file_handler.setFormatter(JsonFormatter())
-    logger.addHandler(file_handler)
+    # Create formatter based on configuration
+    if config.log_format == "json":
+        formatter = JsonFormatter()
+    else:
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        )
+
+    # Create a rotating file handler if log file is configured
+    if log_file:
+        file_handler = RotatingFileHandler(log_file, maxBytes=10 * 1024 * 1024, backupCount=5)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
 
     # Create a console handler for local development (optional)
     console_handler = logging.StreamHandler()
-    console_handler.setFormatter(JsonFormatter())
+    console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
 
     return logging.getLogger(__name__)

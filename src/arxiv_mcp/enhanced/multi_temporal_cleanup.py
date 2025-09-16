@@ -177,7 +177,7 @@ class EnhancedCleanupAdapter:
         self.paper_notifications = paper_notifications
 
     def cleanup_files(
-        self, time_spec: Union[str, int, float], output_dir: str = "./output"
+        self, time_spec: Union[str, int, float], output_dir: str = "output"
     ) -> Dict[str, Any]:
         """
         Enhanced file cleanup with multi-temporal support.
@@ -324,7 +324,7 @@ class EnhancedCleanupAdapter:
             return {"status": "error", "error": str(e)}
 
     def comprehensive_cleanup(
-        self, time_spec: Union[str, int, float], output_dir: str = "./output"
+        self, time_spec: Union[str, int, float], output_dir: str = "output"
     ) -> Dict[str, Any]:
         """
         Perform comprehensive cleanup across all systems.
@@ -402,7 +402,7 @@ def create_enhanced_adapter(config=None) -> EnhancedCleanupAdapter:
 
         if config:
             try:
-                file_saver = FileSaver(output_dir=getattr(config, "output_directory", "./output"))
+                file_saver = FileSaver(output_dir=getattr(config, "output_directory", "output"))
             except Exception as e:
                 logger.warning(f"Could not initialize FileSaver: {e}")
 

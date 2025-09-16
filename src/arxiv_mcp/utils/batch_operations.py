@@ -114,8 +114,14 @@ class BatchProcessor:
     def __init__(self, max_workers: int = 5, cache_dir: str | None = None):
         """Initialize the batch processor."""
         self.max_workers = max_workers
-        self.cache_dir = Path(cache_dir) if cache_dir else Path.cwd() / "batch_cache"
-        self.cache_dir.mkdir(exist_ok=True)
+        if cache_dir:
+            self.cache_dir = Path(cache_dir)
+        else:
+            # Import here to avoid circular imports
+            from ..core.enhanced_config import ConfigurationManager
+            config = ConfigurationManager.load_config()
+            self.cache_dir = Path(config.batch_cache_dir)
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
 
         self.operations: dict[str, BatchOperation] = {}
         self.executor = ThreadPoolExecutor(max_workers=max_workers)

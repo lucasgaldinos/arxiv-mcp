@@ -11,6 +11,7 @@ from pathlib import Path
 import sqlite3
 from typing import Any
 
+from ..core.enhanced_config import get_pipeline_config
 from .logging import structured_logger
 from .metrics import MetricsCollector
 
@@ -40,7 +41,8 @@ class SearchAnalytics:
 
         # Use default cache directory if not specified
         if db_path is None:
-            cache_dir = Path.home() / ".cache" / "arxiv-mcp"
+            config = get_pipeline_config()
+            cache_dir = Path(config.search_analytics_cache_dir)
             cache_dir.mkdir(parents=True, exist_ok=True)
             db_path = cache_dir / "search_analytics.db"
 

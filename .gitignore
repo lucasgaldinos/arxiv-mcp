@@ -41,6 +41,7 @@ dependency_cache/
 network_cache/
 notification_cache/
 reading_cache/
+search_analytics_cache/
 tag_cache/
 trending_cache/
 
