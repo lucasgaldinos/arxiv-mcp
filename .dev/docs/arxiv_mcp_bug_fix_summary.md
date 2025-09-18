@@ -2,8 +2,8 @@
 
 ## 🎯 Bug Fix Overview
 
-**Task**: HIGH priority arxiv-mcp-0 bug fix  
-**Issue**: Files downloaded using absolute paths and raw arxiv_id naming instead of intelligent author-title-year-field kebab-case format  
+**Task**: HIGH priority arxiv-mcp-0 bug fix
+**Issue**: Files downloaded using absolute paths and raw arxiv_id naming instead of intelligent author-title-year-field kebab-case format
 **Status**: ✅ COMPLETED
 
 ## 🔧 Technical Implementation

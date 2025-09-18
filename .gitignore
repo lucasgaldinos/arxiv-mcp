@@ -382,3 +382,4 @@ token.txt
 # END OF ENTERPRISE .gitignore CONFIGURATION
 
 # =============================================================================
+node_modules/

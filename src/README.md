@@ -4,10 +4,10 @@ This directory contains the main source code for the ArXiv MCP server, organized
 
 ## 📁 Architecture Overview
 
-```
+```text
 src/arxiv_mcp/
 ├── __init__.py          # Package initialization and main exports
-├── __main__.py          # CLI entry point  
+├── __main__.py          # CLI entry point
 ├── exceptions.py        # Custom exception hierarchy
 ├── models.py           # Pydantic data models
 ├── tools.py            # MCP tool implementations
@@ -18,7 +18,7 @@ src/arxiv_mcp/
 ├── parsers/            # Content parsing and extraction
 ├── analyzers/          # Content analysis and intelligence
 └── utils/              # Shared utilities and helpers
-```
+```text
 
 ## 🏗️ Module Responsibilities
 
@@ -40,7 +40,7 @@ src/arxiv_mcp/
 - Business rules and validation
 - Cross-cutting concerns
 
-#### `clients/` - External Integration  
+#### `clients/` - External Integration
 
 - ArXiv API client
 - HTTP client abstractions
@@ -56,7 +56,7 @@ src/arxiv_mcp/
 
 #### `parsers/` - Content Extraction
 
-- Document structure analysis  
+- Document structure analysis
 - Metadata extraction
 - Citation parsing
 - Content normalization
@@ -87,12 +87,12 @@ from .exceptions import ArXivMCPError
 # Cross-module imports - absolute
 from arxiv_mcp.core.config import get_config
 from arxiv_mcp.utils.files import save_file
-```
+```python
 
 ### Module Design Principles
 
 1. **Single Responsibility**: Each module has one clear purpose
-2. **Loose Coupling**: Minimal dependencies between modules  
+2. **Loose Coupling**: Minimal dependencies between modules
 3. **High Cohesion**: Related functionality grouped together
 4. **Explicit Dependencies**: Clear imports and interfaces
 
@@ -119,7 +119,7 @@ Example:
     >>> processor = LaTeXProcessor()
     >>> result = processor.convert_to_markdown(latex_content)
 """
-```
+```text
 
 ### Public Interface Guidelines
 
@@ -130,4 +130,4 @@ Example:
 
 ---
 
-*This modular architecture supports scalability, maintainability, and testability of the ArXiv MCP server.*
+_This modular architecture supports scalability, maintainability, and testability of the ArXiv MCP server._
