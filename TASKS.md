@@ -1,24 +1,155 @@
 # TASKS - ArXiv MCP Server v2.4.5
 
-**Comprehensive Implementation Plans and Detailed Task Breakdowns**
-
-This document contains detailed task descriptions, implementation strategies, and comprehensive breakdowns for all major project initiatives. For simple priority-based tracking, see [TODO.md](./TODO.md).
+Authoritative implementation roadmap. High-level priorities live in `TODO.md`; this file captures structured execution plans, success criteria, and phase gates.
 
 ---
 
-## 🎯 **CURRENT CRITICAL TASKS**
+## 🎯 **CURRENT CRITICAL TASKS (ACTIVE)**
 
-### TASK-001: Code Quality Resolution Initiative
+### TASK-000 (CLOSED): Download Reliability & Structural Reorganization
 
-**Objective**: Resolve remaining 142 code quality violations identified by ruff analysis to achieve enterprise-grade code standards.
+Status: ✅ Completed (v2.4.5)  
+Outcome: Success rate 47% → 100%; folder structure now `{paper-name}/{latex,markdown,pdf,metadata}`; gzip/tar, retry/backoff, intelligent naming delivered.  
+Action: No further work – serves as baseline reference.
 
-**Background**: Comprehensive code analysis revealed 391 total violations, with 249 automatically fixed (62% improvement). The remaining 142 violations require manual attention and represent critical quality improvements needed for production deployment.
+Key Achievements Snapshot:
 
-**Research Foundation**: Based on ruff static analysis output and enterprise development standards documented in project guidelines.
+- Robust gzip/tar extraction + fallback
+- Robust gzip/tar extraction + fallback
+- Content-Type validation & retry with exponential backoff
+- Paper-centric directory reorganization
+- Intelligent metadata-driven naming
+
+Historical phases archived below (compact form) for audit only:
+
+**Phase 1 (Historical)** Failure Root Cause Investigation
+
+```yaml
+Duration: 3 days
+Priority: Critical
+Tools: ['mcp_deep-code-rea_escalate_analysis', 'mcp_deep-code-rea_trace_execution_path', 'grep_search', 'semantic_search']
+
+Detailed Tasks:
+  1. Download Failure Analysis:
+     - Investigate 8 failed downloads: HTTP 404, missing files, extraction errors
+     - Analyze ArXiv API response patterns and error conditions
+     - Examine archive extraction pipeline for robustness
+     - Identify missing file dependency patterns causing cascading failures
+  
+  2. Conversion Quality Assessment:
+     - Deep analysis of LaTeX-to-Markdown conversion pipeline
+     - Examine Pandoc configuration and processing chain
+     - Identify EPS/figure conversion bottlenecks
+     - Assess mathematical content preservation issues
+  
+  3. Folder Structure Requirements Analysis:
+     - Document current vs desired folder organization
+     - Plan migration strategy from arxiv-id-based to paper-name-based structure
+     - Design intelligent naming convention implementation
+     - Validate backward compatibility requirements
+```
+
+**Phase 2 (Historical)** Reliability Enhancement
+
+```yaml
+Duration: 4 days
+Priority: Critical
+Tools: ['replace_string_in_file', 'create_file', 'runTests', 'vscode-websearchforcopilot_webSearch']
+
+ArXiv API Integration Improvements:
+  - Enhanced Error Handling:
+    * Implement robust HTTP error recovery and retry mechanisms
+    * Add ArXiv API rate limiting and backoff strategies
+    * Create fallback mechanisms for missing papers
+    * Implement comprehensive logging for failure analysis
+  
+  - Archive Processing Robustness:
+    * Improve extraction handling for various archive formats
+    * Add validation for required files before processing
+    * Implement partial success handling (e.g., LaTeX without figures)
+    * Create recovery mechanisms for corrupted downloads
+
+Figure and Image Processing Pipeline:
+  - EPS/Image Conversion Enhancement:
+    * Implement robust EPS to PDF/PNG conversion for Pandoc
+    * Add missing file detection and alternative sourcing
+    * Create figure dependency resolution system
+    * Implement image optimization for different output formats
+  
+  - LaTeX Compilation Reliability:
+    * Enhanced missing dependency detection and handling
+    * Implement alternative compilation strategies for partial files
+    * Add comprehensive error reporting for debugging
+    * Create fallback mechanisms for failed PDF generation
+
+Success Criteria:
+  - Achieve >85% download success rate (vs current 47%)
+  - Reduce missing file failures to <5%
+  - Implement robust error recovery and logging
+  - Maintain full backward compatibility
+```
+
+**Phase 3 (Historical)** Early Conversion Quality Attempts (superseded by TASK-002)
+
+```yaml
+Duration: 1 week
+Priority: High
+Tools: ['mcp_pandoc', 'replace_string_in_file', 'vscode-websearchforcopilot_webSearch']
+
+LaTeX-to-Markdown Pipeline Improvements:
+  - Mathematical Content Preservation:
+    * Enhance LaTeX equation processing and MathJax compatibility
+    * Implement robust table structure conversion
+    * Add advanced citation extraction and formatting
+    * Create semantic markup preservation system
+  
+  - Pandoc Configuration Optimization:
+    * Research and implement advanced Pandoc filters
+    * Add custom processing for academic paper structures
+    * Implement figure reference resolution in markdown
+    * Create quality validation scoring system
+
+Folder Structure Redesign:
+  - Paper-Centric Organization Implementation:
+    * Design: `{paper-name}/latex/`, `{paper-name}/markdown/`, `{paper-name}/pdf/`, `{paper-name}/metadata/`
+    * Implement intelligent filename generation: `author-title-year` format
+    * Create migration utility for existing downloads
+    * Update all MCP tools to use new structure
+  
+  - User Experience Enhancement:
+    * Implement consistent naming conventions across all outputs
+    * Add manifest files with processing metadata
+    * Create navigation-friendly directory structures
+    * Implement search and discovery utilities
+
+Quality Metrics and Validation:
+  - Conversion Quality Scoring:
+    * Implement automated quality assessment (target: 80%)
+    * Add LaTeX command preservation metrics
+    * Create figure and table conversion validation
+    * Implement comprehensive quality reporting
+
+Success Criteria:
+  - Achieve 80% conversion quality score (vs current 40%)
+  - Implement new folder structure with migration
+  - Zero LaTeX command bleeding in markdown output
+  - Comprehensive quality validation and reporting
+```
+
+#### Closure Summary
+
+All structural + reliability objectives achieved; conversion quality target migrated to TASK-002.
+
+---
+
+### TASK-001: Code Quality Resolution Initiative (ACTIVE)
+
+Objective: Reduce remaining ~142 ruff violations → 0 (security & critical first).  
+Baseline: 391 initial → 249 auto-fixed (≈62% resolved). Remaining represent manual semantic refactors.
 
 #### Implementation Strategy
 
-**Phase 1: Violation Analysis and Categorization (Week 1)**
+##### Phase 1: Violation Analysis and Categorization (Completed)
 
 ```yaml
 Duration: 2 days
@@ -45,7 +176,7 @@ Detailed Tasks:
      - Create rollback procedures for complex changes
 ```
 
-**Phase 2: Security and Critical Fixes (Week 1-2)**
+##### Phase 2: Security and Critical Fixes (IN PROGRESS)
 
 ```yaml
 Duration: 3 days
@@ -81,7 +212,7 @@ Success Criteria:
   - No functional regressions introduced
 ```
 
-**Phase 3: Style and Optimization (Week 2)**
+##### Phase 3: Style and Optimization (UPCOMING)
 
 ```yaml
 Duration: 2 days
@@ -107,31 +238,32 @@ Quality Validation:
   - Integration testing validation
 ```
 
-#### Expected Outcomes
+#### Success Criteria
 
-- **Code Quality**: 100% compliance with enterprise coding standards
-- **Security**: Zero security vulnerabilities in static analysis
-- **Maintainability**: Improved code organization and readability
-- **Performance**: No performance degradation from quality fixes
-- **Testing**: Maintained 100% test passing rate throughout fixes
+| Dimension | Target | Validation |
+|----------|--------|------------|
+| Security (S101/S108) | 0 occurrences | ruff security profile |
+| Imports (F401/F811) | 0 | ruff report diff |
+| Long lines (E501) | 0 (except intentional exclusions) | ruff + manual spot |
+| Docstring coverage (public modules) | 100% | custom scan task |
+| Mypy strict pilot (`utils/`) | Pass | mypy --strict subset |
 
 ---
 
-### TASK-002: Markdown Conversion Quality Enhancement
+### TASK-002: Markdown Conversion Quality Enhancement (ACTIVE)
 
-**Objective**: Achieve 80% markdown conversion quality target through systematic integration of state-of-the-art techniques identified in comprehensive research phase.
+Objective: Elevate conversion heuristic score from ~40–50% → ≥80% across benchmark set (5 diverse papers).  
+Drivers: Improve math/table fidelity, citation extraction, structural semantics, and fallback resilience.
 
-**Background**: Current markdown conversion achieves approximately 40% quality (46 unconverted LaTeX commands detected). Research identified Marker-PDF techniques achieving 95.67% heuristic score and GLiNER+spaCy for enhanced citation extraction.
+Baseline Signals:
 
-**Research Foundation**:
-
-- Marker-PDF: 95.67% heuristic score, 96.67% for scientific papers, 0.18s/page processing
-- GLiNER+spaCy: 2024 state-of-art zero-shot NER for academic entities
-- Quality validation framework: Academic standards with multi-dimensional assessment
+- ~46 raw LaTeX commands leaking per representative paper
+- Tables w/ multirow/multicol losing structure
+- Citations: regex-based extraction (functional, limited context awareness)
 
 #### Implementation Strategy
 
-**Phase 1: Foundation Assessment and Baseline (Week 1)**
+##### Phase 1: Baseline & Instrumentation (IN PROGRESS)
 
 ```yaml
 Duration: 3 days
@@ -158,7 +290,7 @@ Current System Analysis:
     * Document structure preservation: Section hierarchy and formatting
 ```
 
-**Phase 2: Marker-PDF Integration Strategy (Week 2-3)**
+##### Phase 2: Advanced Layout & Filter Integration (SCHEDULED)
 
 ```yaml
 Duration: 1.5 weeks
@@ -198,7 +330,7 @@ Technical Implementation:
     * Performance monitoring and alerting
 ```
 
-**Phase 3: GLiNER+spaCy Citation Enhancement (Week 3-4)**
+##### Phase 3: GLiNER+spaCy Citation Enhancement (PLANNED)
 
 ```yaml
 Duration: 1 week
@@ -238,34 +370,26 @@ Quality Improvements:
     * Bibliography organization
 ```
 
-#### Success Metrics and Validation
+#### Success Metrics
 
-**Quantitative Targets**:
-
-- Conversion Quality: 80% heuristic score (vs current ~40%)
-- Processing Speed: <2 seconds per academic paper
-- Citation Accuracy: >90% precision, >85% recall
-- Table Preservation: >75% structure accuracy
-- Math Handling: >95% LaTeX equation preservation
-
-**Quality Gates**:
-
-- Automated Quality Threshold: All papers must achieve ≥80% quality score
-- Performance Regression: <10% speed degradation during enhancement
-- Error Rate: <5% conversion failures
-- Test Suite: Maintained 100% passing rate throughout implementation
+| Metric | Current | Target | Measurement |
+|--------|---------|--------|-------------|
+| Heuristic composite | ~45% | ≥80% | scoring harness (math/table/citation/structure) |
+| Citation precision | ~? (baseline capture) | ≥90% | sample annotated set |
+| Citation recall | ~? | ≥85% | same set |
+| Table structure retention | Low (qualitative) | ≥75% | cell alignment diff tool |
+| Math preservation | <90% | ≥95% | LaTeX command retention audit |
+| Processing speed | TBD | <2s/MB | timed benchmark harness |
 
 ---
 
-### TASK-003: Documentation and Workspace Organization
+### TASK-003: Documentation & Workspace Organization (ACTIVE)
 
-**Objective**: Complete Diátaxis documentation framework implementation and enforce enterprise workspace organization standards.
-
-**Background**: Current documentation structure exists but needs expansion for comprehensive user journeys. Workspace organization requires enforcement of .dev/ directory structure and elimination of remaining compliance violations.
+Objective: Complete Diátaxis coverage + enforce absolute workspace compliance (no value files in `.dev/temp/`, consistent `uv run` usage, directory READMEs).
 
 #### Implementation Strategy
 
-**Phase 1: Diátaxis Framework Completion (Week 1-2)**
+##### Phase 1: Diátaxis Framework Completion (PARTIALLY COMPLETE)
 
 ```yaml
 Duration: 1.5 weeks
@@ -312,7 +436,7 @@ Reference Documentation:
     * Deployment requirements
 ```
 
-**Phase 2: Workspace Organization Enforcement (Week 2)**
+##### Phase 2: Workspace Organization Enforcement (IN PROGRESS)
 
 ```yaml
 Duration: 3 days
@@ -339,21 +463,15 @@ Directory Structure Validation:
     * Documentation of organization standards
 ```
 
-#### Expected Outcomes
+#### Success Criteria
 
-**Documentation Quality**:
-
-- Complete user journey coverage from beginner to advanced
-- Problem-solving guides for common issues
-- Comprehensive API and technical reference
-- Clear integration and deployment guidance
-
-**Workspace Compliance**:
-
-- 100% enterprise workspace organization compliance
-- Automated enforcement and validation
-- Clean development environment for team collaboration
-- Proper artifact isolation and management
+| Domain | Target | Validation |
+|--------|--------|------------|
+| Tutorials breadth | Beginner + advanced workflows | docs audit checklist |
+| How-to coverage | Top 8 user tasks | index manifest |
+| Reference completeness | All MCP tools + errors taxonomy | generated TOOLS.md + errors.md |
+| Workspace violations | 0 (daily scan) | `scripts/validate_workspace.py --scan-violations` |
+| README coverage in `.dev/` dirs | 100% | script audit |
 
 ---
 
@@ -361,7 +479,7 @@ Directory Structure Validation:
 
 ### Quality Enhancement Implementation Plan
 
-**Source**: [quality_enhancement_implementation_plan.md](.dev/docs/enhancements/quality_enhancement_implementation_plan.md)
+**Source**: *Implementation plan integrated directly into this TASKS.md file*
 
 **Summary**: Comprehensive 8-week roadmap for achieving 80% conversion quality through systematic integration of state-of-the-art techniques from Marker-PDF, enhanced citation extraction, and systematic quality improvements.
 
@@ -390,11 +508,9 @@ Directory Structure Validation:
 
 ## 🔧 **DEVELOPMENT INFRASTRUCTURE TASKS**
 
-### Pre-commit Quality Gates Implementation
+### TASK-004: Pre-commit Quality Gates (ACTIVE)
 
-**Objective**: Establish automated quality enforcement preventing regression and ensuring enterprise development standards.
-
-**Implementation**:
+Objective: Block low-quality commits; fast feedback <25s.
 
 ```yaml
 Components:
@@ -408,9 +524,9 @@ Tools: ['.pre-commit-config.yaml', 'create_file', 'run_in_terminal']
 Success Criteria: Zero quality violations in commits
 ```
 
-### Testing Framework Enhancement
+### TASK-005: Testing Framework Enhancement (ACTIVE)
 
-**Objective**: Expand testing capabilities with performance benchmarks and comprehensive edge case coverage.
+Objective: Add performance, reliability, and edge-case resilience guardrails.
 
 **Implementation**:
 
@@ -430,9 +546,7 @@ Success Criteria: Comprehensive test automation with performance tracking
 
 ## 📈 **FUTURE ENHANCEMENT TASKS**
 
-### GPU Acceleration Investigation
-
-**Objective**: Research and plan GPU-accelerated processing capabilities for enhanced performance.
+### TASK-006: GPU Acceleration Investigation (DEFERRED)
 
 **Scope**:
 
@@ -444,9 +558,7 @@ Success Criteria: Comprehensive test automation with performance tracking
 **Timeline**: Future sprint after quality completion
 **Priority**: Low (deferred until quality targets achieved)
 
-### Academic Workflow Integration Expansion
-
-**Objective**: Integrate additional MCP servers and develop comprehensive academic research toolkit.
+### TASK-007: Academic Workflow Integration Expansion (DEFERRED)
 
 **Components**:
 
@@ -460,6 +572,5 @@ Success Criteria: Comprehensive test automation with performance tracking
 
 ---
 
-**Last Updated**: September 16, 2025  
-**Format**: Comprehensive task breakdowns with implementation strategies  
-**Cross-Reference**: See [TODO.md](./TODO.md) for simple priority tracking
+**Last Updated**: September 17, 2025  
+**Cross-Reference**: See [TODO.md](./TODO.md) for sprint view | Historical sections compressed for clarity.

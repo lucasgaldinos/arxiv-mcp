@@ -112,16 +112,16 @@ repos:
         files: '\.md$'
         exclude: ^(\.dev/|logs/|output/|cache/|htmlcov/)
 
-  # Custom workspace validation (workspace-agnostic)
+  # Custom workspace validation (manual only, correct script path)
   - repo: local
     hooks:
       - id: workspace-validation
         name: Workspace organization validation
-        entry: uv run python .dev/tools/validate_workspace.py --quiet
+        entry: uv run python scripts/validate_workspace.py
         language: system
         pass_filenames: false
-        always_run: true
-        stages: [manual]  # Only run when explicitly requested
+        always_run: false
+        stages: [manual]
 
 # Configuration
 default_install_hook_types: [pre-commit, pre-push]

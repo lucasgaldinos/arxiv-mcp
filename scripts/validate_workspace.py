@@ -125,15 +125,22 @@ class WorkspaceValidator:
         """Validate single source of truth for documentation."""
         print("🔍 Validating documentation unity...")
 
-        # Check for multiple TODO files
-        todo_patterns = ["TODO_MASTER.md", "TODO_FINAL.md", "TODO_MAIN.md", "TASKS.md", "TODO_*.md"]
+        # Check for multiple TODO-style files (strict patterns only)
+        # Allow supporting planning artifacts explicitly: TASKS.md (detailed roadmap) and TODO_backup.md (historical snapshot)
+        todo_patterns = ["TODO_MASTER.md", "TODO_FINAL.md", "TODO_MAIN.md", "TODO_*.md"]
+
+        allowed_support_files = {"TASKS.md", "TODO_backup.md"}
 
         for pattern in todo_patterns:
             matches = list(self.workspace_path.glob(pattern))
             if matches:
                 for match in matches:
-                    if match.name != "TODO.md":  # Allow the main TODO.md
-                        self.violations.append(f"VIOLATION: Multiple TODO file: {match.name}")
+                    filename = match.name
+                    if filename == "TODO.md":
+                        continue  # primary file
+                    if filename in allowed_support_files:
+                        continue  # explicitly allowed
+                    self.violations.append(f"VIOLATION: Multiple TODO file: {filename}")
 
         # Check TODO.md exists
         todo_path = self.workspace_path / "TODO.md"

@@ -1,120 +1,91 @@
-# Changelog# Changelog
+# Changelog
 
-All notable changes to this project will be documented in this file.All notable changes to this project will be documented in this file.
+## [Unreleased]
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+### Added (Major Improvements – 2025-09-17)
 
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## [Unreleased]## [Unreleased]
-
-### Added### Added
-
-- **PDF Support**: Complete PDF file saving functionality for ArXiv papers- Comprehensive workspace organization enforcement
-
-- PDF directory structure in output/pdf/ with organized arxiv_id subdirectories- Enterprise-grade directory structure with performance-optimized cache placement
-
-- save_pdf_file method in FileSaver class for proper PDF persistence- Enhanced development tool configuration with .dev/ structure integration
-
-- PDF papers listing in get_output_structure for directory content tracking- Workspace compliance validation with 100% compliance achievement
-
-- Symlinked runtime directories for backward compatibility (logs/ → .dev/runtime/logs/, output/ → .dev/runtime/output/)
+- Complete overhaul of ArXiv paper processing pipeline (systematic processing improvements)
+- Paper-name–centric directory structure `{paper-name}/{latex,markdown,pdf,metadata}/`
+  - Intelligent paper directory naming from metadata (e.g. `ashish-attention-all-you-need-1706/`)
+  - Human-readable author–title–year patterns
+  - Proper preservation of nested subdirectories (Figures/, vis/, etc.)
+- Enhanced gzip/tar archive handling with native `application/gzip` detection & extraction
+- Content-Type validation distinguishing LaTeX source vs PDF-only papers
+- Robust error recovery (exponential backoff retries, fallback extraction strategies, multi-strategy main TeX detection)
+- Intelligent filename generation (author-title-year-field kebab case)
+- Workspace path resolver & intelligent naming integration across FileSaver / FastMCP tools
+- PDF support: end-to-end saving, organized output structure, batch integration
+- Symlinked runtime directories (`logs/`, `output/`) to `.dev/runtime/` for backward compatibility
+- Enterprise workspace organization enforcement (100% compliance achieved)
+- Markdown quality enhancement pipeline (8-metric scoring + TOC generation)
 
 ### Fixed
+
+- Root cause: gzip handling errors ("not a gzip file") – resolved; success on complex multi-file papers
+- Folder structure redesign (legacy `{format}/{arxiv_id}/` → new paper-centric layout)
+- Automatic creation of nested extraction directories (Figures/, vis/)
+- LaTeX→Markdown converter metadata passing & method integration
+- Path resolution errors (eliminated absolute server path usage; now workspace-relative)
+- include_pdf parameter reliably persists PDFs (single & batch operations)
+- Batch PDF saving and structure reporting in `get_output_structure`
+- Documentation broken links (README.md, TASKS.md, PROJECT_ROOT.md) fixed
+- Duplicate / outdated TODO.md sections removed
+- VS Code MCP configuration conflicts resolved (Phase 4 deployment)
+- PDF saving fallback logic (graceful degradation when compilation fails)
 
 ### Changed
 
-- **Critical**: include_pdf parameter now correctly saves PDF files to disk
+- BREAKING: Runtime artifacts relocated into `.dev/` (with symlinks) while performance-critical caches remain at root
+- FileSaver enhanced: supports intelligent naming & PDF files
+- UnifiedDownloadConverter extended for PDF saving workflow
+- Output structure now includes PDF directory info & intelligent names
+- Development tools (pytest, mypy, ruff, coverage, rope) configured to use `.dev/build/` caches
+- Improved configuration & cache path management for enterprise standards
+- File naming upgraded (e.g. `2412.08992v1.pdf` → `kandula-benchmarking-gpu-optimized-quantum-2024-ai.pdf`)
 
-- **Critical**: Output directory path resolution - files now save to client's working directory instead of MCP server directory- **BREAKING**: Moved runtime artifacts to .dev/ structure while preserving performance-critical caches at root level
+### Technical / Infrastructure
 
-- PDF compilation integration - PDF content from pipeline now properly saved when include_pdf=true- Updated all development tools (pytest, mypy, ruff, coverage, rope) to use .dev/build/ cache directories
+- WorkspacePathResolver & FilenameGenerator foundational utilities
+- Comprehensive workspace compliance validation tooling
+- Error handling standardized with explicit logging & observable failures
+- PDF workflow: pipeline → FileSaver.save_pdf_file → structured output/pdf/{arxiv_id}/{arxiv_id}.pdf
+- Symlink strategy enables legacy path compatibility without structural regressions
+- Centralized cache strategy (root-level performance caches vs `.dev/` development artifacts)
+- All VS Code tasks normalized to `uv run` environment pattern
 
-- Batch operations PDF support - include_pdf parameter working correctly in batch_download_and_convert- Enhanced configuration management with proper cache path handling
+### Directory Structure Changes
 
-- Path resolution for both single and batch download operations using absolute paths- Improved workspace organization following enterprise development standards
-
-### Changed### Technical Details
-
-- FileSaver class now supports PDF files alongside LaTeX, Markdown, and metadata files- **Cache Strategy**: Performance-critical application caches remain at root level for optimal access patterns
-
-- UnifiedDownloadConverter updated to handle PDF saving in download_and_convert workflow- **Development Isolation**: Build tools and development artifacts properly isolated in .dev/ structure  
-
-- Output structure reporting now includes PDF directory information- **Backward Compatibility**: Created symlinks to maintain existing workflow compatibility
-
-- Enhanced error handling for PDF saving operations with detailed logging- **Tool Integration**: All VS Code tasks properly configured to use `uv run` consistently
-
-- **Compliance**: Achieved 100% workspace compliance according to enterprise standards
-
-### Technical Details
-
-### Files Moved
-
-- **PDF Workflow**: Pipeline generates PDF content → FileSaver.save_pdf_file → Organized output/pdf/{arxiv_id}/{arxiv_id}.pdf structure
-
-- **Path Resolution**: Fixed MCP server vs client working directory path resolution using os.getcwd() and absolute paths- `logs/` → `.dev/runtime/logs/` (symlinked for compatibility)
-
-- **Integration**: PDF saving seamlessly integrated into existing LaTeX/Markdown conversion workflow- `output/` → `.dev/runtime/output/` (symlinked for compatibility)
-
-- **Error Handling**: Proper exception handling with fallback to non-PDF operation if PDF compilation fails- `test_output/` → `.dev/artifacts/test_output/`
-
+- `logs/` → `.dev/runtime/logs/` (symlink)
+- `output/` → `.dev/runtime/output/` (symlink)
+- `test_output/` → `.dev/artifacts/test_output/`
 - `.ruff_cache/` → `.dev/build/ruff_cache/`
+- `.ropeproject/` → `.dev/build/rope_cache/`
 
-## [1.0.0] - 2025-09-16- `.ropeproject/` → `.dev/build/rope_cache/`
+### Performance-Critical Caches (Remain at Root)
 
-### Added### Performance-Critical Files Preserved at Root
+- `cache/`, `batch_cache/`, `dependency_cache/`, `network_cache/`, `notification_cache/`, `tag_cache/`
 
-- Initial ArXiv MCP server implementation- `cache/` - Unified cache systems
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-- FastMCP framework integration with 11 ArXiv tools- `batch_cache/` - Batch processing cache
+## [2.4.6] - 2025-09-15
 
-- LaTeX to Markdown conversion with Pandoc- `dependency_cache/` - Dependency tracking cache
+### Added
 
-- ArXiv paper download and processing pipeline- `network_cache/` - Network request cache  
-
-- Citation extraction and analysis tools- `notification_cache/` - Notification system cache
-
-- Batch processing capabilities- `tag_cache/` - Tag analysis cache
-
-- Comprehensive testing framework
-
-- Documentation and workspace organization# Changelog
-
-### Features## [2.4.6] - 2025-09-15
-
-- Download ArXiv papers (source and compiled PDF)### Added
-
-- Convert LaTeX to Markdown with metadata extraction
-
-- Extract and analyze citations from papers- 🎯 **Comprehensive Markdown Quality Enhancement Pipeline**
-
-- Batch download and convert multiple papers  - Created automated quality validation script (`scripts/validate_markdown_quality.py`)
-
-- Search ArXiv database with advanced filtering  - Added 8-metric quality scoring system with 0.8 target threshold
-
-- Performance metrics and processing analytics  - Implemented document structure enhancement with table of contents generation
-
-- Enhanced cleanup with multi-temporal support  - Added proper heading anchor IDs for better navigation
-
-- Quality validation for conversion output
+- 🎯 **Comprehensive Markdown Quality Enhancement Pipeline**
+  - Created automated quality validation script (`scripts/validate_markdown_quality.py`)
+  - Added 8-metric quality scoring system with 0.8 target threshold
+  - Implemented document structure enhancement with table of contents generation
+  - Added proper heading anchor IDs for better navigation
 
 ### Fixed
 
-### Architecture
-
 - 🚫 **Duplicate YAML Frontmatter Issue** - Major quality improvement
-
-- Modular pipeline design with pluggable processors  - Eliminated duplicate YAML blocks by detecting pandoc's automatic generation
-
-- Unified converter for seamless format handling  - Enhanced existing YAML frontmatter instead of duplicating content
-
-- File organization with structured output directories  - Added intelligent merging of pandoc and custom metadata
-
-- Configuration management with production/development profiles- 📝 **LaTeX Comment Bleeding** - Enhanced text processing
-
-- Comprehensive logging and error handling  - Improved LaTeX comment removal to prevent '%' characters in output
-
-- Type-safe implementation with modern Python practices  - Enhanced pre-processing to handle various comment patterns
+  - Eliminated duplicate YAML blocks by detecting pandoc's automatic generation
+  - Enhanced existing YAML frontmatter instead of duplicating content
+  - Added intelligent merging of pandoc and custom metadata
+- 📝 **LaTeX Comment Bleeding** - Enhanced text processing
+  - Improved LaTeX comment removal to prevent '%' characters in output
+  - Enhanced pre-processing to handle various comment patterns
   - Fixed malformed abstracts with incomplete sentences
 - 🔗 **Figure Reference Formatting** - Professional academic presentation
   - Fixed malformed references like `Fig.[\[fig:1\]](#fig:1){reference-type="ref"}`
@@ -141,6 +112,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ **Quality Score Achievement**: Papers with proper structure now achieve 0.8+ quality scores
 - 🎯 **Test Results**: 1911.03674 achieved 0.856 score (above 0.8 threshold)
 - 📈 **Conversion Success**: 50% pass rate on test corpus with enhanced pipeline
+
+## [1.0.0] - 2025-09-16
+
+### Added
+
+- Initial ArXiv MCP server implementation
+- FastMCP framework integration with 11 ArXiv tools
+- LaTeX to Markdown conversion with Pandoc
+- ArXiv paper download and processing pipeline
+- Citation extraction and analysis tools
+- Batch processing capabilities
+- Comprehensive testing framework
+- Documentation and workspace organization
+
+### Features
+
+- Download ArXiv papers (source and compiled PDF)
+- Convert LaTeX to Markdown with metadata extraction
+- Extract and analyze citations from papers
+- Batch download and convert multiple papers  
+- Search ArXiv database with advanced filtering  
+- Performance metrics and processing analytics  
+- Enhanced cleanup with multi-temporal support  
+- Quality validation for conversion output
+
+### Architecture
+
+- Modular pipeline design with pluggable processors  
+- Unified converter for seamless format handling  
+- File organization with structured output directories  
+- Configuration management with production/development profiles
+- Comprehensive logging and error handling  
+- Type-safe implementation with modern Python practices  
 
 ## [0.2.2] - 2024-09-15
 
