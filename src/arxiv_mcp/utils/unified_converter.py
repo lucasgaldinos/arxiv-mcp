@@ -81,22 +81,45 @@ class UnifiedDownloadConverter:
 
             main_tex_file = result["main_tex_file"]
 
+            # Pre-extract metadata for directory naming
+            paper_metadata = None
+            if save_markdown or save_latex:
+                # Get the main TeX content for metadata extraction
+                tex_content = files[main_tex_file].decode("utf-8", errors="ignore")
+                conversion_result = self.markdown_converter.convert_with_metadata(
+                    tex_content, arxiv_id
+                )
+                if conversion_result["success"]:
+                    paper_metadata = conversion_result["metadata"]
+
             # Save LaTeX files if requested
             if save_latex:
-                latex_result = self.file_saver.save_latex_files(arxiv_id, files, main_tex_file)
+                latex_result = self.file_saver.save_latex_files(
+                    arxiv_id, files, main_tex_file, paper_metadata
+                )
                 response["formats"].append("latex")
                 response["files"]["latex"] = latex_result
                 logger.info(f"Saved LaTeX files for {arxiv_id}")
 
             # Convert and save Markdown if requested
             if save_markdown:
-                # Get the main TeX content
-                tex_content = files[main_tex_file].decode("utf-8", errors="ignore")
+                # Use pre-extracted metadata or extract fresh if not available
+                if paper_metadata is None:
+                    # Get the main TeX content
+                    tex_content = files[main_tex_file].decode("utf-8", errors="ignore")
 
-                # Convert to markdown with metadata extraction
-                conversion_result = self.markdown_converter.convert_with_metadata(
-                    tex_content, arxiv_id
-                )
+                    # Convert to markdown with metadata extraction
+                    conversion_result = self.markdown_converter.convert_with_metadata(
+                        tex_content, arxiv_id
+                    )
+                else:
+                    # Use the already extracted metadata and conversion
+                    conversion_result = {
+                        "success": True,
+                        "metadata": paper_metadata,
+                        "markdown": self.markdown_converter.convert(tex_content, paper_metadata),
+                        "conversion_method": "pandoc_with_metadata",
+                    }
 
                 if conversion_result["success"]:
                     # Save markdown file with YAML frontmatter
@@ -133,8 +156,10 @@ class UnifiedDownloadConverter:
             # Save PDF if requested and available
             if include_pdf and result.get("pdf_content"):
                 try:
+                    # Use metadata from markdown conversion if available
+                    pdf_metadata = response.get("metadata", {"arxiv_id": arxiv_id})
                     pdf_path = self.file_saver.save_pdf_file(
-                        arxiv_id, result["pdf_content"]
+                        arxiv_id, result["pdf_content"], pdf_metadata
                     )
                     response["formats"].append("pdf")
                     response["files"]["pdf"] = {
