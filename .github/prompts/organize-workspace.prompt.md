@@ -4,7 +4,7 @@ name: organize-workspace
 description: Organize the workspace following best practices.
 ---
 
-#think You must break this process step by step, explictly preselecting tools use [#file:0-tool_usage](../../infrastructure/0-tool_usage).
+# think You must break this process step by step, explictly preselecting tools use [#file:0-tool_usage](../../infrastructure/0-tool_usage)
 
 1. Familiarize yourself with this codebase (`tree -a`).
    - look for loose files, misplaced files, inconsistent naming conventions, etc.

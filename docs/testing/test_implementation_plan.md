@@ -6,7 +6,7 @@
 **Timeline**: 3-5 days intensive implementation\
 **Priority**: BLOCKING enterprise readiness
 
-______________________________________________________________________
+---
 
 ## **Module 1: tools.py (28.98% → 90%+ coverage)**
 
@@ -17,35 +17,30 @@ Based on coverage report missing lines 224-226, 236-255, 266-286, etc.
 #### **High Priority Functions (Core MCP Interface)**
 
 1. **handle_search_arxiv** (Line 222)
-
    - **Mock Requirements**: ArxivAPIClient, async responses
    - **Test Cases**: Valid query, invalid query, filter combinations, error handling
    - **Assertions**: Response structure, paper data format, error propagation
    - **Estimated Effort**: 2 hours
 
 1. **handle_download_and_convert_paper** (Line 620)
-
    - **Mock Requirements**: ArxivPipeline, file system operations
    - **Test Cases**: Valid paper ID, invalid ID, conversion success/failure
    - **Assertions**: Download success, conversion quality, file creation
    - **Estimated Effort**: 2 hours
 
 1. **handle_batch_download_and_convert** (Line 648)
-
    - **Mock Requirements**: Batch operations, concurrent processing
    - **Test Cases**: Multiple papers, parallel processing, error handling
    - **Assertions**: Batch completion, individual results, resource management
    - **Estimated Effort**: 2 hours
 
 1. **handle_extract_citations** (Line 403)
-
    - **Mock Requirements**: CitationParser
    - **Test Cases**: Text with citations, no citations, malformed text
    - **Assertions**: Citation extraction accuracy, format validation
    - **Estimated Effort**: 1.5 hours
 
 1. **handle_analyze_citation_network** (Line 449)
-
    - **Mock Requirements**: NetworkAnalyzer, citation data
    - **Test Cases**: Valid network data, empty network, complex relationships
    - **Assertions**: Network structure, analysis results
@@ -61,7 +56,7 @@ Based on coverage report missing lines 224-226, 236-255, 266-286, etc.
 
 **Total Estimated Effort for tools.py**: 12-14 hours
 
-______________________________________________________________________
+---
 
 ## **Module 2: latex_fetcher.py (0.00% → 90%+ coverage)**
 
@@ -72,7 +67,6 @@ All 284 lines currently untested.
 #### **Core Class: ArxivLatexFetcher**
 
 1. **fetch_arxiv_paper_content** (Main method)
-
    - **Mock Requirements**: aiohttp responses, tarfile operations, file system
    - **Test Cases**:
      - Valid arXiv ID with LaTeX source
@@ -84,7 +78,6 @@ All 284 lines currently untested.
    - **Estimated Effort**: 4 hours
 
 1. **Private methods and utilities**
-
    - **\_extract_latex_files**: Archive extraction logic
    - **\_find_main_tex_file**: Main file detection
    - **\_validate_download**: Content validation
@@ -92,7 +85,7 @@ All 284 lines currently untested.
 
 **Total Estimated Effort for latex_fetcher.py**: 6 hours
 
-______________________________________________________________________
+---
 
 ## **Module 3: arxiv_api.py (11.98% → 90%+ coverage)**
 
@@ -103,28 +96,25 @@ Missing lines 29-31, 35-41, 72-101, 111-141, etc.
 #### **API Client Methods**
 
 1. **search_papers** (Core search functionality)
-
    - **Mock Requirements**: HTTP responses, XML parsing
    - **Test Cases**: Valid queries, invalid queries, network errors, malformed XML
    - **Assertions**: Paper data parsing, error handling, rate limiting
    - **Estimated Effort**: 3 hours
 
 1. **download_paper** (Download functionality)
-
    - **Mock Requirements**: File download, stream handling
    - **Test Cases**: Valid downloads, network failures, corrupted files
    - **Assertions**: File integrity, error propagation
    - **Estimated Effort**: 2 hours
 
 1. **rate_limiting** and **retry_logic**
-
    - **Mock Requirements**: HTTP status codes, timing
    - **Test Cases**: Rate limit handling, retry scenarios
    - **Estimated Effort**: 2 hours
 
 **Total Estimated Effort for arxiv_api.py**: 7 hours
 
-______________________________________________________________________
+---
 
 ## **Module 4: network_analysis.py (16.59% → 90%+ coverage)**
 
@@ -135,19 +125,17 @@ Missing lines 26-29, 53-56, 70-71, etc.
 #### **Network Analysis Methods**
 
 1. **analyze_network** (Core analysis)
-
    - **Mock Requirements**: NetworkX graphs, citation data
    - **Test Cases**: Various network topologies, empty networks, large networks
    - **Estimated Effort**: 3 hours
 
 1. **centrality_metrics** and **community_detection**
-
    - **Mock Requirements**: Graph algorithms, metric calculations
    - **Estimated Effort**: 2 hours
 
 **Total Estimated Effort for network_analysis.py**: 5 hours
 
-______________________________________________________________________
+---
 
 ## **Module 5: batch_operations.py (27.78% → 90%+ coverage)**
 
@@ -158,19 +146,17 @@ Missing lines 133-134, 143-163, 167-184, etc.
 #### **Batch Processing Methods**
 
 1. **process_batch** (Core batch logic)
-
    - **Mock Requirements**: Concurrent processing, resource management
    - **Test Cases**: Small batches, large batches, error scenarios
    - **Estimated Effort**: 4 hours
 
 1. **resource_management** and **progress_tracking**
-
    - **Mock Requirements**: Memory monitoring, progress callbacks
    - **Estimated Effort**: 2 hours
 
 **Total Estimated Effort for batch_operations.py**: 6 hours
 
-______________________________________________________________________
+---
 
 ## **IMPLEMENTATION TIMELINE**
 
@@ -199,7 +185,7 @@ ______________________________________________________________________
 - **Morning (2h)**: Final coverage validation
 - **Afternoon (2h)**: Fix any remaining gaps
 
-______________________________________________________________________
+---
 
 ## **SUCCESS CRITERIA**
 
@@ -224,7 +210,7 @@ ______________________________________________________________________
 - **Edge Cases**: Error conditions and boundary cases covered
 - **Performance**: Tests complete within reasonable time limits
 
-______________________________________________________________________
+---
 
 **Total Estimated Effort**: 36-40 hours over 5 days\
 **Critical Success Factor**: Must maintain existing functionality while adding comprehensive test coverage

@@ -1,4 +1,4 @@
-______________________________________________________________________
+---
 
 title: Directory-by-Directory Analysis and Reorganization Assessment
 description: Detailed evaluation of each directory in arxiv-mcp-improved workspace with recommendations
@@ -14,7 +14,7 @@ tags:
 - lucas_galdino
   confidence_level: high
 
-______________________________________________________________________
+---
 
 # Directory-by-Directory Analysis and Reorganization Assessment
 
@@ -115,7 +115,7 @@ For each directory, we evaluate:
 - **When?**: No action needed
 - **Action**: **KEEP UNCHANGED** - Excellent current state
 
-______________________________________________________________________
+---
 
 ## Runtime and Cache Directories (TO BE CONSOLIDATED)
 
@@ -189,7 +189,7 @@ ______________________________________________________________________
 - **When?**: Phase 3 of reorganization (immediate priority)
 - **Action**: **MOVE** - Build artifact organization
 
-______________________________________________________________________
+---
 
 ## Problematic and Unclear Directories
 
@@ -203,7 +203,7 @@ ______________________________________________________________________
 - **When?**: Phase 6 cleanup (immediate priority)
 - **Action**: **REMOVE OR CLARIFY** - Investigate contents first
 
-______________________________________________________________________
+---
 
 ## Hidden Directories and Build Artifacts
 
@@ -237,7 +237,7 @@ ______________________________________________________________________
 - **When?**: Phase 6 cleanup
 - **Action**: **EVALUATE AND MOVE OR REMOVE**
 
-______________________________________________________________________
+---
 
 ## Root-Level Files Assessment
 

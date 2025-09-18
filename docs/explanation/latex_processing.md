@@ -32,7 +32,7 @@ output/
 └── metadata/
     └── {arxiv_id}/
         └── processing_info.json
-```
+```text
 
 ## Implementation Details
 
@@ -79,7 +79,7 @@ submitted: "2023-01-01"
 abstract: "Paper abstract..."
 keywords: ["keyword1", "keyword2"]
 ---
-```
+```text
 
 ### 4. Is there a download+convert tool outputting to latex and markdown folders?
 

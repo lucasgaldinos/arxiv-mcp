@@ -2,6 +2,7 @@
 mode: [agent, ask]
 description: Help fix the code in the current commit based on the context searched.
 ---
+
 For every next task, you'll break them down into smaller steps, and for each step, you shall make a preselection of the agent tools you'll use.
 
 # Rules

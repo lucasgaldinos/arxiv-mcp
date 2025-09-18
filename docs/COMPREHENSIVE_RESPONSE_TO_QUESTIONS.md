@@ -36,7 +36,7 @@ Covered: 2,591 (45.10%)
 Missing: 2,670 (54.90%)
 Target: 85%
 Gap: 39.90% (≈2,099 lines untested)
-```
+```text
 
 **Failing Tests (4/166):**
 
@@ -97,12 +97,12 @@ Gap: 39.90% (≈2,099 lines untested)
   },
   "files": {
     "src/arxiv_mcp/models.py": {
-      "summary": {"percent_covered": 98.48},
+      "summary": { "percent_covered": 98.48 },
       "missing_lines": [89, 107]
     }
   }
 }
-```
+```text
 
 ---
 
@@ -129,7 +129,7 @@ Examples:
   - "python -m coverage" → Should be "uv run python -m coverage"
   - "python -m pytest" → Should be "uv run python -m pytest"
   - "python -m black" → Should be "uv run python -m black"
-```
+```text
 
 **2. Python Path Configuration:**
 
@@ -137,7 +137,7 @@ Examples:
 Issue: PYTHONPATH environment variable conflicts
 Impact: Import resolution failures
 Solution: Consistent use of uv run for all Python commands
-```
+```text
 
 **3. Workspace Enforcement:**
 
@@ -145,7 +145,7 @@ Solution: Consistent use of uv run for all Python commands
 Issue: Partial automation implementation
 Impact: Manual compliance checking required
 Status: Enhanced cleanup system available but not fully integrated
-```
+```text
 
 ---
 
@@ -209,7 +209,7 @@ Quarter 1 Targets:
   - Production deployment ready
   - Advanced features complete
   - Enterprise-grade quality achieved
-```
+```text
 
 ---
 
@@ -224,4 +224,4 @@ Quarter 1 Targets:
 
 ---
 
-*This comprehensive analysis provides the definitive assessment you requested, with specific metrics, actionable recommendations, and clear next steps for achieving production-ready quality.*
+_This comprehensive analysis provides the definitive assessment you requested, with specific metrics, actionable recommendations, and clear next steps for achieving production-ready quality._

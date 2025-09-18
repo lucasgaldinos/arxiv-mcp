@@ -172,18 +172,18 @@ This document provides a complete summary of systematic testing performed on all
 
 ## Comparison with Initial Testing
 
-| Tool | Initial Test | Re-test | Parameter Changes |
-|------|-------------|---------|-------------------|
-| cleanup_output | days_old=1 | days_old=0,30 | More aggressive cleanup + selective |
-| search_arxiv | "quantum computing", max=10 | "ML neural networks", max=15 | Different domain + larger results |
-| download_and_convert | Basic parameters | include_pdf=true | Added PDF generation |
-| fetch_arxiv_paper | include_pdf=true | include_pdf=false | Removed PDF extraction |
-| extract_citations | Simple text | Complex academic text | More realistic content |
-| analyze_citation_network | 2 papers | 3 papers | Larger network |
-| batch_download | Default settings | Specific format control | Targeted output formats |
-| get_processing_metrics | 24h window | 1h window | Shorter time range |
-| validate_conversion_quality | Complete papers | Incomplete sets | Error condition testing |
-| get_output_structure | After initial tests | After re-tests | Different state verification |
+| Tool                        | Initial Test                | Re-test                      | Parameter Changes                   |
+| --------------------------- | --------------------------- | ---------------------------- | ----------------------------------- |
+| cleanup_output              | days_old=1                  | days_old=0,30                | More aggressive cleanup + selective |
+| search_arxiv                | "quantum computing", max=10 | "ML neural networks", max=15 | Different domain + larger results   |
+| download_and_convert        | Basic parameters            | include_pdf=true             | Added PDF generation                |
+| fetch_arxiv_paper           | include_pdf=true            | include_pdf=false            | Removed PDF extraction              |
+| extract_citations           | Simple text                 | Complex academic text        | More realistic content              |
+| analyze_citation_network    | 2 papers                    | 3 papers                     | Larger network                      |
+| batch_download              | Default settings            | Specific format control      | Targeted output formats             |
+| get_processing_metrics      | 24h window                  | 1h window                    | Shorter time range                  |
+| validate_conversion_quality | Complete papers             | Incomplete sets              | Error condition testing             |
+| get_output_structure        | After initial tests         | After re-tests               | Different state verification        |
 
 ## Conclusions
 

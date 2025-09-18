@@ -1,4 +1,4 @@
-______________________________________________________________________
+---
 
 title: Comprehensive Workspace Organization Analysis
 description: Detailed analysis of arxiv-mcp-improved workspace structure and reorganization recommendations
@@ -15,7 +15,7 @@ tags:
 - lucas_galdino
   confidence_level: high
 
-______________________________________________________________________
+---
 
 # Comprehensive Workspace Organization Analysis
 
@@ -43,7 +43,7 @@ The arxiv-mcp-improved workspace demonstrates strong technical capabilities but 
 Current Structure (PROBLEMATIC):
 arxiv-mcp-improved/
 ├── .github/              ✅ Good
-├── src/                  ✅ Good  
+├── src/                  ✅ Good
 ├── tests/                ✅ Good
 ├── docs/                 ⚠️  Needs organization
 ├── config/               ⚠️  Isolated
@@ -51,7 +51,7 @@ arxiv-mcp-improved/
 ├── scripts/              ✅ Good
 ├── cache/                ❌ VIOLATION 1: Cache sprawl
 ├── batch_cache/          ❌ VIOLATION 2: Duplicate cache
-├── network_cache/        ❌ VIOLATION 3: Duplicate cache  
+├── network_cache/        ❌ VIOLATION 3: Duplicate cache
 ├── tag_cache/            ❌ VIOLATION 4: Duplicate cache
 ├── output/               ❌ VIOLATION 5: Mixed concerns
 ├── logs/                 ❌ VIOLATION 6: Runtime at root
@@ -169,7 +169,7 @@ arxiv-mcp-improved/
 - Requires strict governance to maintain
 - More complex migration path
 
-______________________________________________________________________
+---
 
 ### 🔬 **Approach 2: Project-Centric with Runtime Separation (Research-Oriented)**
 
@@ -227,7 +227,7 @@ arxiv-mcp-improved/
 - Initial setup requires more configuration
 - Less familiar to general software development teams
 
-______________________________________________________________________
+---
 
 ### ⚖️ **Approach 3: Hybrid Development-Focused (Recommended)**
 
@@ -295,14 +295,14 @@ arxiv-mcp-improved/
 **Script Updates Required**: 2-5 files
 
 | Current Location | New Location (Approach 3) | Files Affected |
-|------------------|----------------------------|----------------|
-| `cache/` | `.dev/cache/arxiv/` | ~20 files |
-| `batch_cache/` | `.dev/cache/batch/` | ~10 files |
-| `network_cache/` | `.dev/cache/network/` | ~5 files |
-| `tag_cache/` | `.dev/cache/tags/` | ~5 files |
-| `output/` | `.dev/output/` | ~30 files |
-| `logs/` | `.dev/logs/` | ~10 files |
-| `htmlcov/` | `.dev/coverage/` | ~20 files |
+| ---------------- | ------------------------- | -------------- |
+| `cache/`         | `.dev/cache/arxiv/`       | ~20 files      |
+| `batch_cache/`   | `.dev/cache/batch/`       | ~10 files      |
+| `network_cache/` | `.dev/cache/network/`     | ~5 files       |
+| `tag_cache/`     | `.dev/cache/tags/`        | ~5 files       |
+| `output/`        | `.dev/output/`            | ~30 files      |
+| `logs/`          | `.dev/logs/`              | ~10 files      |
+| `htmlcov/`       | `.dev/coverage/`          | ~20 files      |
 
 ### ⚙️ Configuration Updates Required
 

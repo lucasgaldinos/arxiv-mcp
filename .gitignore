@@ -20,12 +20,8 @@
 
 # Development directory (enterprise organization)
 
-# Entire development workspace (default ignored)
 .dev/
-
-# Allow permanent high-value documentation inside .dev/docs/
-!.dev/docs/
-!.dev/docs/**
+output/
 
 # Granular .dev/ patterns for better control (if needed for exceptions)
 

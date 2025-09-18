@@ -1,7 +1,7 @@
 <!--
  * @Author: Zerui Han <hanzr.nju@outlook.com>
  * @Date: 2025-06-12 17:13:25
- * @Description: 
+ * @Description:
  * @FilePath: /arxiv-mcp/README.md
  * @LastEditTime: 2025-06-12 20:03:30
 -->
@@ -38,7 +38,7 @@ A comprehensive Model Context Protocol (MCP) server for downloading, processing,
 - ✅ **Type Safety**: Enhanced Pydantic 2.11.7 integration with robust validation
 - ✅ **Development Tools**: UV package manager for fast dependency management
 
-[**View Full Production Status Report →**](PRODUCTION_STATUS.md)
+[**View Full Production Status Report →**](docs/project/PRODUCTION_STATUS.md)
 
 ## 🗂️ Enterprise Repository Organization
 
@@ -124,7 +124,7 @@ arxiv-mcp-improved/
     ├── runtime/            # Logs, generated outputs
     ├── temp/               # Temporary files
     └── artifacts/          # CI/CD artifacts
-```
+```text
 
 See [Development Guidelines](.github/instructions/development-guidelines.instructions.md) for detailed organization principles.
 
@@ -147,7 +147,7 @@ When using the enhanced features, papers are organized as follows:
 └── metadata/
     └── {arxiv_id}/
         └── processing_info.json
-```
+```text
 
 ## 🛠 Usage
 
@@ -156,7 +156,7 @@ When using the enhanced features, papers are organized as follows:
 ```python
 # Fetch paper content (LaTeX preferred, PDF fallback)
 await fetch_arxiv_paper_content("2301.07041")
-```
+```text
 
 ### Enhanced Download and Convert
 
@@ -168,7 +168,7 @@ await download_and_convert_paper(
     save_latex=True,
     save_markdown=True
 )
-```
+```text
 
 ### Batch Processing
 
@@ -179,7 +179,7 @@ await batch_download_and_convert(
     output_dir="./batch_papers",
     max_concurrent=3
 )
-```
+```text
 
 ### Quality Validation
 
@@ -187,7 +187,7 @@ await batch_download_and_convert(
 # Validate conversion quality
 quality_report = validate_conversion_quality("2301.07041")
 print(f"Quality score: {quality_report['quality_score']}")
-```
+```text
 
 ## 📋 Available Tools
 
@@ -220,26 +220,26 @@ Create `config/arxiv_mcp_production.json`:
 
 ```json
 {
-    "output_directory": "./arxiv_papers",
-    "download_timeout": 30,
-    "max_files_per_archive": 200,
-    "latex_cleanup_enabled": true,
-    "conversion_method": "pandoc_primary"
+  "output_directory": "./arxiv_papers",
+  "download_timeout": 30,
+  "max_files_per_archive": 200,
+  "latex_cleanup_enabled": true,
+  "conversion_method": "pandoc_primary"
 }
-```
+```text
 
 ### Advanced Options
 
 ```json
 {
-    "performance_tracking": true,
-    "concurrent_downloads": 3,
-    "quality_validation": true,
-    "metadata_extraction": true,
-    "yaml_frontmatter": true,
-    "cleanup_days": 30
+  "performance_tracking": true,
+  "concurrent_downloads": 3,
+  "quality_validation": true,
+  "metadata_extraction": true,
+  "yaml_frontmatter": true,
+  "cleanup_days": 30
 }
-```
+```text
 
 ## 📦 Installation
 
@@ -269,7 +269,7 @@ brew install pandoc
 
 # Windows:
 # Install from https://pandoc.org/installing.html
-```
+```text
 
 ### Verify Installation
 
@@ -279,7 +279,7 @@ uv run pytest tests/ -v
 
 # Check MCP server functionality
 uv run python -m arxiv_mcp --help
-```
+```bash
 
 ### Development Setup
 
@@ -293,7 +293,7 @@ uv run pre-commit install
 # Run quality checks
 uv run ruff check src/ tests/
 uv run mypy src/
-```
+```bash
 
 ## 🔍 Quality Assessment
 
@@ -350,7 +350,7 @@ uv run pytest tests/ -v --cov=src/
 
 # Validate workspace organization
 uv run python scripts/validate_workspace.py
-```
+```bash
 
 ## 📄 License
 
@@ -359,12 +359,12 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ## 🔗 Links
 
 - **[📖 Documentation](docs/README.md)** - Complete user and developer guides
-- **[🚀 Production Status](PRODUCTION_STATUS.md)** - Current operational status
+- **[🚀 Production Status](docs/project/PRODUCTION_STATUS.md)** - Current operational status
 - **[📋 TODO](TODO.md)** - Development roadmap and priorities
 - **[📝 Changelog](CHANGELOG.md)** - Version history and changes
 - **[🛠️ Development Guidelines](.github/instructions/development-guidelines.instructions.md)** - Standards and practices
 
-______________________________________________________________________
+---
 
 **Last Updated**: January 2025 - v2.4.2\
 **Maintenance**: Active development with enterprise standards\

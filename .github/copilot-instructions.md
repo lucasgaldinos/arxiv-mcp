@@ -2,80 +2,198 @@
 applyTo: '**'
 ---
 
+# ArXiv MCP Server Development Guide
 
-# Absolute Rules
+This is a **production-ready Model Context Protocol (MCP) server** for ArXiv paper research with advanced LaTeX-to-Markdown conversion. Follow these essential patterns for effective development.
 
-**[ABSOLUTE] You shall ALWAYS follow these rules in `copilot_instructions.md`, no matter what. If you find any contradictions, you must ALWAYS follow these rules.**
-**[ABSOLUTE] ALWAYS incorporate the rules into the steps you break down.**
-**[ABSOLUTE] You shall ALWAYS ALWAYS ALWAYS GUARANTEE THE TOOL IS RUNNING IN PRODUCTION**
+## 🏗️ Architecture Overview
 
-- **[MANDATORY-CHECK] You shall ALWAYS use #think tool before executing any complex task requiring multiple steps**
-- **[MANDATORY-CHECK] When asked to follow instructions step by step, break down the task into clear steps, selecting the appropriate tools and fallbacks (multiple if needed) from your tool list for each step.**
-  - [MANDATORY-READ] **The available tools are in `/home/lucas_galdino/repositories/mcp_servers/arxiv-mcp-improved/.github/.knowledge_base/0-tool_usage/1-simple_tool_list.md`[folder](../.knowledge_base/0-tool_usage).**
-  - [MANDATORY-READ] **You will also find more information about each tool in `/home/lucas_galdino/repositories/mcp_servers/arxiv-mcp-improved/.github/.knowledge_base/0-tool_usage/tools_and_mcps.md`[folder](.knowledge_base/0-tool_usage).**
-- **[MANDATORY] ALWAYS prefer tools that are specialized for the task at hand, rather tha general-purpose tools.**
-- **[MANDATORY] You are obliged to #think and `optimize tool selection`[^1] before executing any task where tools are not explictly set.**
-- **[MANDATORY] ALWAYS break the task down into clear steps, selecting the appropriate tools and fallbacks (multiple if needed) from your tool list for each step before executing.**
-- **[MANDATORY-RESEARCH] You shall ACTIVELY use search and research tools/MCPs WHILE implementing, not just for planning:**
-  - **[MANDATORY] Use #vscode-websearchforcopilot_webSearch for best practices, standards, and current solutions**
-  - **[MANDATORY] Use #semantic_search to understand codebase structure and find relevant patterns**
-  - **[MANDATORY] Use #file_search and #grep_search to locate and analyze existing implementations**
-  - **[MANDATORY] Research before implementing to avoid reinventing wheels and ensure industry standards**
-- **[MANDATORY] When there are steps already broken, you must follow them, unless:
-  - **[MANDATORY-CHECK] absurd ordering.**
-  - **[MANDATORY-CHECK] user didn't organized**
-    - in a logical way (e.g. `<ol>`).
-    - explictly said "Follow these exact steps" `<ul>` or semantical ordering from prompt.
-- NEVER use keep files with `fixed` or `final` as names. There's no such thing. Substitute the old ones with `_backup_v{n}`.
-- [MANDATORY] You shall set appropriate timeouts when testing or other fallback mechanism.
-- [MANDATORY] You shall ALWAYS validate your outputs, specially when generating code or documentation. NEVER assume your first output is correct.
-- [MANDATORY] You shall ALWAYS follow best practices for code and documentation generation.
-- [MANDATORY] You shall update or create `CHANGELOG.md` or `UPDATE.md` files with a summary of changes made.
-- [MANDATORY] You shall update or create `TODO.md` or `IMPROVEMENTS.md` files with a summary of planned improvements.
-- **[MANDATORY] TODO.md vs TASKS.md DISTINCTION:**
-  - **TODO.md Format**: Simple priority-based checkboxes only
-    ```markdown
-    - [ ] PRIORITY | simple task description
-      - subtask or description of how to do the task
-      - subtask or description of how to do the task
-    ```
-  - **TASKS.md Format**: Detailed descriptive tasks similar to quality_enhancement_plan
-    - Comprehensive breakdown of implementation process
-    - Research findings and strategic approaches
-    - Technical specifications and success criteria
-    - Implementation timelines and resource requirements
-  - **[MANDATORY] NEVER mix formats**: TODO.md stays simple, TASKS.md stays detailed
-  - **[MANDATORY] Cross-reference**: TODO.md must reference TASKS.md for detailed breakdowns
-- [MANDATORY] You shall ALWAYS follow the knowledge base organization principles when creating or updating documentation inside `./.github/.knowledge_base/`.
-- **[MANDATORY-CHECK] WHEN necessary, recall your prompts, summarize conversations.**
-- **[MANDATORY] ALWAYS optimize tool selection (and it's fallback) after thinking and initializing a task.**
-- **[MANDATORY] ALWAYS update docs over changes made.**
-  - **[MANDATORY-CHECK] ALWAYS update docs with accurate information.**
-  - **[MANDATORY] ALWAYS analyze the contents hierarchy and structure.**
-- **[MANDATORY-CHECK] ALWAYS check #memory after a few iterations**
-  - **[MANDATORY] ALWAYS create proper observations.**
-  - **[MANDATORY] ALWAYS create proper relations.**
-  - **[MANDATORY] ALWAYS create proper entities where due.**
-  - **[MANDATORY] WHEN necessary, recall your memories (read_graph).**
-- **[MANDATORY] look for informations on the internet when necessary.**
-- **[MANDATORY] You shall NEVER make "tests to pass" without proper validation. TESTS ARE MADE TO FAIL, not to pass, unless specific for the methodology. But test should really cover what they're supposed to cover.**
+### Core Components (src/arxiv_mcp/)
 
-  With "proper" meaning you have to analyze, specially your current conversation.
-- **[MANDATORY-CHECK] follow good design patterns and principles.**
-- **[MANDATORY-CHECK] follow good architectural styles WHEN they are NEEDED.**
-- **[MANDATORY-CHECK] follow good system design principles.**
-- **[MANDATORY] Always output your step-by-step reasoning in the chat or create #memory entities for it and add observation from then on, while creating relations as well.**
-  - **[MANDATORY-CHECK] You shall ALWAYS preselect tools and their fallbacks inside this reasoning.**
-- **[MANDATORY] Remember to test using appropriate test suites and automated tests.**
-  - [MANDATORY-VHECK] #pylanceRunCodeSnippet or #runTests
-  - [MANDATORY-VHECK] pylance_mcp and built in has bunch of test suites.
-  - [MANDATORY-VHECK] the usage of tasks is also welcome.
+- **`fastmcp_tools.py`**: Main MCP server with 11 ArXiv tools using FastMCP 2.12.2 framework
+- **`tools.py`**: Traditional MCP tool implementations for advanced scenarios  
+- **`core/pipeline.py`**: Orchestrates async ArXiv processing with semaphore-based resource management
+- **`utils/latex_to_markdown.py`**: Pandoc-first conversion with intelligent fallbacks
 
-# Conditional rules
+### Key Integration Points
 
-- When analyzing code, ALWAYS check for:
-  - [MANDATORY-CHECK] If there are any `UPDATE.md`, `CHANGELOG.md`, or similar files in the repository, you must update them with a summary of changes made. If there aren't, create one. NEVER keep creating new changelogs.
-  - If there is any `TODO.md`, `IMPROVEMENTS.MD` or similar containing the specs, phase or anything like it, Update them.If there aren't, create one. NEVER keep creating new changelogs.
-- [MANDATORY] python should always be used with uv
-- [MANDATORY] use typescript instead of javascript when possible
-- [MANDATORY] use async/await (aiohttp/httpx in python) when possible
+- **FastMCP Framework**: Primary MCP integration using `@mcp.tool()` decorators
+- **VS Code Workspace**: Paths resolved via `workspace_resolver.resolve_output_path()`
+- **Async Pipeline**: All ArXiv operations use async/await with semaphore limiting
+
+## 🛠️ Development Workflow Essentials
+
+### Package Management (MANDATORY)
+
+```bash
+# Always use UV - never pip directly
+uv run python -m pytest tests/unit/ -v
+uv run python -m mypy src/arxiv_mcp
+uv run python -m ruff check src/ tests/
+```
+
+### Testing Strategy
+
+```bash
+# Test organization: unit/ (fast), integration/ (workflows), legacy/ (archived)
+uv run pytest tests/unit/          # Component isolation tests
+uv run pytest tests/integration/   # Cross-component workflows  
+uv run pytest tests/ --cov=src    # Full coverage report
+```
+
+### Directory Organization (.dev/ structure)
+
+- **`.dev/runtime/`**: Active logs, output directories (symlinked for compatibility)
+- **`.dev/build/`**: Coverage reports, cache files from development tools
+- **Performance caches**: Stay at root (`cache/`, `batch_cache/`) for optimal access
+
+## 📝 ArXiv Processing Patterns
+
+### Unified Conversion Workflow
+
+```python
+# Standard pattern for ArXiv paper processing
+from arxiv_mcp.utils.unified_converter import UnifiedDownloadConverter
+from arxiv_mcp.utils.workspace_resolver import workspace_resolver
+
+# Always resolve paths relative to VS Code workspace
+output_dir = workspace_resolver.resolve_output_path("./output")
+converter = UnifiedDownloadConverter(config)
+
+# Dual-format output: LaTeX + Markdown with YAML frontmatter
+result = await converter.download_and_convert(
+    arxiv_id="2301.07041",
+    save_latex=True,
+    save_markdown=True,  # Includes YAML metadata extraction
+    include_pdf=True     # Optional PDF compilation
+)
+```
+
+### LaTeX to Markdown Strategy
+
+```python
+# Pandoc-first with intelligent fallback system
+from arxiv_mcp.utils.latex_to_markdown import LaTeXToMarkdownConverter
+
+converter = LaTeXToMarkdownConverter(use_pandoc=True)
+result = converter.convert_with_metadata(latex_content, arxiv_id)
+# Returns: {'markdown': str, 'metadata': dict, 'conversion_method': str}
+```
+
+## 🎯 MCP Tool Development
+
+### FastMCP Tool Pattern (Preferred)
+
+```python
+@mcp.tool()
+async def your_arxiv_tool(arxiv_id: str, option: bool = False) -> dict:
+    """Tool description for MCP clients"""
+    try:
+        # Always resolve workspace-relative paths
+        output_dir = workspace_resolver.resolve_output_path("./output")
+        
+        # Use async pipeline with error handling
+        result = await pipeline.process_paper(arxiv_id)
+        
+        return {"status": "success", "tool": "your_arxiv_tool", **result}
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+```
+
+### File Organization Output
+
+```bash
+# Standard ArXiv output structure  
+output/
+├── latex/{arxiv_id}/     # Source LaTeX files with figures/
+├── markdown/{arxiv_id}/  # Converted .md with YAML frontmatter  
+├── pdf/{arxiv_id}/       # Optional compiled PDFs
+└── metadata/{arxiv_id}/  # Processing manifests
+```
+
+## 🧪 Quality & Testing Patterns
+
+### Test Structure Alignment
+
+```python
+# Match source module structure in tests/
+src/arxiv_mcp/utils/latex_to_markdown.py
+tests/unit/test_latex_to_markdown.py      # Component tests
+tests/integration/test_conversion_workflow.py  # End-to-end tests
+```
+
+### Error Handling Philosophy
+
+```python
+# Never hide ArXiv processing errors - make them observable
+try:
+    paper_data = await client.fetch_paper(arxiv_id)
+except ArxivAPIError as e:
+    logger.error(f"ArXiv API failure for {arxiv_id}: {e}")
+    raise  # Re-raise for caller to handle appropriately
+```
+
+## 📋 Project Standards
+
+### CHANGELOG.md vs TODO.md Format
+
+- **CHANGELOG.md**: Semantic versioning with ArXiv feature releases
+- **TODO.md**: Simple checkboxes (`- [ ] PRIORITY | task`)  
+- **TASKS.md**: Detailed implementation plans with research findings
+
+### Documentation (Diátaxis Framework)
+
+- **`docs/tutorials/`**: Getting started with ArXiv processing
+- **`docs/how-to-guides/`**: Specific ArXiv workflow solutions
+- **`docs/reference/`**: MCP tool API documentation  
+- **`docs/explanation/`**: LaTeX conversion architecture
+
+### VS Code Integration
+
+```jsonc
+// .vscode/tasks.json uses consistent UV pattern
+{
+    "command": "uv",
+    "args": ["run", "python", "-m", "pytest", "tests/", "-v"]
+}
+```
+
+## ⚡ Performance Considerations
+
+### Async Resource Management
+
+```python
+# Pipeline uses semaphores for controlled concurrency
+self.download_semaphore = asyncio.Semaphore(config.max_downloads)
+self.extraction_semaphore = asyncio.Semaphore(config.max_extractions)
+
+# Batch processing with configurable limits
+await batch_download_and_convert(arxiv_ids, max_concurrent=3)
+```
+
+### Cache Strategy
+
+- **Application caches**: Root level for performance (`cache/`, `batch_cache/`)
+- **Development artifacts**: `.dev/build/` for isolation
+- **Runtime outputs**: `.dev/runtime/` with backward-compatible symlinks
+
+---
+
+## 🎯 Essential Commands for AI Agents
+
+```bash
+# Development setup verification
+uv run python -m arxiv_mcp                    # Start MCP server
+uv run pytest tests/ -v --tb=short            # Full test suite
+uv run python examples/demo_phase_4a_item_1.py # End-to-end validation
+
+# Code quality enforcement  
+uv run ruff check src/ tests/ --fix           # Linting with auto-fix
+uv run mypy src/arxiv_mcp                     # Type checking
+uv run coverage run -m pytest && coverage report  # Coverage analysis
+
+# Workspace compliance
+uv run python scripts/validate_workspace.py   # Organization validation
+```
+
+This codebase prioritizes **production reliability** with **academic research quality** - ensure any changes maintain the 144/144 test passing rate and enterprise workspace organization standards.

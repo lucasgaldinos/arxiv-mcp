@@ -35,7 +35,7 @@ The ArXiv MCP Server provides 10 powerful tools for academic research workflows,
 
 **Output**: List of papers with metadata (title, authors, abstract, ArXiv ID)
 
-______________________________________________________________________
+---
 
 ### 2. Download and Convert Paper (`mcp_arxiv-mcp-dev_download_and_convert_paper`)
 
@@ -76,7 +76,7 @@ ______________________________________________________________________
 
 **Output**: Downloaded files in organized directory structure with manifest
 
-______________________________________________________________________
+---
 
 ### 3. Fetch Paper Content (`mcp_arxiv-mcp-dev_fetch_arxiv_paper_content`)
 
@@ -104,7 +104,7 @@ ______________________________________________________________________
 
 **Output**: Full paper content as structured text
 
-______________________________________________________________________
+---
 
 ### 4. Batch Download and Convert (`mcp_arxiv-mcp-dev_batch_download_and_convert`)
 
@@ -146,7 +146,7 @@ ______________________________________________________________________
 
 **Output**: Batch processing results with success/failure statistics
 
-______________________________________________________________________
+---
 
 ### 5. Extract Citations (`mcp_arxiv-mcp-dev_extract_citations`)
 
@@ -166,7 +166,7 @@ ______________________________________________________________________
 
 **Output**: List of extracted citations with metadata
 
-______________________________________________________________________
+---
 
 ### 6. Analyze Citation Network (`mcp_arxiv-mcp-dev_analyze_citation_network`)
 
@@ -192,7 +192,7 @@ ______________________________________________________________________
 
 **Output**: Network analysis with nodes, edges, clustering, and connectivity metrics
 
-______________________________________________________________________
+---
 
 ### 7. Get Processing Metrics (`mcp_arxiv-mcp-dev_get_processing_metrics`)
 
@@ -223,7 +223,7 @@ ______________________________________________________________________
 
 **Output**: Performance metrics, counters, and system health indicators
 
-______________________________________________________________________
+---
 
 ### 8. Validate Conversion Quality (`mcp_arxiv-mcp-dev_validate_conversion_quality`)
 
@@ -251,7 +251,7 @@ ______________________________________________________________________
 
 **Output**: Quality assessment with scores, issues, and improvement suggestions
 
-______________________________________________________________________
+---
 
 ### 9. Get Output Structure (`mcp_arxiv-mcp-dev_get_output_structure`)
 
@@ -275,7 +275,7 @@ ______________________________________________________________________
 
 **Output**: Directory structure analysis with file counts and organization
 
-______________________________________________________________________
+---
 
 ### 10. Cleanup Output (`mcp_arxiv-mcp-dev_cleanup_output`)
 
@@ -306,7 +306,7 @@ ______________________________________________________________________
 
 **Output**: Cleanup statistics and removed file counts
 
-______________________________________________________________________
+---
 
 ## 🔄 Common Workflows
 
