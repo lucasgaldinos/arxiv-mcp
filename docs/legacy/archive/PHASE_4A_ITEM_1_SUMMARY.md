@@ -57,13 +57,13 @@ Extend the ArXiv MCP server beyond PDF and LaTeX processing to support additiona
 ### Format Support Matrix
 
 | Format | Extension | Detection | Processing | Metadata | Optional Deps |
-|--------|-----------|-----------|------------|----------|---------------|
-| PDF | .pdf | ✅ | ✅ | ✅ | - |
-| LaTeX | .tex | ✅ | ✅ | ✅ | - |
-| ODT | .odt | ✅ | ✅ | ✅ | odfpy |
-| RTF | .rtf | ✅ | ✅ | ✅ | striprtf |
-| DOCX | .docx | ✅ | ✅ | ⚠️ | python-docx |
-| TXT | .txt | ✅ | ✅ | ✅ | - |
+| ------ | --------- | --------- | ---------- | -------- | ------------- |
+| PDF    | .pdf      | ✅        | ✅         | ✅       | -             |
+| LaTeX  | .tex      | ✅        | ✅         | ✅       | -             |
+| ODT    | .odt      | ✅        | ✅         | ✅       | odfpy         |
+| RTF    | .rtf      | ✅        | ✅         | ✅       | striprtf      |
+| DOCX   | .docx     | ✅        | ✅         | ⚠️       | python-docx   |
+| TXT    | .txt      | ✅        | ✅         | ✅       | -             |
 
 ### Performance Characteristics
 
@@ -147,18 +147,16 @@ tests/test_mcp_integration.py: 3/3 passed
 Based on this successful implementation, the next priority is:
 
 1. **Enhanced Cache Management** (High Priority)
-
    - Intelligent cache invalidation strategies
    - Cache size monitoring and cleanup
    - Performance optimization for large datasets
 
 1. **Figure & Table Extraction** (Medium Priority)
-
    - Build on document processing foundation
    - Integrate with pymupdf for enhanced PDF parsing
    - Add OCR capabilities for image-based content
 
-______________________________________________________________________
+---
 
 **Implementation completed successfully!** 🎊\
 **Phase 4A Item 1 delivers exactly what was promised and more.**

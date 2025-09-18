@@ -7,13 +7,13 @@ Scans Python files for missing docstrings and provides automation capabilities.
 import ast
 import os
 import sys
-from typing import List, Dict, Any
+from typing import Any
 
 
-def find_missing_docstrings(file_path: str) -> List[Dict[str, Any]]:
+def find_missing_docstrings(file_path: str) -> list[dict[str, Any]]:
     """Find functions and classes missing docstrings."""
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             tree = ast.parse(f.read())
     except (SyntaxError, UnicodeDecodeError):
         print(f"Warning: Could not parse {file_path}")
@@ -42,7 +42,7 @@ def find_missing_docstrings(file_path: str) -> List[Dict[str, Any]]:
     return missing
 
 
-def scan_project(base_dir: str = "src") -> List[Dict[str, Any]]:
+def scan_project(base_dir: str = "src") -> list[dict[str, Any]]:
     """Scan entire project for missing docstrings."""
     python_files = []
     for root, dirs, files in os.walk(base_dir):
@@ -55,9 +55,7 @@ def scan_project(base_dir: str = "src") -> List[Dict[str, Any]]:
         missing = find_missing_docstrings(file_path)
         all_missing.extend(missing)
 
-    print(
-        f"Found {len(all_missing)} missing docstrings across {len(python_files)} Python files:"
-    )
+    print(f"Found {len(all_missing)} missing docstrings across {len(python_files)} Python files:")
 
     # Group by file
     by_file = {}
@@ -80,10 +78,9 @@ def generate_docstring(node_type: str, name: str) -> str:
     """Generate appropriate docstring based on node type and name."""
     if node_type == "ClassDef":
         return f'"""{name} class for handling related functionality."""'
-    elif node_type in ["FunctionDef", "AsyncFunctionDef"]:
+    if node_type in ["FunctionDef", "AsyncFunctionDef"]:
         return f'"""{name.replace("_", " ").title()} functionality."""'
-    else:
-        return f'"""Docstring for {name}."""'
+    return f'"""Docstring for {name}."""'
 
 
 def main():

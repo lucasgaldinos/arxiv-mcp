@@ -11,58 +11,58 @@ The ArXiv MCP Server follows a modular, service-oriented architecture designed f
 ```mermaid
 architecture-beta
     group arxiv_core(server)[ArXiv MCP Core]
-    group processing_engine(cloud)[Processing Engine] 
+    group processing_engine(cloud)[Processing Engine]
     group storage_layer(database)[Storage and Cache]
     group analysis_tools(disk)[Analysis Tools]
-    
+
     service mcp_server(server)[MCP Server] in arxiv_core
     service api_client(internet)[ArXiv API Client] in arxiv_core
     service tools_registry(server)[Tools Registry] in arxiv_core
-    
+
     service latex_processor(server)[LaTeX Processor] in processing_engine
     service citation_extractor(server)[Citation Extractor] in processing_engine
     service markdown_converter(server)[Markdown Converter] in processing_engine
     service document_processor(server)[Document Processor] in processing_engine
-    
+
     service file_cache(disk)[File Cache] in storage_layer
     service metadata_db(database)[Metadata DB] in storage_layer
     service output_manager(disk)[Output Manager] in storage_layer
-    
+
     service network_analyzer(server)[Network Analyzer] in analysis_tools
     service auto_summarizer(server)[Auto Summarizer] in analysis_tools
     service citation_parser(server)[Citation Parser] in analysis_tools
     service smart_tagger(server)[Smart Tagger] in analysis_tools
-    
+
     junction processing_hub
     junction storage_hub
     junction analysis_hub
-    
+
     mcp_server:R -- L:processing_hub
     api_client:B -- T:processing_hub
     tools_registry:L -- R:processing_hub
-    
+
     processing_hub:R -- L:latex_processor
     processing_hub:R -- L:citation_extractor
     processing_hub:B -- T:markdown_converter
     processing_hub:B -- T:document_processor
-    
+
     latex_processor:B -- T:storage_hub
     citation_extractor:B -- T:storage_hub
     markdown_converter:R -- L:storage_hub
     document_processor:R -- L:storage_hub
-    
+
     storage_hub:R -- L:file_cache
     storage_hub:B -- T:metadata_db
     storage_hub:R -- L:output_manager
-    
+
     citation_extractor:R -- L:analysis_hub
     document_processor:R -- L:analysis_hub
-    
+
     analysis_hub:R -- L:network_analyzer
-    analysis_hub:R -- L:auto_summarizer  
+    analysis_hub:R -- L:auto_summarizer
     analysis_hub:B -- T:citation_parser
     analysis_hub:B -- T:smart_tagger
-```
+```text
 
 ## 🔧 Core Components
 
@@ -106,36 +106,36 @@ Advanced research analysis capabilities.
 flowchart TD
     A[Client Request] --> B[MCP Server]
     B --> C{Tool Router}
-    
+
     C -->|Search| D[ArXiv API Client]
     C -->|Download| E[LaTeX Processor]
     C -->|Convert| F[Markdown Converter]
     C -->|Analyze| G[Analysis Tools]
-    
+
     D --> H[Metadata Cache]
     E --> I[File Cache]
     F --> J[Output Manager]
     G --> K[Analysis Results]
-    
+
     H --> L[Response Builder]
     I --> L
     J --> L
     K --> L
-    
+
     L --> M[MCP Response]
     M --> N[Client]
-    
+
     style A fill:#e1f5fe
     style N fill:#e8f5e8
     style C fill:#fff3e0
     style L fill:#fce4ec
-```
+```text
 
 ## 🏢 Directory Structure & Organization
 
 ### Production Structure
 
-```
+```text
 src/arxiv_mcp/
 ├── core/                   # Core framework components
 │   ├── config.py          # Configuration management
@@ -156,11 +156,11 @@ src/arxiv_mcp/
 ├── tools.py               # MCP tool definitions
 ├── fastmcp_tools.py       # FastMCP integration
 └── exceptions.py          # Custom exception classes
-```
+```text
 
 ### Development Structure (.dev/)
 
-```
+```text
 .dev/
 ├── build/                 # Build artifacts
 │   ├── pytest_cache/     # Test cache
@@ -174,7 +174,7 @@ src/arxiv_mcp/
     ├── coverage.json     # Coverage JSON report
     ├── coverage.xml      # Coverage XML report
     └── test_reports/     # Test result reports
-```
+```text
 
 ## 🔄 Processing Pipeline
 
@@ -188,13 +188,13 @@ sequenceDiagram
     participant Proc as Processor
     participant Cache as Cache Layer
     participant Anal as Analyzer
-    
+
     Client->>MCP: Search Request
     MCP->>API: Query ArXiv
     API-->>MCP: Paper Metadata
     MCP->>Cache: Store Metadata
     MCP-->>Client: Search Results
-    
+
     Client->>MCP: Download Request
     MCP->>API: Fetch LaTeX Source
     API-->>MCP: LaTeX Content
@@ -202,7 +202,7 @@ sequenceDiagram
     Proc->>Cache: Store Processed
     Proc-->>MCP: Processing Complete
     MCP-->>Client: Download Success
-    
+
     Client->>MCP: Analysis Request
     MCP->>Cache: Retrieve Content
     Cache-->>MCP: Cached Content
@@ -210,7 +210,7 @@ sequenceDiagram
     Anal->>Cache: Store Results
     Anal-->>MCP: Analysis Complete
     MCP-->>Client: Analysis Results
-```
+```text
 
 ### Pipeline Stages
 
@@ -232,12 +232,12 @@ graph LR
     C -->|Async Execution| D[Processing Engine]
     D -->|Results| B
     B -->|MCP Response| A
-    
+
     style A fill:#e3f2fd
     style B fill:#f3e5f5
     style C fill:#e8f5e8
     style D fill:#fff3e0
-```
+```text
 
 ### Tool Architecture
 
@@ -249,32 +249,32 @@ classDiagram
         +handle_request()
         +route_tool_call()
     }
-    
+
     class ToolRegistry {
         +Dict tools
         +register_tool()
         +get_tool()
         +list_tools()
     }
-    
+
     class ArxivTool {
         +name: str
         +description: str
         +execute()
         +validate_params()
     }
-    
+
     class ProcessingEngine {
         +LaTeXProcessor latex
-        +CitationExtractor citations  
+        +CitationExtractor citations
         +MarkdownConverter converter
         +process_paper()
     }
-    
+
     MCPServer --> ToolRegistry
     ToolRegistry --> ArxivTool
     ArxivTool --> ProcessingEngine
-```
+```text
 
 ## 📊 Quality Metrics & Monitoring
 
@@ -287,10 +287,10 @@ classDiagram
 
 ### Coverage Analysis by Module
 
-```
+```text
 High Coverage (>70%):
 ├── models.py: 98.48%
-├── config.py: 96.30%  
+├── config.py: 96.30%
 ├── document_processor.py: 74.67%
 └── docs_generator.py: 75.90%
 
@@ -305,7 +305,7 @@ Low Coverage (<40%):
 ├── batch_operations.py: 28.07%
 ├── unified_converter.py: 22.53%
 └── latex_to_markdown.py: 30.99%
-```
+```text
 
 ## 🔧 Development Workflow Integration
 
@@ -315,7 +315,7 @@ All development tools use the `.dev/` structure for workspace compliance:
 
 ```yaml
 Development Tools:
-  pytest: 
+  pytest:
     cache: .dev/build/pytest_cache/
     reports: .dev/artifacts/test_reports/
   coverage:
@@ -329,7 +329,7 @@ Development Tools:
     cache: .dev/build/mypy_cache/
   rope:
     cache: .dev/build/rope_cache/
-```
+```text
 
 ### Workspace Enforcement
 
@@ -343,11 +343,11 @@ flowchart TD
     E -->|No| G[Report Violation]
     F --> C
     G --> H[Developer Action Required]
-    
+
     style B fill:#e3f2fd
     style D fill:#fff3e0
     style G fill:#ffebee
-```
+```text
 
 ## 🚀 Performance Characteristics
 
@@ -361,7 +361,7 @@ flowchart TD
 
 ### Resource Management
 
-```
+```text
 Memory Usage:
 ├── Base Server: ~50MB
 ├── Per Paper Processing: ~10-25MB
@@ -370,10 +370,10 @@ Memory Usage:
 
 Disk Usage:
 ├── Source Cache: ~1-5MB per paper
-├── Processed Output: ~0.5-2MB per paper  
+├── Processed Output: ~0.5-2MB per paper
 ├── Metadata: ~10KB per paper
 └── Analysis Results: ~50-200KB per paper
-```
+```text
 
 ## 🔮 Architecture Evolution
 
@@ -403,4 +403,4 @@ Disk Usage:
 
 ---
 
-*This architecture documentation is automatically updated as part of the continuous integration process.*
+_This architecture documentation is automatically updated as part of the continuous integration process._

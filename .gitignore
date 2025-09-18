@@ -21,6 +21,7 @@
 # Development directory (enterprise organization)
 
 .dev/
+output/
 
 # Granular .dev/ patterns for better control (if needed for exceptions)
 
@@ -382,3 +383,4 @@ token.txt
 # END OF ENTERPRISE .gitignore CONFIGURATION
 
 # =============================================================================
+node_modules/

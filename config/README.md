@@ -4,14 +4,14 @@ This directory contains configuration files and templates for the ArXiv MCP serv
 
 ## 📁 Configuration Files
 
-```
+```text
 config/
 ├── arxiv_mcp_example.yaml     # Example configuration with all options
 ├── arxiv_mcp_production.json  # Production-ready configuration
 ├── development.yaml           # Development environment config
 ├── testing.yaml              # Test environment config
 └── README.md                  # This file
-```
+```text
 
 ## ⚙️ Configuration Options
 
@@ -22,15 +22,15 @@ config/
 server:
   name: "arxiv-mcp-server"
   version: "1.0.0"
-  
+
 arxiv:
   api_url: "http://export.arxiv.org/api/query"
-  rate_limit: 3  # requests per second
-  
+  rate_limit: 3 # requests per second
+
 output:
   base_directory: ".dev/runtime/output"
   formats: ["latex", "markdown", "metadata"]
-```
+```text
 
 ### Advanced Features
 
@@ -40,16 +40,16 @@ processing:
   latex_processor:
     timeout: 60
     max_file_size: "10MB"
-    
+
   citation_analysis:
     enabled: true
     confidence_threshold: 0.8
-    
+
 caching:
   enabled: true
   cache_directory: "cache"
-  ttl: 3600  # 1 hour
-```
+  ttl: 3600 # 1 hour
+```text
 
 ## 🔧 Environment-Specific Configs
 
@@ -60,7 +60,7 @@ caching:
 - Local cache paths
 - Development output directories
 
-### Testing (`testing.yaml`)  
+### Testing (`testing.yaml`)
 
 - Test-specific settings
 - Mock service endpoints
@@ -86,7 +86,7 @@ config = load_config()
 
 # Load specific environment
 config = load_config("config/production.yaml")
-```
+```text
 
 ### Environment Variables
 
@@ -96,7 +96,7 @@ Override configuration with environment variables:
 export ARXIV_MCP_OUTPUT_DIR=".dev/runtime/output"
 export ARXIV_MCP_LOG_LEVEL="DEBUG"
 export ARXIV_MCP_CACHE_ENABLED="true"
-```
+```text
 
 ### Validation
 
@@ -104,4 +104,4 @@ All configuration files are validated against the schema defined in `src/arxiv_m
 
 ---
 
-*Configuration should be environment-aware, secure by default, and easy to override for different deployment scenarios.*
+_Configuration should be environment-aware, secure by default, and easy to override for different deployment scenarios._

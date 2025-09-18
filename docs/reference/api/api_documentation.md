@@ -127,7 +127,7 @@ inputSchema={
 },
 "required": ["query"]
 }
-),he main __init__.py for better modularity.
+),he main **init**.py for better modularity.
 
 #### Functions
 
@@ -146,7 +146,7 @@ Main entry point for the MCP server.
 ### exceptions
 
 Custom exception classes for the ArXiv MCP server.
-Extracted from the main __init__.py for better modularity.
+Extracted from the main **init**.py for better modularity.
 
 #### Classes
 
@@ -174,7 +174,7 @@ Exception raised for errors during LaTeX compilation.
 
 Exception raised for input validation errors.
 
-### __init__
+### **init**
 
 ### config
 
@@ -199,7 +199,7 @@ This function provides backward compatibility while using the enhanced configura
 ### pipeline
 
 Core pipeline orchestration for the ArXiv MCP server.
-Extracted from the main __init__.py for better modularity.
+Extracted from the main **init**.py for better modularity.
 
 #### Classes
 
@@ -207,7 +207,7 @@ Extracted from the main __init__.py for better modularity.
 
 Enhanced ArXiv processing pipeline with async support and comprehensive error handling.
 
-### __init__
+### **init**
 
 ### enhanced_config
 
@@ -259,10 +259,10 @@ Search papers by author.
 
 Search recent papers in a category.
 
-### __init__
+### **init**
 
 Clients module for external service interactions.
-Extracted from the main __init__.py for better modularity.
+Extracted from the main **init**.py for better modularity.
 
 #### Classes
 
@@ -270,10 +270,10 @@ Extracted from the main __init__.py for better modularity.
 
 Asynchronous ArXiv paper downloader with rate limiting and error handling.
 
-### __init__
+### **init**
 
 Processors module for document processing functionality.
-Extracted from the main __init__.py for better modularity.
+Extracted from the main **init**.py for better modularity.
 
 #### Classes
 
@@ -288,7 +288,7 @@ Enhanced PDF processor with text extraction and analysis.
 ### metrics
 
 Comprehensive metrics collection for observability.
-Extracted from the main __init__.py for better modularity.
+Extracted from the main **init**.py for better modularity.
 
 #### Classes
 
@@ -342,7 +342,7 @@ APIDocumentation object
 ### validation
 
 Comprehensive input validation and sanitization.
-Extracted from the main __init__.py for better modularity.
+Extracted from the main **init**.py for better modularity.
 
 #### Classes
 
@@ -405,7 +405,7 @@ Safely import numpy with fallback.
 
 Initialize warnings for missing dependencies.
 
-### __init__
+### **init**
 
 ### retry
 
@@ -463,7 +463,7 @@ Format multiple citations as a bibliography.
 ### logging
 
 Enhanced logging configuration with structured JSON output.
-Extracted from the main __init__.py for better modularity.
+Extracted from the main **init**.py for better modularity.
 
 #### Functions
 

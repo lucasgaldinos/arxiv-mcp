@@ -29,6 +29,6 @@ To start the MCP server, run the following command:
 
 ```bash
 uv run python -m src.arxiv_mcp
-```
+```bash
 
 The server will start and register the available tools. You can then interact with it through a compatible client.

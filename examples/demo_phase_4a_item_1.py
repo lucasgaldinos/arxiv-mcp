@@ -3,19 +3,19 @@ Demo script for Phase 4A Item 1: Enhanced Document Processing
 Demonstrates the new process_document_formats MCP tool functionality.
 """
 
-import tempfile
-import os
-import zipfile
-from io import BytesIO
 import base64
+from io import BytesIO
+import os
 
 # Import our new functionality
 import sys
+import tempfile
+import zipfile
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src.arxiv_mcp.tools import handle_process_document_formats
 from src.arxiv_mcp.processors.document_processor import DocumentProcessor
+from src.arxiv_mcp.tools import handle_process_document_formats
 
 
 def create_sample_documents():
@@ -26,7 +26,7 @@ def create_sample_documents():
     txt_content = """
 # Research Paper Analysis
 
-This is a comprehensive analysis of recent developments in 
+This is a comprehensive analysis of recent developments in
 machine learning and artificial intelligence.
 
 ## Introduction
@@ -45,7 +45,7 @@ Future research should focus on efficiency and interpretability.
 
     # Create sample RTF document
     rtf_content = b"""{\\rtf1\\ansi\\deff0 {\\fonttbl {\\f0 Times New Roman;}}
-\\f0\\fs24 
+\\f0\\fs24
 \\b Research Report: Advanced AI Methods\\b0
 \\par\\par
 This document presents findings from our latest research into \\i artificial intelligence\\i0 methods.
@@ -143,9 +143,7 @@ def demo_supported_formats():
             print(f"  📄 {format_name.upper()}: {format_info['name']}")
             print(f"     Extensions: {', '.join(format_info['extensions'])}")
             if format_info["requires_external"]:
-                print(
-                    f"     Dependencies: {format_info.get('optional_dependency', 'Various')}"
-                )
+                print(f"     Dependencies: {format_info.get('optional_dependency', 'Various')}")
             print()
     else:
         print(f"❌ Error: {result.get('error', 'Unknown error')}")
@@ -163,16 +161,12 @@ def demo_file_processing():
         print(f"\n📄 Processing {filename}...")
 
         # Write to temporary file
-        with tempfile.NamedTemporaryFile(
-            suffix=f".{filename.split('.')[-1]}", delete=False
-        ) as tmp:
+        with tempfile.NamedTemporaryFile(suffix=f".{filename.split('.')[-1]}", delete=False) as tmp:
             tmp.write(content)
             tmp_path = tmp.name
 
         try:
-            result = handle_process_document_formats(
-                file_path=tmp_path, extract_metadata=True
-            )
+            result = handle_process_document_formats(file_path=tmp_path, extract_metadata=True)
 
             if result["status"] == "success":
                 print(f"✅ Successfully processed {result['format'].upper()} document")
@@ -206,7 +200,7 @@ def demo_base64_processing():
     text_content = """
 Research Summary: Quantum Computing Applications
 
-This document summarizes recent advances in quantum computing 
+This document summarizes recent advances in quantum computing
 applications for optimization problems.
 
 Key Benefits:
@@ -292,7 +286,7 @@ driven by advances in computational power and the availability of large datasets
 
 Key Contributions
 1. Novel algorithms for deep learning
-2. Improved optimization techniques  
+2. Improved optimization techniques
 3. Enhanced interpretability methods
 4. Robust evaluation frameworks
 

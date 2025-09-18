@@ -5,7 +5,7 @@ Extracted from the main __init__.py for better modularity.
 
 import asyncio
 from io import BytesIO
-from typing import Any, Dict
+from typing import Any
 
 import aiohttp
 
@@ -42,7 +42,7 @@ class AsyncArxivDownloader:
         self.last_request_times.append(current_time)
 
     async def download(self, arxiv_id: str, timeout: int = 60) -> BytesIO:
-        """Download a paper from ArXiv."""
+        """Download a paper from ArXiv with enhanced validation."""
         async with self.semaphore:
             await self._rate_limit()
 
@@ -55,18 +55,66 @@ class AsyncArxivDownloader:
                     session.get(url, timeout=aiohttp.ClientTimeout(total=timeout)) as response,
                 ):
                     if response.status == 200:
+                        # Validate Content-Type
+                        content_type = response.headers.get('Content-Type', '').lower()
+                        self.logger.debug(f"Response Content-Type: {content_type}")
+                        
+                        # Expected content types for ArXiv e-prints
+                        valid_types = [
+                            'application/gzip',
+                            'application/x-gzip', 
+                            'application/octet-stream',
+                            'application/x-tar',
+                            'text/plain',  # Sometimes single .tex files
+                        ]
+                        
+                        # Check if content type is valid (allowing empty content-type for compatibility)
+                        if content_type and not any(valid_type in content_type for valid_type in valid_types):
+                            self.logger.warning(f"Unexpected Content-Type '{content_type}' for {arxiv_id}")
+                            # Don't fail immediately - ArXiv sometimes returns incorrect headers
+                        
                         content = await response.read()
+                        
+                        # Validate content is not empty
+                        if not content:
+                            raise ArxivMCPError(f"Empty response for {arxiv_id}")
+                        
+                        # Basic content validation - check if it looks like expected formats
+                        if len(content) < 100:  # Suspiciously small
+                            self.logger.warning(f"Suspiciously small content for {arxiv_id}: {len(content)} bytes")
+                            # Try to decode as text to see if it's an error message
+                            try:
+                                text_content = content.decode('utf-8', errors='ignore')
+                                if 'error' in text_content.lower() or 'not found' in text_content.lower():
+                                    raise ArxivMCPError(f"ArXiv returned error for {arxiv_id}: {text_content[:200]}")
+                            except:
+                                pass
+                        
                         self.metrics.increment_counter(
                             "downloads", {"arxiv_id": arxiv_id, "status": "success"}
                         )
                         self.logger.info(
-                            f"Successfully downloaded paper {arxiv_id}, size: {len(content)} bytes"
+                            f"Successfully downloaded paper {arxiv_id}, size: {len(content)} bytes, type: {content_type}"
                         )
                         return BytesIO(content)
-                    self.metrics.increment_counter(
-                        "downloads", {"arxiv_id": arxiv_id, "status": "error"}
-                    )
-                    raise ArxivMCPError(f"Failed to download {arxiv_id}: HTTP {response.status}")
+                        
+                    elif response.status == 404:
+                        self.metrics.increment_counter(
+                            "downloads", {"arxiv_id": arxiv_id, "status": "not_found"}
+                        )
+                        raise ArxivMCPError(f"Paper {arxiv_id} not found on ArXiv (HTTP 404)")
+                    else:
+                        self.metrics.increment_counter(
+                            "downloads", {"arxiv_id": arxiv_id, "status": "error"}
+                        )
+                        raise ArxivMCPError(f"Failed to download {arxiv_id}: HTTP {response.status}")
+                        
+            except aiohttp.ClientTimeout:
+                self.metrics.increment_counter(
+                    "downloads", {"arxiv_id": arxiv_id, "status": "timeout"}
+                )
+                self.logger.error(f"Timeout downloading {arxiv_id} after {timeout}s")
+                raise ArxivMCPError(f"Download timeout for {arxiv_id} after {timeout}s")
             except Exception as e:
                 self.metrics.increment_counter(
                     "downloads", {"arxiv_id": arxiv_id, "status": "error"}

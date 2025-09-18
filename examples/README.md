@@ -4,7 +4,7 @@ This directory contains practical examples and usage demonstrations for the ArXi
 
 ## 📁 Example Categories
 
-```
+```text
 examples/
 ├── basic/                  # Simple usage examples
 ├── advanced/              # Complex integration scenarios
@@ -12,7 +12,7 @@ examples/
 ├── workflows/             # Complete workflow demonstrations
 ├── jupyter/               # Jupyter notebook examples
 └── README.md             # This file
-```
+```text
 
 ## 🚀 Quick Start Examples
 
@@ -28,7 +28,7 @@ result = await download_and_convert_paper(
 )
 
 print(f"Paper saved to: {result.output_path}")
-```
+```text
 
 ### Batch Processing
 
@@ -46,7 +46,7 @@ results = await batch_download_and_convert(
     titles=papers,
     max_concurrency=3
 )
-```
+```text
 
 ### Citation Analysis
 
@@ -60,7 +60,7 @@ network = await analyze_citation_network(
 )
 
 print(f"Found {len(network.citations)} related papers")
-```
+```text
 
 ## 📚 Available Examples
 
@@ -104,7 +104,7 @@ uv sync
 
 # Set up configuration
 cp config/arxiv_mcp_example.yaml config/local.yaml
-```
+```text
 
 ### Basic Examples
 
@@ -114,7 +114,7 @@ uv run python examples/basic/simple_download.py
 
 # Run with custom config
 uv run python examples/basic/simple_download.py --config config/development.yaml
-```
+```bash
 
 ### Advanced Examples
 
@@ -124,7 +124,7 @@ uv run python examples/advanced/performance_tuning.py
 
 # Run integration tests
 uv run python examples/integrations/claude_integration.py
-```
+```bash
 
 ## 📋 Example Standards
 
@@ -155,7 +155,7 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-```
+```text
 
 ### Documentation Requirements
 
@@ -167,4 +167,4 @@ if __name__ == "__main__":
 
 ---
 
-*Examples should be runnable, educational, and demonstrate real-world usage patterns.*
+_Examples should be runnable, educational, and demonstrate real-world usage patterns._

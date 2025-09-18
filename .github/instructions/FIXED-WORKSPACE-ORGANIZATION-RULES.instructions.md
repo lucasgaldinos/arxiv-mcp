@@ -1,7 +1,7 @@
 ---
-applyTo: '**'
-priority: 'ABSOLUTE'
-status: 'FIXED-INSTRUCTION'
+applyTo: "**"
+priority: "ABSOLUTE"
+status: "FIXED-INSTRUCTION"
 ---
 
 # FIXED WORKSPACE ORGANIZATION RULES
@@ -24,7 +24,7 @@ These rules are **FIXED INSTRUCTIONS** that must ALWAYS be followed to prevent c
 - **Lifecycle**: Permanent - valuable for knowledge transfer and maintenance
 - **Value**: HIGH - Essential for understanding system evolution
 
-**`.dev/tests/` - Development Validation**  
+**`.dev/tests/` - Development Validation**
 
 - **Purpose**: Development-specific testing and validation scripts
 - **Contains**: Implementation validation tests, integration tests, performance tests
@@ -73,10 +73,10 @@ These rules are **FIXED INSTRUCTIONS** that must ALWAYS be followed to prevent c
 
 ```json
 {
-    "command": "uv",
-    "args": ["run", "python", "-m", "tool_name", "...args"]
+  "command": "uv",
+  "args": ["run", "python", "-m", "tool_name", "...args"]
 }
-```
+```text
 
 **Terminal Commands:**
 
@@ -84,14 +84,14 @@ These rules are **FIXED INSTRUCTIONS** that must ALWAYS be followed to prevent c
 uv run python script.py
 uv run python -m pytest tests/
 uv run python -m black src/ tests/
-```
+```bash
 
 **Development Scripts:**
 
 ```python
 #!/usr/bin/env uv run python
 # Use uv shebang for development scripts
-```
+```text
 
 #### ❌ PROHIBITED Patterns
 
@@ -123,7 +123,7 @@ Is this file valuable for future development work?
 └─ NO → Is it automatically generated with no long-term value?
     ├─ YES → .dev/temp/
     └─ NO → Reassess classification (probably has value)
-```
+```text
 
 #### Validation Commands
 
@@ -136,9 +136,9 @@ find .dev/temp/ -name "*.md" -o -name "test_*.py" -o -name "debug_*.py"
 # Find bare python commands in tasks
 grep -r "\"command\": \"python\"" .vscode/
 
-# Validate organization compliance  
+# Validate organization compliance
 uv run python scripts/validate_workspace.py --scan-violations
-```
+```bash
 
 ### Rule 4: Documentation Standards
 
@@ -150,17 +150,21 @@ uv run python scripts/validate_workspace.py --scan-violations
 # [Directory Name]
 
 ## 📁 Purpose
+
 [Clear explanation of what goes in this directory]
 
-## 🔄 Usage  
+## 🔄 Usage
+
 [How to use contents of this directory]
 
 ## 📋 Standards
+
 [Relevant standards and conventions]
 
 ## 🏗️ Organization Principle
+
 [Why this separation exists and how it fits the overall structure]
-```
+```text
 
 ## 🔍 ENFORCEMENT MECHANISMS
 
@@ -196,7 +200,7 @@ uv run python scripts/validate_workspace.py --scan-violations
 ### Daily Development Checklist
 
 - [ ] All new files classified by value, not temporality
-- [ ] All Python commands use `uv run` consistently  
+- [ ] All Python commands use `uv run` consistently
 - [ ] No valuable artifacts in `.dev/temp/`
 - [ ] New directories have proper README documentation
 - [ ] Environment usage consistent across all tools
@@ -229,9 +233,9 @@ uv run python scripts/validate_workspace.py --scan-violations
 
 ## 📝 IMPLEMENTATION HISTORY
 
-**Created**: 2025-09-15  
-**Reason**: Resolved circular workspace organization logic that was misclassifying valuable development artifacts as "temporary" files  
-**Validated**: Successful reorganization of citation fixes, enhanced implementation tests, and debug scripts from `.dev/temp/` to proper classification  
+**Created**: 2025-09-15
+**Reason**: Resolved circular workspace organization logic that was misclassifying valuable development artifacts as "temporary" files
+**Validated**: Successful reorganization of citation fixes, enhanced implementation tests, and debug scripts from `.dev/temp/` to proper classification
 **Status**: FIXED INSTRUCTION - permanent development standard
 
 This document serves as the definitive reference for workspace organization and MUST be consulted before making any changes to file classification or environment management approaches.

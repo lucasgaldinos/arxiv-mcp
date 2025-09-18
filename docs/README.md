@@ -50,12 +50,12 @@ This directory contains all project documentation, organized by audience and pur
 docs/
 ├── api/                    # API documentation and references
 ├── archive/                # Historical documentation and decisions
-├── guides/                 # User and developer guides  
+├── guides/                 # User and developer guides
 ├── examples/               # Usage examples and tutorials
 ├── specifications/         # Technical specifications
 ├── README.md              # This file
 └── *.md                   # Top-level documentation files
-```
+```text
 
 ## 📚 Documentation Categories
 
@@ -121,17 +121,21 @@ docs/
 Brief description of purpose and scope.
 
 ## Overview
+
 High-level explanation...
 
 ## Sections
+
 Detailed content...
 
 ## Examples
+
 Practical usage examples...
 
 ## References
+
 Links to related documentation...
-```
+```text
 
 ## 🔧 Maintenance
 
@@ -149,6 +153,6 @@ Links to related documentation...
 1. **Completeness**: Check all scenarios covered
 1. **Currency**: Ensure information is up-to-date
 
-______________________________________________________________________
+---
 
-*Good documentation is code. It should be versioned, reviewed, and maintained with the same rigor as source code.*
+_Good documentation is code. It should be versioned, reviewed, and maintained with the same rigor as source code._

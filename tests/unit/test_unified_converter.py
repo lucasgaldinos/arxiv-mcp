@@ -1,10 +1,8 @@
 """Test suite for UnifiedDownloadConverter with integration approach for real coverage."""
 
-import gzip
 import io
 from pathlib import Path
 import shutil
-import tarfile
 import tempfile
 from unittest.mock import AsyncMock, patch
 
@@ -77,6 +75,8 @@ This is the conclusion.
 \\end{document}"""
 
         # Create a tar.gz-like structure that mimics arXiv format
+        import gzip
+        import tarfile
 
         # Create a tar archive in memory
         tar_buffer = io.BytesIO()

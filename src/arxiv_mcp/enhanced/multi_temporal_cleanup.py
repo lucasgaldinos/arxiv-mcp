@@ -5,13 +5,12 @@ Provides flexible time specification supporting seconds-to-days precision
 while maintaining backward compatibility with existing day-based cleanup systems.
 """
 
-import re
-from datetime import datetime, timedelta
-from typing import Union, Dict, Any, Optional
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from enum import Enum
-
 import logging
+import re
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -49,16 +48,15 @@ class TimeSpec:
         """Convert to datetime.timedelta."""
         if self.unit == TimeUnit.SECONDS:
             return timedelta(seconds=self.value)
-        elif self.unit == TimeUnit.MINUTES:
+        if self.unit == TimeUnit.MINUTES:
             return timedelta(minutes=self.value)
-        elif self.unit == TimeUnit.HOURS:
+        if self.unit == TimeUnit.HOURS:
             return timedelta(hours=self.value)
-        elif self.unit == TimeUnit.DAYS:
+        if self.unit == TimeUnit.DAYS:
             return timedelta(days=self.value)
-        elif self.unit == TimeUnit.WEEKS:
+        if self.unit == TimeUnit.WEEKS:
             return timedelta(weeks=self.value)
-        else:
-            raise ValueError(f"Unsupported time unit: {self.unit}")
+        raise ValueError(f"Unsupported time unit: {self.unit}")
 
     def to_days(self) -> float:
         """Convert to days as float for backward compatibility."""
@@ -79,7 +77,7 @@ class MultiTemporalParser:
     )
 
     @classmethod
-    def parse(cls, time_spec: Union[str, int, float]) -> timedelta:
+    def parse(cls, time_spec: str | int | float) -> timedelta:
         """
         Parse time specification into timedelta.
 
@@ -177,8 +175,8 @@ class EnhancedCleanupAdapter:
         self.paper_notifications = paper_notifications
 
     def cleanup_files(
-        self, time_spec: Union[str, int, float], output_dir: str = "output"
-    ) -> Dict[str, Any]:
+        self, time_spec: str | int | float, output_dir: str = "./output"
+    ) -> dict[str, Any]:
         """
         Enhanced file cleanup with multi-temporal support.
 
@@ -233,11 +231,10 @@ class EnhancedCleanupAdapter:
 
     def _cleanup_with_precise_timing(
         self, cutoff_date: datetime, output_dir: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Perform cleanup with precise sub-day timing."""
-        from pathlib import Path
         import os
-        import json
+        from pathlib import Path
 
         output_path = Path(output_dir)
         if not output_path.exists():
@@ -281,7 +278,7 @@ class EnhancedCleanupAdapter:
             "size_freed": size_freed,
         }
 
-    def cleanup_batch_operations(self, time_spec: Union[str, int, float]) -> Dict[str, Any]:
+    def cleanup_batch_operations(self, time_spec: str | int | float) -> dict[str, Any]:
         """Clean up batch operations with multi-temporal support."""
         if not self.batch_processor:
             return {"status": "skipped", "reason": "No batch processor component available"}
@@ -302,7 +299,7 @@ class EnhancedCleanupAdapter:
         except Exception as e:
             return {"status": "error", "error": str(e)}
 
-    def cleanup_notifications(self, time_spec: Union[str, int, float]) -> Dict[str, Any]:
+    def cleanup_notifications(self, time_spec: str | int | float) -> dict[str, Any]:
         """Clean up notifications with multi-temporal support."""
         if not self.paper_notifications:
             return {"status": "skipped", "reason": "No notifications component available"}
@@ -324,8 +321,8 @@ class EnhancedCleanupAdapter:
             return {"status": "error", "error": str(e)}
 
     def comprehensive_cleanup(
-        self, time_spec: Union[str, int, float], output_dir: str = "output"
-    ) -> Dict[str, Any]:
+        self, time_spec: str | int | float, output_dir: str = "./output"
+    ) -> dict[str, Any]:
         """
         Perform comprehensive cleanup across all systems.
 
@@ -390,8 +387,8 @@ def create_enhanced_adapter(config=None) -> EnhancedCleanupAdapter:
     Returns:
         Configured EnhancedCleanupAdapter instance
     """
-    from ..utils.file_saver import FileSaver
     from ..utils.batch_operations import BatchProcessor
+    from ..utils.file_saver import FileSaver
     from ..utils.paper_notifications import PaperNotificationSystem
 
     try:
@@ -402,7 +399,7 @@ def create_enhanced_adapter(config=None) -> EnhancedCleanupAdapter:
 
         if config:
             try:
-                file_saver = FileSaver(output_dir=getattr(config, "output_directory", "output"))
+                file_saver = FileSaver(output_dir=getattr(config, "output_directory", "./output"))
             except Exception as e:
                 logger.warning(f"Could not initialize FileSaver: {e}")
 

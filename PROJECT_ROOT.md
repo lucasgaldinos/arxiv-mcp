@@ -4,7 +4,7 @@ This is the main directory of the ArXiv MCP (Model Context Protocol) server proj
 
 ## 📁 Project Structure Overview
 
-```
+```text
 arxiv-mcp-improved/
 ├── 📂 .dev/              # Development workspace - all build/runtime artifacts
 ├── 📂 .github/           # GitHub workflows, templates, and knowledge base
@@ -21,7 +21,7 @@ arxiv-mcp-improved/
 ├── 📄 README.md          # Main project documentation
 ├── 📄 pyproject.toml     # Python project configuration
 └── 📄 *.md               # Additional Extremely necessary documentation files
-```
+```text
 
 ## 🚀 Quick Start
 
@@ -42,7 +42,7 @@ uv sync
 
 # Run tests to verify installation
 uv run python -m pytest tests/ -v
-```
+```bash
 
 ### Basic Usage
 
@@ -52,11 +52,11 @@ uv run python -m arxiv_mcp
 
 # Run example scripts
 uv run python examples/demo_phase_4a_item_1.py
-```
+```bash
 
 ## 📚 Documentation Navigation
 
-- **📖 [User Guide](docs/guides/)** - Getting started and usage examples
+- **📖 [User Guide](docs/tutorials/)** - Getting started and usage examples
 - **🔧 [API Documentation](docs/api/)** - Technical reference
 - **💡 [Examples](examples/)** - Practical usage demonstrations
 - **⚙️ [Configuration](config/)** - Setup and configuration options
@@ -95,7 +95,7 @@ uv run python -m pytest tests/integration/ -v  # Integration tests
 
 # Generate coverage report
 uv run python -m pytest tests/ --cov=src --cov-report=html:.dev/build/htmlcov/
-```
+```bash
 
 ### Development Tasks
 
@@ -108,7 +108,7 @@ uv run python -m black src/ tests/
 
 # Type checking
 uv run python -m mypy src/arxiv_mcp
-```
+```bash
 
 ## 📋 Project Standards
 
@@ -145,4 +145,4 @@ uv run python -m mypy src/arxiv_mcp
 
 ---
 
-*This project demonstrates enterprise-grade Python package organization with comprehensive documentation, testing, and development workflow optimization.*
+_This project demonstrates enterprise-grade Python package organization with comprehensive documentation, testing, and development workflow optimization._

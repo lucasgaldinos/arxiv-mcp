@@ -1,4 +1,4 @@
-______________________________________________________________________
+---
 
 title: Workspace Reorganization Implementation Plan
 description: Step-by-step plan for reorganizing arxiv-mcp-improved workspace following best practices
@@ -14,7 +14,7 @@ tags:
 - lucas_galdino
   confidence_level: high
 
-______________________________________________________________________
+---
 
 # Workspace Reorganization Implementation Plan
 
@@ -39,7 +39,7 @@ ______________________________________________________________________
 mkdir -p .dev/{cache,output,logs,coverage,temp}
 mkdir -p .dev/cache/{arxiv,network,batch,tags}
 
-# Create enhanced docs structure  
+# Create enhanced docs structure
 mkdir -p docs/{user,dev,api}
 ```
 
@@ -65,7 +65,7 @@ echo "" >> .gitignore
 ```bash
 # Consolidate all cache directories
 mv cache/* .dev/cache/arxiv/ 2>/dev/null || true
-mv batch_cache/* .dev/cache/batch/ 2>/dev/null || true  
+mv batch_cache/* .dev/cache/batch/ 2>/dev/null || true
 mv network_cache/* .dev/cache/network/ 2>/dev/null || true
 mv tag_cache/* .dev/cache/tags/ 2>/dev/null || true
 
@@ -93,7 +93,7 @@ Update the following files to point to new cache locations:
 mv output/* .dev/output/ 2>/dev/null || true
 rmdir output 2>/dev/null || true
 
-# Move logs  
+# Move logs
 mv logs/* .dev/logs/ 2>/dev/null || true
 rmdir logs 2>/dev/null || true
 ```
@@ -214,7 +214,6 @@ Add new workspace organization section:
 ## 🗂️ Workspace Organization
 
 This project follows modern development workspace organization principles:
-
 ```
 
 arxiv-mcp-improved/
@@ -251,6 +250,7 @@ Add entry for workspace reorganization:
 ## [2.3.0] - 2025-09-11
 
 ### Infrastructure
+
 - **MAJOR**: Complete workspace reorganization following enterprise best practices
 - **IMPROVED**: Consolidated 4 separate cache directories into unified `.dev/cache/` system
 - **IMPROVED**: Moved all runtime artifacts to `.dev/` directory (git-ignored)
@@ -292,19 +292,16 @@ Add entry for workspace reorganization:
 ### 🚨 **Potential Issues and Solutions**
 
 1. **Path Reference Errors**
-
    - **Detection**: Run full test suite after each phase
    - **Solution**: Update configuration files immediately
    - **Rollback**: Git revert if necessary
 
 1. **Cache System Malfunction**
-
    - **Detection**: Test cache operations specifically
    - **Solution**: Verify directory permissions and paths
    - **Rollback**: Restore old cache directories temporarily
 
 1. **Configuration Drift**
-
    - **Detection**: Validate all config files after updates
    - **Solution**: Use grep to find remaining old path references
    - **Rollback**: Restore backup configuration files
@@ -330,19 +327,19 @@ Add entry for workspace reorganization:
 **Total Estimated Time**: 4-6 hours\
 **Recommended Schedule**: Single focused session or 2 half-day sessions
 
-| Phase | Duration | Cumulative | Dependencies |
-|-------|----------|------------|--------------|
-| Phase 1 | 30 min | 30 min | None |
-| Phase 2 | 45 min | 75 min | Phase 1 |
-| Phase 3 | 30 min | 105 min | Phase 2 |
-| Phase 4 | 60 min | 165 min | Phase 3 |
-| Phase 5 | 45 min | 210 min | Phase 4 |
-| Phase 6 | 30 min | 240 min | Phase 5 |
-| Phase 7 | 60 min | 300 min | Phase 6 |
-| Phase 8 | 30 min | 330 min | Phase 7 |
+| Phase   | Duration | Cumulative | Dependencies |
+| ------- | -------- | ---------- | ------------ |
+| Phase 1 | 30 min   | 30 min     | None         |
+| Phase 2 | 45 min   | 75 min     | Phase 1      |
+| Phase 3 | 30 min   | 105 min    | Phase 2      |
+| Phase 4 | 60 min   | 165 min    | Phase 3      |
+| Phase 5 | 45 min   | 210 min    | Phase 4      |
+| Phase 6 | 30 min   | 240 min    | Phase 5      |
+| Phase 7 | 60 min   | 300 min    | Phase 6      |
+| Phase 8 | 30 min   | 330 min    | Phase 7      |
 
 **Note**: Add 25% buffer time for unexpected issues = **~4.5 hours total**
 
-______________________________________________________________________
+---
 
 **Ready for Implementation**: This plan provides comprehensive step-by-step guidance for reorganizing the workspace while maintaining functionality and minimizing risk.

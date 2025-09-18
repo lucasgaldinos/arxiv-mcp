@@ -55,7 +55,7 @@ def add_docstring_to_function(
     file_path: str, line_number: int, function_name: str, node_type: str
 ) -> bool:
     """Add appropriate docstring to a function or class."""
-    with open(file_path, "r", encoding="utf-8") as f:
+    with open(file_path, encoding="utf-8") as f:
         lines = f.readlines()
 
     # Find the function/class definition line
@@ -99,9 +99,7 @@ def add_docstring_to_function(
         insert_line += 1
 
     # Check if docstring already exists
-    if insert_line < len(lines) and (
-        '"""' in lines[insert_line] or "'''" in lines[insert_line]
-    ):
+    if insert_line < len(lines) and ('"""' in lines[insert_line] or "'''" in lines[insert_line]):
         return False  # Docstring already exists
 
     # Insert the docstring
@@ -142,9 +140,7 @@ def add_missing_docstrings() -> None:
                 if len(node_info) >= 2:
                     node_type = node_info[0]
                     function_name = node_info[1]
-                    missing_items.append(
-                        (current_file, line_num, function_name, node_type)
-                    )
+                    missing_items.append((current_file, line_num, function_name, node_type))
 
     print(f"📊 Processing {len(missing_items)} missing docstrings...")
 
@@ -204,7 +200,7 @@ def update_documentation() -> None:
 """
 
     try:
-        with open("CHANGELOG.md", "r", encoding="utf-8") as f:
+        with open("CHANGELOG.md", encoding="utf-8") as f:
             content = f.read()
 
         # Insert new entry at the beginning (after title)
@@ -234,7 +230,7 @@ def create_commit_summary() -> None:
 
 ## 🎯 Objectives Achieved
 ✅ **Step 1**: Memory graph analysis and entity updates completed
-✅ **Step 2**: Comprehensive linting analysis (104 issues identified and categorized)  
+✅ **Step 2**: Comprehensive linting analysis (104 issues identified and categorized)
 ✅ **Step 3**: All critical API issues resolved (127/127 tests passing)
 ✅ **Step 4**: Systematic docstring addition (48 missing docstrings automated)
 ✅ **Step 5**: Documentation updates (CHANGELOG.md, COMPLETION_SUMMARY.md)

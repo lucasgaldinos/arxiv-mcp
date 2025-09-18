@@ -19,7 +19,7 @@ GitHub Copilot: Optimizing tool selection...Now let me execute the plan step by 
 - **Features**: Code analysis, optimization, compute unit estimation, best practices recommendations
 - **Why it stands out**: Provides comprehensive language-specific tooling with focus on code quality
 
-#### 2. **hrirkslab/context-server-rs** ⭐ 5 stars  
+#### 2. **hrirkslab/context-server-rs** ⭐ 5 stars
 
 - **Language**: Rust
 - **Focus**: Solves context engineering problems for AI code generation
@@ -65,47 +65,45 @@ Follow these exact steps, only adding when needed.
 2. Check for any errors in tool names as well.
 3. #memory read graph and `add OR create`, depending on whether there already are related notes. Then create relations.
 4. I want you to then update #file:tools_and_mcps.md following this logic (ignore the tools, do just the mcps):
-    <mcp-or-tool id = "tool" name="tool_name"> tool name </mcp-or-tool>
+   <mcp-or-tool id = "tool" name="tool_name"> tool name </mcp-or-tool>
+   - `"When-to-use-this-tool."`
+   - `"When-NOT-to-use-this-tool."`
+   - `"Reliability"`
+   - `"Speed"`
+   - ... more information/observations from the <mcp-or-tool id = "tool" name="tool_name"> tool name </mcp-or-tool> here from the repository.
 
-    - `"When-to-use-this-tool."`
-    - `"When-NOT-to-use-this-tool."`
-    - `"Reliability"`
-    - `"Speed"`
-    - ... more information/observations from the <mcp-or-tool id = "tool" name="tool_name"> tool name </mcp-or-tool> here from the repository.
+   <mcp-or-tool id = "mcp" name="mcp_name"> mcp name </mcp-or-tool>
+   - `"When-to-use-this-mcp."`
+   - `"When-NOT-to-use-this-mcp."`
+   - `"Reliability"`
+   - `"Speed"`
+   - ... more information/observations from the <mcp-or-tool id = "mcp" name="mcp_name"> mcp name </mcp-or-tool> here from the repository.
 
-    <mcp-or-tool id = "mcp" name="mcp_name"> mcp name </mcp-or-tool>
+   ```python
+   other_tools_and_mcps = [] # Add more tools and MCPs from the the list from before:
+   tool_list = ["markdownit", "deepwiki", ..., *other_tools_and_mcps]  # Add more MCP names as needed
+   count = 0
+   file_name = f".github/.knowledge_base/0-tool_usage/{mcp_or_tool}_usage.md"
+   with open(file_name, "w") as f:
+     for mcp_or_tool in tool_list:
+       count += 1
+       search_mcp_in_repository(mcp_or_tool)  # Function to search for the MCP or tool in the repository
+       try:
+         write_observations_usage(mcp_or_tool)
+         write_usage_avoid(mcp_or_tool)
+         write_reliability(mcp_or_tool)
+         write_speed(mcp_or_tool)
+         write_additional_info(mcp_or_tool)
+         count = 0
 
-    - `"When-to-use-this-mcp."`
-    - `"When-NOT-to-use-this-mcp."`
-    - `"Reliability"`
-    - `"Speed"`
-    - ... more information/observations from the <mcp-or-tool id = "mcp" name="mcp_name"> mcp name </mcp-or-tool> here from the repository.
-
-    ```python
-    other_tools_and_mcps = [] # Add more tools and MCPs from the the list from before:
-    tool_list = ["markdownit", "deepwiki", ..., *other_tools_and_mcps]  # Add more MCP names as needed
-    count = 0
-    file_name = f".github/.knowledge_base/0-tool_usage/{mcp_or_tool}_usage.md"
-    with open(file_name, "w") as f:
-      for mcp_or_tool in tool_list:
-        count += 1
-        search_mcp_in_repository(mcp_or_tool)  # Function to search for the MCP or tool in the repository
-        try:
-          write_observations_usage(mcp_or_tool)
-          write_usage_avoid(mcp_or_tool)
-          write_reliability(mcp_or_tool)
-          write_speed(mcp_or_tool)
-          write_additional_info(mcp_or_tool)
-          count = 0
-
-        except no_info_found_error:
-          if count < 2:
-            print(f"No information found for {mcp_or_tool}, trying again just one more time with other tool (I didn't wanted to implement the logic, but you'll redo the process above with other tool just one more time).")
-          else:
-            print(f"No information found for {mcp_or_tool}, skipping...")
-            count = 0
-        continue
-    ```
+       except no_info_found_error:
+         if count < 2:
+           print(f"No information found for {mcp_or_tool}, trying again just one more time with other tool (I didn't wanted to implement the logic, but you'll redo the process above with other tool just one more time).")
+         else:
+           print(f"No information found for {mcp_or_tool}, skipping...")
+           count = 0
+       continue
+   ```
 
 GitHub Copilot: I'll follow your exact steps. Let me start: ## Step 1: Update the tool list file
 
@@ -167,48 +165,47 @@ Follow these exact steps, only adding when needed.
 
 1. #memory read graph and `add_observations` to the past nodes. Then create relations.
 2. I want you to then update `/home/lucas_galdino/repositories/mcp_servers/arxiv-mcp-improved/.github/.knowledge_base/0-tool_usage/tools_and_mcps.md` following this logic (this time relating the tools, while adding more observations):
-    <mcp-or-tool id = "tool" name="tool_name"> tool name </mcp-or-tool>
+   <mcp-or-tool id = "tool" name="tool_name"> tool name </mcp-or-tool>
+   - `"When-to-use-this-tool."`
+   - `"When-NOT-to-use-this-tool."`
+   - `"Reliability"`
+   - `"Speed"`
+   - ... more information/observations from the <mcp-or-tool id = "tool" name="tool_name"> tool name </mcp-or-tool> here from the repository.
 
-    - `"When-to-use-this-tool."`
-    - `"When-NOT-to-use-this-tool."`
-    - `"Reliability"`
-    - `"Speed"`
-    - ... more information/observations from the <mcp-or-tool id = "tool" name="tool_name"> tool name </mcp-or-tool> here from the repository.
+   <mcp-or-tool id = "mcp" name="mcp_name"> mcp name </mcp-or-tool>
+   - `"When-to-use-this-mcp."`
+   - `"When-NOT-to-use-this-mcp."`
+   - `"Reliability"`
+   - `"Speed"`
+   - ... more information/observations from the <mcp-or-tool id = "mcp" name="mcp_name"> mcp name </mcp-or-tool> here from the repository.
 
-    <mcp-or-tool id = "mcp" name="mcp_name"> mcp name </mcp-or-tool>
+   ```python
+   other_tools_and_mcps = [] # Add more tools and MCPs from the the list from before:
+   tool_list = ["markdownit", "deepwiki", ..., *other_tools_and_mcps]  # Add more MCP names as needed
+   count = 0
+   file_name = f".github/.knowledge_base/0-tool_usage/{mcp_or_tool}_usage.md"
+   with open(file_name, "w") as f:
+     for mcp_or_tool in tool_list:
+       count += 1
+       search_mcp_in_repository(mcp_or_tool)  # Function to search for the MCP or tool in the repository
+       try:
+         write_observations_usage(mcp_or_tool)
+         write_usage_avoid(mcp_or_tool)
+         write_reliability(mcp_or_tool)
+         write_speed(mcp_or_tool)
+         while mcp_additional_info:
+           write_additional_info(mcp_or_tool)
+         count = 0
 
-    - `"When-to-use-this-mcp."`
-    - `"When-NOT-to-use-this-mcp."`
-    - `"Reliability"`
-    - `"Speed"`
-    - ... more information/observations from the <mcp-or-tool id = "mcp" name="mcp_name"> mcp name </mcp-or-tool> here from the repository.
+       except no_info_found_error:
+         if count < 2:
+           print(f"No information found for {mcp_or_tool}, trying again just one more time with other tool (I didn't wanted to implement the logic, but you'll redo the process above with other tool just one more time).")
+         else:
+           print(f"No information found for {mcp_or_tool}, skipping...")
+           count = 0
+       continue
+   ```
 
-    ```python
-    other_tools_and_mcps = [] # Add more tools and MCPs from the the list from before:
-    tool_list = ["markdownit", "deepwiki", ..., *other_tools_and_mcps]  # Add more MCP names as needed
-    count = 0
-    file_name = f".github/.knowledge_base/0-tool_usage/{mcp_or_tool}_usage.md"
-    with open(file_name, "w") as f:
-      for mcp_or_tool in tool_list:
-        count += 1
-        search_mcp_in_repository(mcp_or_tool)  # Function to search for the MCP or tool in the repository
-        try:
-          write_observations_usage(mcp_or_tool)
-          write_usage_avoid(mcp_or_tool)
-          write_reliability(mcp_or_tool)
-          write_speed(mcp_or_tool)
-          while mcp_additional_info:
-            write_additional_info(mcp_or_tool)
-          count = 0
-
-        except no_info_found_error:
-          if count < 2:
-            print(f"No information found for {mcp_or_tool}, trying again just one more time with other tool (I didn't wanted to implement the logic, but you'll redo the process above with other tool just one more time).")
-          else:
-            print(f"No information found for {mcp_or_tool}, skipping...")
-            count = 0
-        continue
-    ```
 3. improve the current mcps descriptions, adding at least 5 more unordered list items.
 4. #memory read graph and `add OR create`, depending on whether there already are related notes. Then create relations.
 5. only then, improve the formatting to make this file more clear, with proper headings, ordered and unordered lists where due. A complete formtting refactoring.
@@ -240,7 +237,8 @@ Ready for step 3: improving the current MCP descriptions with at least 5 more un
 
 lucasgaldinos: @agent continue
 
-#think
+# think
+
 Contextualize yourself with the context, than proceed to the task.
 
 GitHub Copilot: Now let me check the current content of the file to see what manual edits were made: Let me continue reading to see the rest of the file: Great! I can see the file is exactly as we left it after step 2. Now I'll proceed with step 3: improving the current MCP descriptions by adding at least 5 more unordered list items to each tool/MCP. Let me start with the first tool:
@@ -276,7 +274,8 @@ Ready for **step 5**: "improve the formatting to make this file more clear, with
 
 lucasgaldinos: @agent continue
 
-#think
+# think
+
 Contextualize yourself with the context, than proceed to the task.
 
 GitHub Copilot: Now I'll proceed with step 5: improving the formatting of the tools_and_mcps.md file to make it clearer with proper headings, ordered and unordered lists. Let me first read the current content to assess the formatting improvements needed: Let me continue reading to see the full structure: Now I'll implement step 5: improving the formatting to make the file clearer with proper headings, ordered and unordered lists. I'll restructure the content for better organization and readability:
@@ -318,13 +317,13 @@ Perfect! I've successfully completed step 5 of the 5-step process by implementin
 
 ## 🏆 Complete 5-Step Process Summary
 
-| Step | Status | Description |
-|------|--------|-------------|
-| **1** | ✅ | Memory operations and XML formatting setup |
-| **2** | ✅ | Updated tools_and_mcps.md with XML format and enhanced descriptions |
-| **3** | ✅ | Added 6+ additional bullet points to each tool/MCP description |
-| **4** | ✅ | Memory graph operations - added observations and created relations |
-| **5** | ✅ | Improved formatting with proper headings, ordered/unordered lists |
+| Step  | Status | Description                                                         |
+| ----- | ------ | ------------------------------------------------------------------- |
+| **1** | ✅     | Memory operations and XML formatting setup                          |
+| **2** | ✅     | Updated tools_and_mcps.md with XML format and enhanced descriptions |
+| **3** | ✅     | Added 6+ additional bullet points to each tool/MCP description      |
+| **4** | ✅     | Memory graph operations - added observations and created relations  |
+| **5** | ✅     | Improved formatting with proper headings, ordered/unordered lists   |
 
 The file is now significantly more organized, readable, and professional, following best practices for technical documentation with clear structure, comprehensive content, and easy navigation.
 
@@ -340,7 +339,7 @@ lucasgaldinos: #think
 - [MANDATORY] Always prefer tools that are specialized for the task at hand, rather than general-purpose tools.
 - [MANDATORY] You are obliged to #think and `optimize tool selection`[^1] before executing any task where tools are not explictly set.
 
-  [^1]:(I don't know how it's called the function/tool for this, please add a simple observation saying if it's `possible: true/false`, if it's `true`, put `observation: tool_name/tool_call_order`).
+  [^1]: (I don't know how it's called the function/tool for this, please add a simple observation saying if it's `possible: true/false`, if it's `true`, put `observation: tool_name/tool_call_order`).
 
 ## task
 
@@ -357,16 +356,14 @@ Update both `/home/lucas_galdino/repositories/mcp_servers/arxiv-mcp-improved/.gi
 - [MANDATORY] Always prefer tools that are specialized for the task at hand, rather than general-purpose tools.
 - [MANDATORY] You are obliged to #think and `optimize tool selection`[^1] before executing any task where tools are not explictly set.
 
-  [^1]:(I don't know how it's called the function/tool for this, please add a simple observation saying if it's `possible: true/false`, if it's `true`, put `observation: tool_name/tool_call_order`).
 - [MANDATORY] You MUST use #human-in-the-loop when you are not sure about something, or when you need confirmation from the user before proceeding.
   - When you use a tool and do not obtain good results. You MUST use #human-in-the-loop to ask the user for clarification or more details on how to proceed.
   - Right after you defined an execution plan, you MUST use #human-in-the-loop to ask the user for confirmation before proceeding.
   - Any type of decision critical decision.
   - you shall not proceed without human confirmation.
 - [MANDATORY] Before stopping or reaching any conclusion, about a task
-  
   - you shall have the `human-in-the-loop` tools in your #memory (create entities about the human in the loop mcp tools, read_graph and then create relations where proper)
-Follow these exact steps, only adding new tool calls when needed.
+    Follow these exact steps, only adding new tool calls when needed.
 
 1. #memory read graph and `add_observations` to the past nodes. Then create relations.
 2. I want you to then update `/home/lucas_galdino/repositories/mcp_servers/arxiv-mcp-improved/.github/.knowledge_base/0-tool_usage/tools_and_mcps.md` by adding recommended models for: `general tasks, complex tasks, simpler tasks`.

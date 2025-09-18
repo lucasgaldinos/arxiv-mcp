@@ -10,7 +10,7 @@
   - using pandoc might be an option. Should explore best LATEX to markdown conversion tools.
 - Scope: Focus on core functionality, avoid feature creep
 
-______________________________________________________________________
+---
 
 ## 🔥 Critical Priorities (Must Fix)
 
@@ -30,21 +30,19 @@ ______________________________________________________________________
   - **Priority**: HIGH - testing infrastructure broken
   - **Estimate**: 4-6 hours
 
-______________________________________________________________________
+---
 
 ## 🎯 High Priority (Core Features)
 
 ### 📁 File Management & Output
 
 - [ ] **Output directory organization**
-
   - Structured saving: `output/{latex,markdown,metadata}/`
   - File naming conventions
   - **Success criteria**: Papers saved to disk with proper structure
   - **Estimate**: 4-6 hours
 
 - [ ] **Enhanced LaTeX processing**
-
   - Better .tex file extraction and cleaning
   - Improve conversion quality
   - **Success criteria**: 90%+ successful LaTeX→Markdown conversion
@@ -53,33 +51,29 @@ ______________________________________________________________________
 ### 🔍 Core API Features
 
 - [ ] **ArXiv search improvements**
-
   - Better query handling and filters
   - Result pagination
   - **Success criteria**: Reliable search with 10+ results per query
   - **Estimate**: 6-8 hours
 
 - [ ] **Error handling & recovery**
-
   - Graceful fallbacks (LaTeX→PDF→Text)
   - Better error messages
   - **Success criteria**: \<5% unhandled errors
   - **Estimate**: 4-6 hours
 
-______________________________________________________________________
+---
 
 ## 📈 Medium Priority (Quality & Polish)
 
 ### 🧹 Code Quality
 
 - [ ] **Documentation updates**
-
   - Update README with current features
   - API documentation
   - **Estimate**: 2-4 hours
 
 - [ ] **Type safety**
-
   - Complete Pydantic v2 integration
   - Type hint coverage >90%
   - **Estimate**: 6-8 hours
@@ -87,30 +81,26 @@ ______________________________________________________________________
 ### ⚡ Performance
 
 - [ ] **Batch processing**
-
   - Process multiple papers concurrently
   - Progress tracking
   - **Estimate**: 6-10 hours
 
 - [ ] **Caching improvements**
-
   - SQLite persistence for metadata
   - Cache invalidation strategy
   - **Estimate**: 4-6 hours
 
-______________________________________________________________________
+---
 
 ## 🔧 Low Priority (Future Enhancements)
 
 ### 🎨 User Experience
 
 - [ ] **Configuration validation**
-
   - Startup checks with helpful errors
   - **Estimate**: 2-3 hours
 
 - [ ] **Progress indicators**
-
   - Real-time processing feedback
   - **Estimate**: 3-4 hours
 
@@ -120,7 +110,7 @@ ______________________________________________________________________
   - Search patterns, popular papers
   - **Estimate**: 4-6 hours
 
-______________________________________________________________________
+---
 
 ## ✅ Completed Features
 
@@ -142,7 +132,7 @@ ______________________________________________________________________
 - ✅ **Async processing pipeline** with resource management
 - ✅ **Logging and metrics** with structured output
 
-______________________________________________________________________
+---
 
 ## 🚫 Deliberately Excluded (Scope Management)
 
@@ -164,7 +154,7 @@ ______________________________________________________________________
 - **Reason**: Core mission is document fetching, not analytics platform
 - **Alternative**: Basic usage tracking only
 
-______________________________________________________________________
+---
 
 ## 📋 Success Metrics
 
@@ -188,7 +178,7 @@ ______________________________________________________________________
 - [ ] Progress indication for long operations
 - [ ] Simple configuration with validation
 
-______________________________________________________________________
+---
 
 ## 🗓️ Timeline Estimates
 
@@ -210,7 +200,7 @@ ______________________________________________________________________
 - Performance optimizations
 - **Deliverable**: Stable v2.3.0
 
-______________________________________________________________________
+---
 
 ## 📝 Definition of Done
 
@@ -228,7 +218,7 @@ ______________________________________________________________________
 - [ ] Performance acceptable (\<30s per paper)
 - [ ] User feedback incorporated
 
-______________________________________________________________________
+---
 
-*Last updated: January 2025*
-*Focus: Simple, reliable ArXiv paper fetching with LaTeX-to-Markdown conversion*
+_Last updated: January 2025_
+_Focus: Simple, reliable ArXiv paper fetching with LaTeX-to-Markdown conversion_

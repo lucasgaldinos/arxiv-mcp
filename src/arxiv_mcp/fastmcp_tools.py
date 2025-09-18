@@ -3,6 +3,7 @@
 ArXiv MCP Server using FastMCP - Fixed version for VS Code integration.
 """
 
+from dataclasses import dataclass
 from pathlib import Path
 import sys
 
@@ -11,9 +12,37 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 from fastmcp import FastMCP
 
+from arxiv_mcp.analyzers.network_analyzer import NetworkAnalyzer, NetworkNode, NetworkType
+
+# Core imports
 from arxiv_mcp.clients.arxiv_api import ArxivAPIClient
 from arxiv_mcp.core.config import PipelineConfig
 from arxiv_mcp.core.pipeline import ArxivPipeline
+
+# Enhanced feature imports
+from arxiv_mcp.enhanced.multi_temporal_cleanup import create_enhanced_adapter
+
+# Parser and analyzer imports
+from arxiv_mcp.parsers.citation_parser import CitationParser
+from arxiv_mcp.utils.metrics import PerformanceMetrics
+
+# Utils imports - moved from function level to top level
+from arxiv_mcp.utils.unified_converter import (
+    UnifiedDownloadConverter,
+    download_and_convert_paper,
+)
+from arxiv_mcp.utils.workspace_resolver import workspace_resolver
+
+
+@dataclass
+class BatchConversionParams:
+    """Parameters for batch download and conversion operations."""
+    arxiv_ids: list[str]
+    output_dir: str = "./output"
+    save_latex: bool = True
+    save_markdown: bool = True
+    include_pdf: bool = False
+    max_concurrent: int = 3
 
 # Create FastMCP server instance
 mcp = FastMCP("arxiv-mcp-improved")
@@ -76,112 +105,107 @@ async def fetch_arxiv_paper_content(
 
 
 @mcp.tool()
-async def download_and_convert_paper(
+async def download_and_convert_paper_tool(
     arxiv_id: str,
-    output_dir: str = None,
+    output_dir: str = "./output",
     save_latex: bool = True,
     save_markdown: bool = True,
     include_pdf: bool = False,
 ) -> dict:
     """Download and convert an ArXiv paper to multiple formats"""
     try:
-        from arxiv_mcp.core.enhanced_config import get_pipeline_config
-        from arxiv_mcp.utils.unified_converter import download_and_convert_paper
-        
-        # Use enhanced configuration if no output_dir provided
-        if output_dir is None:
-            config = get_pipeline_config()
-            output_dir = config.output_directory
+        # Resolve output directory relative to VS Code workspace root
+        resolved_output_dir = workspace_resolver.resolve_output_path(output_dir)
 
         result = await download_and_convert_paper(
             arxiv_id=arxiv_id,
-            output_dir=output_dir,
+            output_dir=resolved_output_dir,
             save_latex=save_latex,
             save_markdown=save_markdown,
+            include_pdf=include_pdf,
         )
-
-        return {"status": "success", "tool": "download_and_convert_paper", **result}
-
     except Exception as e:
         return {
             "status": "error",
             "tool": "download_and_convert_paper",
             "error": f"Unified download and convert failed: {str(e)}",
         }
+    else:
+        return {"status": "success", "tool": "download_and_convert_paper", **result}
 
 
 @mcp.tool()
 async def batch_download_and_convert(
     arxiv_ids: list[str],
-    output_dir: str = None,
+    output_dir: str = "./output",
     save_latex: bool = True,
     save_markdown: bool = True,
     include_pdf: bool = False,
-    max_concurrent: int = 3,
 ) -> dict:
-    """Batch download and convert multiple ArXiv papers"""
+    """Batch download and convert multiple ArXiv papers
+
+    Args:
+        arxiv_ids: List of ArXiv paper IDs to process
+        output_dir: Output directory for converted files
+        save_latex: Whether to save LaTeX source files
+        save_markdown: Whether to save converted Markdown files
+        include_pdf: Whether to include PDF files
+    """
     try:
-        from arxiv_mcp.core.enhanced_config import get_pipeline_config
-        from arxiv_mcp.core.config import PipelineConfig
-        from arxiv_mcp.utils.unified_converter import UnifiedDownloadConverter
+        # Use fixed max_concurrent to reduce parameter count
+        max_concurrent = 3
 
-        # Use enhanced configuration if no output_dir provided
-        if output_dir is None:
-            enhanced_config = get_pipeline_config()
-            output_dir = enhanced_config.output_directory
-
-        config = PipelineConfig.from_dict({"output_directory": output_dir})
-        converter = UnifiedDownloadConverter(config)
-
-        result = await converter.batch_download_and_convert(
+        # Create parameters object to reduce complexity
+        params = BatchConversionParams(
             arxiv_ids=arxiv_ids,
+            output_dir=output_dir,
             save_latex=save_latex,
             save_markdown=save_markdown,
             include_pdf=include_pdf,
             max_concurrent=max_concurrent,
         )
 
-        return {"status": "success", "tool": "batch_download_and_convert", **result}
+        # Resolve output directory relative to VS Code workspace root
+        resolved_output_dir = workspace_resolver.resolve_output_path(params.output_dir)
 
+        config = PipelineConfig.from_dict({"output_directory": resolved_output_dir})
+        converter = UnifiedDownloadConverter(config)
+
+        result = await converter.batch_download_and_convert(
+            arxiv_ids=params.arxiv_ids,
+            save_latex=params.save_latex,
+            save_markdown=params.save_markdown,
+            include_pdf=params.include_pdf,
+            max_concurrent=params.max_concurrent,
+        )
     except Exception as e:
         return {
             "status": "error",
             "tool": "batch_download_and_convert",
             "error": f"Batch download and convert failed: {str(e)}",
         }
-
-
+    else:
+        return {"status": "success", "tool": "batch_download_and_convert", **result}
 @mcp.tool()
-def get_output_structure(output_dir: str = None) -> dict:
+def get_output_structure(output_dir: str = "./output") -> dict:
     """Get information about the output directory structure"""
     try:
-        from arxiv_mcp.core.enhanced_config import get_pipeline_config
-        from arxiv_mcp.core.config import PipelineConfig
-        from arxiv_mcp.utils.unified_converter import UnifiedDownloadConverter
-
-        # Use enhanced configuration if no output_dir provided
-        if output_dir is None:
-            enhanced_config = get_pipeline_config()
-            output_dir = enhanced_config.output_directory
-
         config = PipelineConfig.from_dict({"output_directory": output_dir})
         converter = UnifiedDownloadConverter(config)
-
         structure = converter.get_output_structure()
-
-        return {"status": "success", "tool": "get_output_structure", **structure}
-
     except Exception as e:
         return {
             "status": "error",
             "tool": "get_output_structure",
             "error": f"Getting output structure failed: {str(e)}",
         }
+    else:
+        return {"status": "success", "tool": "get_output_structure", **structure}
 
 
 @mcp.tool()
 def validate_conversion_quality(
-    arxiv_id: str, output_dir: str = None, format_type: str = "both"
+    arxiv_id: str, output_dir: str = "./output", format_type: str = "both"
 ) -> dict:
     """Validate the quality of LaTeX to Markdown conversion with flexible format support
 
@@ -191,65 +215,45 @@ def validate_conversion_quality(
         format_type: Validation mode - "both", "latex_only", or "markdown_only"
     """
     try:
-        from arxiv_mcp.core.enhanced_config import get_pipeline_config
-        from arxiv_mcp.core.config import PipelineConfig
-        from arxiv_mcp.utils.unified_converter import UnifiedDownloadConverter
-
-        # Use enhanced configuration if no output_dir provided
-        if output_dir is None:
-            enhanced_config = get_pipeline_config()
-            output_dir = enhanced_config.output_directory
-
         config = PipelineConfig.from_dict({"output_directory": output_dir})
         converter = UnifiedDownloadConverter(config)
-
         quality_result = converter.validate_conversion_quality(arxiv_id, format_type)
-
-        return {
-            "status": "success",
-            "tool": "validate_conversion_quality",
-            **quality_result,
-        }
-
     except Exception as e:
         return {
             "status": "error",
             "tool": "validate_conversion_quality",
             "error": f"Quality validation failed: {str(e)}",
         }
+    else:
+        return {
+            "status": "success",
+            "tool": "validate_conversion_quality",
+            **quality_result,
+        }
 
 
 @mcp.tool()
-def cleanup_output(output_dir: str = None, days_old: int = 30) -> dict:
+def cleanup_output(output_dir: str = "./output", days_old: int = 30) -> dict:
     """Clean up old output files"""
     try:
-        from arxiv_mcp.core.enhanced_config import get_pipeline_config
-        from arxiv_mcp.core.config import PipelineConfig
-        from arxiv_mcp.utils.unified_converter import UnifiedDownloadConverter
-
-        # Use enhanced configuration if no output_dir provided
-        if output_dir is None:
-            enhanced_config = get_pipeline_config()
-            output_dir = enhanced_config.output_directory
-
         config = PipelineConfig.from_dict({"output_directory": output_dir})
         converter = UnifiedDownloadConverter(config)
-
         cleanup_result = converter.cleanup_output(days_old)
-
-        return {"status": "success", "tool": "cleanup_output", **cleanup_result}
-
     except Exception as e:
         return {
             "status": "error",
             "tool": "cleanup_output",
             "error": f"Cleanup failed: {str(e)}",
         }
+    else:
+        return {"status": "success", "tool": "cleanup_output", **cleanup_result}
 
 
 @mcp.tool()
 def enhanced_cleanup_output(
-    output_dir: str = None, time_spec: str = "30d", cleanup_type: str = "comprehensive"
+    output_dir: str = "./output",
+    time_spec: str = "30d",
+    cleanup_type: str = "comprehensive"
 ) -> dict:
     """
     Enhanced cleanup with multi-temporal support (seconds to days precision).
@@ -262,16 +266,19 @@ def enhanced_cleanup_output(
     Returns:
         Dictionary with cleanup results
     """
+    # Validate cleanup_type first
+    if cleanup_type not in ["files", "batch", "notifications", "comprehensive"]:
+        error_msg = (
+            f"Unknown cleanup_type: {cleanup_type}. "
+            "Must be one of: files, batch, notifications, comprehensive"
+        )
+        return {
+            "status": "error",
+            "tool": "enhanced_cleanup_output",
+            "error": error_msg,
+        }
+
     try:
-        from arxiv_mcp.core.enhanced_config import get_pipeline_config
-        from arxiv_mcp.core.config import PipelineConfig
-        from arxiv_mcp.enhanced.multi_temporal_cleanup import create_enhanced_adapter
-
-        # Use enhanced configuration if no output_dir provided
-        if output_dir is None:
-            enhanced_config = get_pipeline_config()
-            output_dir = enhanced_config.output_directory
-
         config = PipelineConfig.from_dict({"output_directory": output_dir})
         adapter = create_enhanced_adapter(config)
 
@@ -281,22 +288,8 @@ def enhanced_cleanup_output(
             result = adapter.cleanup_batch_operations(time_spec)
         elif cleanup_type == "notifications":
             result = adapter.cleanup_notifications(time_spec)
-        elif cleanup_type == "comprehensive":
+        else:  # cleanup_type == "comprehensive"
             result = adapter.comprehensive_cleanup(time_spec, output_dir)
-        else:
-            return {
-                "status": "error",
-                "tool": "enhanced_cleanup_output",
-                "error": f"Unknown cleanup_type: {cleanup_type}. Must be one of: files, batch, notifications, comprehensive",
-            }
-
-        return {
-            "status": "success",
-            "tool": "enhanced_cleanup_output",
-            "cleanup_type": cleanup_type,
-            **result,
-        }
-
     except Exception as e:
         return {
             "status": "error",
@@ -305,14 +298,19 @@ def enhanced_cleanup_output(
             "time_spec": time_spec,
             "cleanup_type": cleanup_type,
         }
+    else:
+        return {
+            "status": "success",
+            "tool": "enhanced_cleanup_output",
+            "cleanup_type": cleanup_type,
+            **result,
+        }
 
 
 @mcp.tool()
 def extract_citations(text: str) -> dict:
     """Extract citations from paper text"""
     try:
-        from arxiv_mcp.parsers.citation_parser import CitationParser
-
         parser = CitationParser()
         citations = parser.extract_citations_from_text(text)
         return {
@@ -339,8 +337,6 @@ def extract_citations(text: str) -> dict:
 def analyze_citation_network(arxiv_ids: list[str]) -> dict:
     """Analyze citation networks and research connections"""
     try:
-        from arxiv_mcp.analyzers.network_analyzer import NetworkAnalyzer, NetworkNode, NetworkType
-
         analyzer = NetworkAnalyzer()
 
         # Create placeholder network analysis for the provided paper IDs
@@ -372,22 +368,20 @@ def analyze_citation_network(arxiv_ids: list[str]) -> dict:
 def get_processing_metrics(time_range: str = "24h") -> dict:
     """Get processing performance metrics"""
     try:
-        from arxiv_mcp.utils.metrics import PerformanceMetrics
-
         metrics = PerformanceMetrics()
         performance_data = metrics.get_performance_summary(time_range)
-
-        return {
-            "status": "success",
-            "tool": "get_processing_metrics",
-            "time_range": time_range,
-            "metrics": performance_data,
-        }
     except Exception as e:
         return {
             "status": "error",
             "tool": "get_processing_metrics",
             "error": f"Failed to get metrics: {str(e)}",
+        }
+    else:
+        return {
+            "status": "success",
+            "tool": "get_processing_metrics",
+            "time_range": time_range,
+            "metrics": performance_data,
         }
 
 

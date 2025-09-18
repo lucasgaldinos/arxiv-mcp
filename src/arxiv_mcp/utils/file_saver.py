@@ -9,54 +9,85 @@ from pathlib import Path
 from typing import Any
 
 from ..utils.logging import structured_logger
+from .filename_generator import FilenameGenerator
 
 logger = structured_logger()
 
 
 class FileSaver:
-    """Handles saving ArXiv papers in organized directory structure."""
+    """Handles saving ArXiv papers in paper-name-centric directory structure."""
 
-    def __init__(self, output_directory: str | None = None):
-        if output_directory:
-            self.output_directory = Path(output_directory)
+    def __init__(self, output_directory: str = "./output", use_intelligent_naming: bool = True):
+        self.output_directory = Path(output_directory)
+        self.use_intelligent_naming = use_intelligent_naming
+        self.filename_generator = FilenameGenerator() if use_intelligent_naming else None
+
+        # Create base output directory
+        self.output_directory.mkdir(parents=True, exist_ok=True)
+        logger.info(f"Output directory initialized: {self.output_directory}")
+
+    def _get_paper_directory_name(self, arxiv_id: str, metadata: dict[str, Any] = None) -> str:
+        """Generate paper directory name using intelligent naming or arxiv_id fallback.
+        
+        Args:
+            arxiv_id: ArXiv paper ID
+            metadata: Optional metadata for intelligent naming
+            
+        Returns:
+            Directory name for the paper
+        """
+        if self.use_intelligent_naming and self.filename_generator and metadata:
+            # Generate clean paper name from title and authors
+            paper_name = self.filename_generator.generate_paper_directory_name(arxiv_id, metadata)
+            logger.info(f"Generated paper directory name: {paper_name} for {arxiv_id}")
+            return paper_name
         else:
-            # Import here to avoid circular imports
-            from ..core.enhanced_config import ConfigurationManager
-            config = ConfigurationManager.load_config()
-            self.output_directory = Path(config.output_directory)
-        self.latex_dir = self.output_directory / "latex"
-        self.markdown_dir = self.output_directory / "markdown"
-        self.metadata_dir = self.output_directory / "metadata"
-
-        # Create directories if they don't exist
-        self._ensure_directories()
-
-    def _ensure_directories(self):
-        """Create output directories if they don't exist."""
-        for directory in [self.latex_dir, self.markdown_dir, self.metadata_dir]:
-            directory.mkdir(parents=True, exist_ok=True)
-        logger.info(f"Output directories ensured: {self.output_directory}")
+            # Fallback to arxiv_id
+            return arxiv_id
+    
+    def _ensure_paper_directory(self, paper_name: str) -> Path:
+        """Create paper directory with subdirectories for different formats.
+        
+        Args:
+            paper_name: Name of the paper directory
+            
+        Returns:
+            Path to the paper directory
+        """
+        paper_dir = self.output_directory / paper_name
+        
+        # Create subdirectories for different formats
+        for subdir in ["latex", "markdown", "pdf", "metadata"]:
+            (paper_dir / subdir).mkdir(parents=True, exist_ok=True)
+            
+        return paper_dir
 
     def save_latex_files(
-        self, arxiv_id: str, files: dict[str, bytes], main_tex_file: str
+        self, arxiv_id: str, files: dict[str, bytes], main_tex_file: str, metadata: dict[str, Any] = None
     ) -> dict[str, str]:
-        """Save LaTeX files to organized directory structure.
+        """Save LaTeX files to paper-centric directory structure.
 
         Args:
             arxiv_id: ArXiv paper ID
             files: Dictionary of filename -> file content
             main_tex_file: Name of the main .tex file
+            metadata: Optional metadata for intelligent directory naming
 
         Returns:
             Dictionary with saved file paths
         """
-        paper_dir = self.latex_dir / arxiv_id
-        paper_dir.mkdir(parents=True, exist_ok=True)
+        # Get paper directory name
+        paper_name = self._get_paper_directory_name(arxiv_id, metadata)
+        paper_dir = self._ensure_paper_directory(paper_name)
+        latex_dir = paper_dir / "latex"
 
         saved_files = {}
 
         for filename, content in files.items():
-            file_path = paper_dir / filename
+            file_path = latex_dir / filename
+            
+            # Ensure parent directories exist (e.g., for "Figures/image.png")
+            file_path.parent.mkdir(parents=True, exist_ok=True)
 
             # Save file content
             with open(file_path, "wb") as f:
@@ -67,22 +98,25 @@ class FileSaver:
         # Create manifest file
         manifest = {
             "arxiv_id": arxiv_id,
+            "paper_directory": paper_name,
             "main_tex_file": main_tex_file,
             "files": list(files.keys()),
             "saved_at": datetime.now().isoformat(),
             "total_files": len(files),
         }
 
-        manifest_path = paper_dir / "manifest.json"
+        manifest_path = latex_dir / "manifest.json"
         with open(manifest_path, "w") as f:
             json.dump(manifest, f, indent=2)
 
-        logger.info(f"Saved {len(files)} LaTeX files for {arxiv_id} to {paper_dir}")
+        logger.info(f"Saved {len(files)} LaTeX files for {arxiv_id} to {latex_dir}")
         return {
-            "directory": str(paper_dir),
+            "directory": str(latex_dir),
+            "paper_directory": str(paper_dir),
+            "paper_name": paper_name,
             "manifest": str(manifest_path),
             "files": saved_files,
-            "main_tex_file": str(paper_dir / main_tex_file),
+            "main_tex_file": str(latex_dir / main_tex_file),
         }
 
     def save_markdown_file(
@@ -91,27 +125,31 @@ class FileSaver:
         markdown_content: str,
         metadata: dict[str, Any] | None = None,
     ) -> str:
-        """Save markdown file with optional YAML frontmatter.
+        """Save markdown file with optional YAML frontmatter to paper-centric structure.
 
         Args:
             arxiv_id: ArXiv paper ID
             markdown_content: Converted markdown content
-            metadata: Optional metadata for YAML frontmatter
+            metadata: Optional metadata for YAML frontmatter and intelligent filename generation
 
         Returns:
             Path to saved markdown file
         """
-        paper_dir = self.markdown_dir / arxiv_id
-        paper_dir.mkdir(parents=True, exist_ok=True)
+        # Get paper directory name
+        paper_name = self._get_paper_directory_name(arxiv_id, metadata)
+        paper_dir = self._ensure_paper_directory(paper_name)
+        markdown_dir = paper_dir / "markdown"
 
-        markdown_path = paper_dir / f"{arxiv_id}.md"
+        # Generate intelligent filename if enabled and metadata available
+        if self.use_intelligent_naming and self.filename_generator and metadata:
+            filename = self.filename_generator.generate_filename(arxiv_id, metadata, "md")
+        else:
+            filename = f"{arxiv_id}.md"
 
-        # Check if markdown already has YAML frontmatter (from pandoc)
-        if markdown_content.strip().startswith('---') and metadata:
-            # Enhance existing YAML frontmatter instead of duplicating
-            full_content = self._enhance_existing_yaml(markdown_content, metadata, arxiv_id)
-        elif metadata:
-            # Generate new YAML frontmatter
+        markdown_path = markdown_dir / filename
+
+        # Prepare content with YAML frontmatter if metadata provided
+        if metadata:
             yaml_content = self._generate_yaml_frontmatter(metadata)
             full_content = f"{yaml_content}\n\n{markdown_content}"
         else:
@@ -124,8 +162,39 @@ class FileSaver:
         logger.info(f"Saved markdown file for {arxiv_id} to {markdown_path}")
         return str(markdown_path)
 
+    def save_pdf_file(self, arxiv_id: str, pdf_content: bytes, metadata: dict[str, Any] = None) -> str:
+        """Save PDF file to the paper-centric pdf directory.
+
+        Args:
+            arxiv_id: ArXiv paper ID
+            pdf_content: PDF file content as bytes
+            metadata: Optional metadata for intelligent filename generation
+
+        Returns:
+            Path to saved PDF file
+        """
+        # Get paper directory name
+        paper_name = self._get_paper_directory_name(arxiv_id, metadata)
+        paper_dir = self._ensure_paper_directory(paper_name)
+        pdf_dir = paper_dir / "pdf"
+
+        # Generate intelligent filename if enabled and metadata available
+        if self.use_intelligent_naming and self.filename_generator and metadata:
+            filename = self.filename_generator.generate_filename(arxiv_id, metadata, "pdf")
+        else:
+            filename = f"{arxiv_id}.pdf"
+
+        pdf_path = pdf_dir / filename
+
+        # Save PDF file
+        with open(pdf_path, "wb") as f:
+            f.write(pdf_content)
+
+        logger.info(f"Saved PDF file for {arxiv_id} to {pdf_path}")
+        return str(pdf_path)
+
     def save_metadata(self, arxiv_id: str, metadata: dict[str, Any]) -> str:
-        """Save paper metadata as JSON file.
+        """Save paper metadata as JSON file to paper-centric structure.
 
         Args:
             arxiv_id: ArXiv paper ID
@@ -134,13 +203,20 @@ class FileSaver:
         Returns:
             Path to saved metadata file
         """
-        metadata_path = self.metadata_dir / f"{arxiv_id}.json"
+        # Get paper directory name
+        paper_name = self._get_paper_directory_name(arxiv_id, metadata)
+        paper_dir = self._ensure_paper_directory(paper_name)
+        metadata_dir = paper_dir / "metadata"
 
-        # Add saving timestamp
-        metadata["saved_at"] = datetime.now().isoformat()
+        metadata_path = metadata_dir / f"{arxiv_id}.json"
+
+        # Add saving timestamp and paper directory info
+        enhanced_metadata = metadata.copy()
+        enhanced_metadata["saved_at"] = datetime.now().isoformat()
+        enhanced_metadata["paper_directory"] = paper_name
 
         with open(metadata_path, "w", encoding="utf-8") as f:
-            json.dump(metadata, f, indent=2, ensure_ascii=False)
+            json.dump(enhanced_metadata, f, indent=2, ensure_ascii=False)
 
         logger.info(f"Saved metadata for {arxiv_id} to {metadata_path}")
         return str(metadata_path)
@@ -186,82 +262,43 @@ class FileSaver:
 
         return f"---\n{yaml_str}---"
 
-    def _enhance_existing_yaml(self, markdown_content: str, metadata: dict[str, Any], arxiv_id: str) -> str:
-        """Enhance existing YAML frontmatter with additional metadata.
-        
-        Args:
-            markdown_content: Markdown content with existing YAML frontmatter
-            metadata: Additional metadata to merge
-            arxiv_id: ArXiv paper ID
-            
-        Returns:
-            Enhanced markdown content with merged YAML frontmatter
-        """
-        import yaml
-        
-        # Split the content into YAML and body
-        parts = markdown_content.split('---', 2)
-        if len(parts) < 3:
-            # No valid YAML frontmatter found, fall back to adding new one
-            yaml_content = self._generate_yaml_frontmatter(metadata)
-            return f"{yaml_content}\n\n{markdown_content}"
-        
-        yaml_section = parts[1].strip()
-        body_section = parts[2]
-        
-        try:
-            # Parse existing YAML
-            existing_yaml = yaml.safe_load(yaml_section) or {}
-            
-            # Add ArXiv ID and processing metadata
-            existing_yaml['arxiv_id'] = arxiv_id
-            existing_yaml['processed_at'] = datetime.now().isoformat()
-            existing_yaml['source'] = 'arxiv-mcp-improved'
-            
-            # Add categories if available in metadata
-            if 'categories' in metadata and metadata['categories']:
-                existing_yaml['categories'] = metadata['categories']
-            
-            # Add keywords if available
-            if 'keywords' in metadata and metadata['keywords']:
-                existing_yaml['keywords'] = metadata['keywords']
-            
-            # Add submission date if available
-            if 'submitted' in metadata and metadata['submitted']:
-                existing_yaml['submitted'] = metadata['submitted']
-                
-            # Convert back to YAML
-            enhanced_yaml = yaml.dump(
-                existing_yaml, default_flow_style=False, allow_unicode=True, sort_keys=False
-            )
-            
-            return f"---\n{enhanced_yaml}---{body_section}"
-            
-        except yaml.YAMLError as e:
-            logger.warning(f"Failed to parse existing YAML frontmatter: {e}")
-            # Fall back to generating new YAML
-            yaml_content = self._generate_yaml_frontmatter(metadata)
-            return f"{yaml_content}\n\n{body_section}"
-
     def get_saved_papers(self) -> dict[str, list[str]]:
-        """Get list of saved papers by format.
+        """Get list of saved papers by format from paper-centric structure.
 
         Returns:
             Dictionary with latex and markdown paper lists
         """
         latex_papers = []
-        if self.latex_dir.exists():
-            latex_papers = [d.name for d in self.latex_dir.iterdir() if d.is_dir()]
-
         markdown_papers = []
-        if self.markdown_dir.exists():
-            markdown_papers = [d.name for d in self.markdown_dir.iterdir() if d.is_dir()]
+        pdf_papers = []
+        
+        if self.output_directory.exists():
+            for paper_dir in self.output_directory.iterdir():
+                if paper_dir.is_dir():
+                    paper_name = paper_dir.name
+                    
+                    # Check for latex files
+                    latex_dir = paper_dir / "latex"
+                    if latex_dir.exists() and any(latex_dir.iterdir()):
+                        latex_papers.append(paper_name)
+                    
+                    # Check for markdown files
+                    markdown_dir = paper_dir / "markdown" 
+                    if markdown_dir.exists() and any(markdown_dir.iterdir()):
+                        markdown_papers.append(paper_name)
+                    
+                    # Check for PDF files
+                    pdf_dir = paper_dir / "pdf"
+                    if pdf_dir.exists() and any(pdf_dir.iterdir()):
+                        pdf_papers.append(paper_name)
 
         return {
             "latex": latex_papers,
             "markdown": markdown_papers,
+            "pdf": pdf_papers,
             "total_latex": len(latex_papers),
             "total_markdown": len(markdown_papers),
+            "total_pdf": len(pdf_papers),
         }
 
     def cleanup_old_files(self, days_old: int = 30) -> dict[str, int]:

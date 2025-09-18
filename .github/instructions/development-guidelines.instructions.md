@@ -1,5 +1,5 @@
 ---
-applyTo: '**'
+applyTo: "**"
 ---
 
 # AI Development Assistant Instructions
@@ -19,10 +19,10 @@ Before every significant action, follow this structured approach:
 
 ```text
 - Break down the problem into specific, measurable sub-tasks
-- Identify potential risks and mitigation strategies  
+- Identify potential risks and mitigation strategies
 - Select primary and fallback tools for each step
 - Estimate effort and complexity
-```
+```text
 
 **Validation:** Can you explain your approach in 2-3 sentences to a colleague?
 
@@ -35,7 +35,7 @@ Before every significant action, follow this structured approach:
 - Create specific, actionable items with clear success criteria
 - Set realistic timelines and dependencies
 - Track progress transparently
-```
+```text
 
 **Validation:** Does each todo item have a clear "done" definition?
 
@@ -49,7 +49,7 @@ Before every significant action, follow this structured approach:
 - Check code quality with linters and type checkers
 - Verify documentation accuracy
 - Test error scenarios, not just happy paths
-```
+```text
 
 **Validation:** Would you trust this code in production?
 
@@ -63,14 +63,14 @@ Before every significant action, follow this structured approach:
 - Update TODO.md to reflect current project state
 - Ensure all documentation is current and accurate
 - Run full test suite if core functionality changed
-```
+```text
 
 **Validation:** Can a new team member understand what you changed and why?
 
 ## 🏗️ Workspace Architecture Standards
 
 ### Principle: "Clean Separation of Concerns"
->
+
 > **Mental Model:** Think of your workspace like a well-organized laboratory where every tool has its place and every experiment is reproducible.
 
 #### Development Artifacts Isolation
@@ -88,14 +88,14 @@ Is this file generated during development/testing?
 │   ├─ Test reports → .dev/artifacts/
 │   └─ Temporary files → .dev/temp/
 └─ NO → Keep in appropriate source directory
-```
+```text
 
 **Validation Command:**
 
 ```bash
 # This should return NOTHING if compliant
 find . -maxdepth 1 -type d -name "htmlcov" -o -name "logs" -o -name "output" -o -name "temp*"
-```
+```text
 
 #### Documentation Organization (Diátaxis Framework)
 
@@ -105,11 +105,11 @@ find . -maxdepth 1 -type d -name "htmlcov" -o -name "logs" -o -name "output" -o 
 ```tree decision-tree
 docs/
 ├─ tutorials/     → "I want to learn" (learning-oriented)
-├─ how-to-guides/ → "I want to solve X" (goal-oriented)  
+├─ how-to-guides/ → "I want to solve X" (goal-oriented)
 ├─ reference/     → "I need to look up Y" (information-oriented)
 ├─ explanation/   → "I want to understand Z" (understanding-oriented)
 └─ legacy/        → Historical/deprecated content
-```
+```text
 
 **Quality Gates:**
 
@@ -117,7 +117,7 @@ docs/
 - [ ] New content goes in the correct category based on user intent
 - [ ] No orphaned files or unclear purposes
 
-#### Test Organization Strategy  
+#### Test Organization Strategy
 
 **Rule:** Organize by test purpose and execution speed
 **Structure:**
@@ -128,15 +128,15 @@ tests/
 ├─ integration/   → Multi-component workflows (<5s each)
 ├─ legacy/        → Archived/disabled tests
 └─ fixtures/      → Shared test data and mocks
-```
+```text
 
 **Decision Matrix:**
 
-| Test Type | Duration | Dependencies | Purpose |
-|-----------|----------|--------------|---------|
-| Unit | <100ms | None (mocked) | Verify single function/class |
-| Integration | <5s | Real components | Verify workflows |
-| Legacy | N/A | Archived | Historical reference |
+| Test Type   | Duration | Dependencies    | Purpose                      |
+| ----------- | -------- | --------------- | ---------------------------- |
+| Unit        | <100ms   | None (mocked)   | Verify single function/class |
+| Integration | <5s      | Real components | Verify workflows             |
+| Legacy      | N/A      | Archived        | Historical reference         |
 
 ## 💻 Python Development Standards
 
@@ -165,7 +165,7 @@ Before committing ANY Python code:
 #!/bin/bash
 # Purpose: Clear cache directories
 # Usage: ./clear_cache.sh [--dry-run]
-```
+```text
 
 **Complex Logic (>50 lines):** Python scripts
 
@@ -180,7 +180,7 @@ def main():
     parser.add_argument("--verbose", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     # ... implementation
-```
+```text
 
 ### Error Handling Philosophy
 
@@ -199,7 +199,7 @@ try:
 except SpecificException as e:
     logger.error(f"Operation failed: {e}")
     raise  # Re-raise for caller to handle
-```
+```text
 
 ## 🧪 Testing Strategy & Quality Assurance
 
@@ -212,11 +212,11 @@ except SpecificException as e:
 
 ### Test Categories & Execution Times
 
-| Category | Purpose | Max Duration | When to Run |
-|----------|---------|--------------|-------------|
-| Unit | Verify single components | 100ms | Every save |
-| Integration | Test component interactions | 5s | Before commit |
-| Legacy | Historical test preservation | N/A | During migration |
+| Category    | Purpose                      | Max Duration | When to Run      |
+| ----------- | ---------------------------- | ------------ | ---------------- |
+| Unit        | Verify single components     | 100ms        | Every save       |
+| Integration | Test component interactions  | 5s           | Before commit    |
+| Legacy      | Historical test preservation | N/A          | During migration |
 
 ### Pre-Commit Quality Gates
 
@@ -227,7 +227,7 @@ except SpecificException as e:
 uv run ruff check src/ tests/
 uv run black --check src/ tests/
 
-# 2. Type Checking  
+# 2. Type Checking
 uv run mypy src/
 
 # 3. Test Execution
@@ -236,7 +236,7 @@ uv run pytest tests/integration/ --maxfail=1
 
 # 4. Coverage Validation
 uv run pytest --cov=src/ --cov-fail-under=80
-```
+```bash
 
 ### Test Design Principles
 
@@ -255,7 +255,7 @@ def test_citation_parser_extracts_valid_citations():
     citations = parser.extract(text)
     assert len(citations) == 1
     assert citations[0].author == "Smith, J."
-```
+```text
 
 ## 📚 Documentation Excellence
 
@@ -263,12 +263,12 @@ def test_citation_parser_extracts_valid_citations():
 
 Use the Diátaxis framework to match content to user needs:
 
-| Type | Audience | Purpose | Example |
-|------|----------|---------|---------|
-| **Tutorial** | New users | Learning by doing | "Your First ArXiv Search" |
-| **How-To** | Task-focused users | Solving specific problems | "How to Add Custom Filters" |
-| **Reference** | Implementers | Looking up specifics | "API Function Reference" |
-| **Explanation** | Curious users | Understanding concepts | "Why We Use FastMCP" |
+| Type            | Audience           | Purpose                   | Example                     |
+| --------------- | ------------------ | ------------------------- | --------------------------- |
+| **Tutorial**    | New users          | Learning by doing         | "Your First ArXiv Search"   |
+| **How-To**      | Task-focused users | Solving specific problems | "How to Add Custom Filters" |
+| **Reference**   | Implementers       | Looking up specifics      | "API Function Reference"    |
+| **Explanation** | Curious users      | Understanding concepts    | "Why We Use FastMCP"        |
 
 ### Documentation Quality Standards
 
@@ -288,14 +288,17 @@ Use the Diátaxis framework to match content to user needs:
 Brief description of purpose and scope.
 
 ## 📁 Directory Structure
+
 [Structure overview with explanations]
 
 ## 🚀 Usage
+
 [How to use contents of this directory]
 
 ## 📋 Standards
+
 [Relevant standards and conventions]
-```
+```text
 
 ## 🔄 Git Workflow & Change Management
 
@@ -326,12 +329,12 @@ Detailed explanation of what changed and why.
 - List specific changes
 - Include any breaking changes
 - Reference issues: Fixes #123
-```
+```text
 
 ### Branch Naming Convention
 
 - `feature/short-description` - New features
-- `fix/issue-description` - Bug fixes  
+- `fix/issue-description` - Bug fixes
 - `docs/content-type` - Documentation updates
 - `refactor/component-name` - Code improvements
 

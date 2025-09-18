@@ -16,11 +16,11 @@ extraction_timeout: 60
 compilation_timeout: 600
 
 # Caching settings
-cache_ttl: 7200  # 2 hours
+cache_ttl: 7200 # 2 hours
 
 # Validation and security
 enable_http_validation: true
-max_file_size: 209715200  # 200MB
+max_file_size: 209715200 # 200MB
 max_files_per_archive: 2000
 enable_sandboxing: true
 
