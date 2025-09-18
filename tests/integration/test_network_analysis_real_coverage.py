@@ -3,6 +3,7 @@
 This test suite targets basic functionality of network_analysis.py to improve coverage
 while avoiding complex API mismatches and dependency issues.
 """
+
 from pathlib import Path
 import sqlite3
 import tempfile
@@ -41,7 +42,7 @@ class TestNetworkAnalyzerSimpleIntegration:
                 "authors": ["Author A"],
                 "categories": ["cs.AI"],
                 "citations": [],
-                "abstract": "Test abstract 1"
+                "abstract": "Test abstract 1",
             },
             {
                 "id": "test002",
@@ -49,8 +50,8 @@ class TestNetworkAnalyzerSimpleIntegration:
                 "authors": ["Author B"],
                 "categories": ["cs.AI"],
                 "citations": ["test001"],
-                "abstract": "Test abstract 2"
-            }
+                "abstract": "Test abstract 2",
+            },
         ]
 
     def test_constructor_initialization(self, temp_cache_dir):
@@ -65,8 +66,8 @@ class TestNetworkAnalyzerSimpleIntegration:
             cursor = conn.cursor()
             cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
             tables = [row[0] for row in cursor.fetchall()]
-            assert 'networks' in tables
-            assert 'network_nodes' in tables
+            assert "networks" in tables
+            assert "network_nodes" in tables
 
     def test_create_citation_network_basic(self, network_analyzer, sample_papers):
         """Test basic citation network creation."""
@@ -105,8 +106,8 @@ class TestNetworkAnalyzerSimpleIntegration:
         try:
             result = network_analyzer.analyze_network(network_id)
             # If successful, verify basic structure
-            assert hasattr(result, 'network_type')
-            assert hasattr(result, 'metrics')
+            assert hasattr(result, "network_type")
+            assert hasattr(result, "metrics")
         except Exception:
             # Analysis may fail due to missing dependencies - that's acceptable
             # The important thing is that the network creation worked
@@ -125,7 +126,7 @@ class TestNetworkAnalyzerSimpleIntegration:
         assert len(networks) >= 2
 
         # Check network IDs are present
-        network_ids = [net.get('id') for net in networks]
+        network_ids = [net.get("id") for net in networks]
         assert net1 in network_ids
         assert net2 in network_ids
 
@@ -176,7 +177,7 @@ class TestNetworkAnalyzerSimpleIntegration:
 
         # Verify network still exists
         networks = analyzer2.get_network_list()
-        network_ids = [net.get('id') for net in networks]
+        network_ids = [net.get("id") for net in networks]
         assert network_id in network_ids
 
     def test_networkx_availability_flag(self):

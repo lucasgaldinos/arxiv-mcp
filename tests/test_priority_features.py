@@ -204,7 +204,6 @@ class TestIntegrationFeatures:
     def test_tools_import(self):
         """Test that tools module can import all new utilities."""
         try:
-
             # If we get here, imports are working
             assert True
 

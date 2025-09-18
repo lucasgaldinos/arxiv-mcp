@@ -129,9 +129,9 @@ processing systems, 33, 1877-1902.
         confidences = [c.confidence for c in citations if hasattr(c, "confidence")]
         if confidences:
             avg_confidence = sum(confidences) / len(confidences)
-            assert (
-                avg_confidence >= 0.85
-            ), f"Average confidence {avg_confidence:.3f} below target 0.85"
+            assert avg_confidence >= 0.85, (
+                f"Average confidence {avg_confidence:.3f} below target 0.85"
+            )
 
     def test_three_out_of_three_extraction(self):
         """Test that all 3 citations are properly extracted (was 1/3 before fix)."""
@@ -162,9 +162,9 @@ processing systems, 33, 1877-1902.
 
         # All should have authors
         citations_with_authors = [c for c in citations if c.authors and len(c.authors) > 0]
-        assert (
-            len(citations_with_authors) == 3
-        ), f"Expected 3 citations with authors, got {len(citations_with_authors)}"
+        assert len(citations_with_authors) == 3, (
+            f"Expected 3 citations with authors, got {len(citations_with_authors)}"
+        )
 
     def test_specific_title_extractions(self):
         """Test specific titles that were not being extracted."""
@@ -172,15 +172,24 @@ processing systems, 33, 1877-1902.
         # These specific titles were problematic
         test_cases = [
             {
-                "citation": """[1] Vaswani, A. et al. (2017). Attention is all you need. In Advances in neural information processing systems.""",
+                "citation": (
+                    "[1] Vaswani, A. et al. (2017). Attention is all you need. "
+                    "In Advances in neural information processing systems."
+                ),
                 "expected_title": "Attention is all you need",
             },
             {
-                "citation": """[2] Devlin, J. et al. (2018). BERT: Pre-training of deep bidirectional transformers for language understanding. arXiv preprint arXiv:1810.04805.""",
+                "citation": (
+                    "[2] Devlin, J. et al. (2018). BERT: Pre-training of deep bidirectional "
+                    "transformers for language understanding. arXiv preprint arXiv:1810.04805."
+                ),
                 "expected_title": "BERT: Pre-training of deep bidirectional transformers for language understanding",
             },
             {
-                "citation": """[3] Brown, T. et al. (2020). Language models are few-shot learners. Advances in neural information processing systems.""",
+                "citation": (
+                    "[3] Brown, T. et al. (2020). Language models are few-shot learners. "
+                    "Advances in neural information processing systems."
+                ),
                 "expected_title": "Language models are few-shot learners",
             },
         ]
@@ -189,16 +198,16 @@ processing systems, 33, 1877-1902.
             test_doc = f"References\n\n{test_case['citation']}"
             citations = self.parser.extract_citations(test_doc)
 
-            assert (
-                len(citations) == 1
-            ), f"Test case {i + 1}: Expected 1 citation, got {len(citations)}"
+            assert len(citations) == 1, (
+                f"Test case {i + 1}: Expected 1 citation, got {len(citations)}"
+            )
 
             extracted_title = citations[0].title
             expected_title = test_case["expected_title"]
 
-            assert (
-                extracted_title == expected_title
-            ), f"Test case {i + 1}: Expected title '{expected_title}', got '{extracted_title}'"
+            assert extracted_title == expected_title, (
+                f"Test case {i + 1}: Expected title '{expected_title}', got '{extracted_title}'"
+            )
 
     def test_journal_vs_arxiv_format_detection(self):
         """Test proper detection of journal vs arXiv formats."""

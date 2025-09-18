@@ -43,25 +43,25 @@ class TestDependencyAnalyzerIntegration:
         """Test basic package dependency analysis."""
         result = dependency_analyzer.analyze_package_dependencies()
 
-        assert 'available_dependencies' in result
-        assert 'missing_dependencies' in result
-        assert 'total_analyzed' in result
-        assert isinstance(result['total_analyzed'], int)
+        assert "available_dependencies" in result
+        assert "missing_dependencies" in result
+        assert "total_analyzed" in result
+        assert isinstance(result["total_analyzed"], int)
 
     def test_package_dependencies_specific(self, dependency_analyzer):
         """Test specific package analysis."""
         result = dependency_analyzer.analyze_package_dependencies("requests")
 
-        assert 'available_dependencies' in result
-        assert 'total_analyzed' in result
+        assert "available_dependencies" in result
+        assert "total_analyzed" in result
 
     def test_paper_dependencies(self, dependency_analyzer):
         """Test paper dependency analysis."""
         result = dependency_analyzer.analyze_paper_dependencies("test_paper", ["cite1", "cite2"])
 
-        assert 'paper_id' in result
-        assert 'direct_dependencies' in result
-        assert 'dependency_graph' in result
+        assert "paper_id" in result
+        assert "direct_dependencies" in result
+        assert "dependency_graph" in result
 
     def test_circular_dependencies(self, dependency_analyzer):
         """Test circular dependency detection."""
@@ -83,9 +83,9 @@ class TestDependencyAnalyzerIntegration:
 
         impact = dependency_analyzer.get_dependency_impact("root")
 
-        assert 'node_id' in impact
-        assert 'direct_dependencies' in impact
-        assert 'impact_score' in impact
+        assert "node_id" in impact
+        assert "direct_dependencies" in impact
+        assert "impact_score" in impact
 
     def test_build_graph(self, dependency_analyzer):
         """Test dependency graph building."""
@@ -99,8 +99,8 @@ class TestDependencyAnalyzerIntegration:
         graph = dependency_analyzer.build_dependency_graph(DependencyType.PACKAGE)
 
         assert isinstance(graph, DependencyGraph)
-        assert hasattr(graph, 'nodes')
-        assert hasattr(graph, 'edges')
+        assert hasattr(graph, "nodes")
+        assert hasattr(graph, "edges")
 
     def test_analysis_storage(self, dependency_analyzer):
         """Test analysis result storage."""
@@ -124,6 +124,7 @@ class TestDependencyAnalyzerIntegration:
 
         # Test DependencyGraph
         from datetime import datetime
+
         graph = DependencyGraph({}, [], "test", datetime.now())
         assert graph.graph_type == "test"
 
@@ -146,14 +147,14 @@ class TestDependencyAnalyzerIntegration:
         # Create new analyzer with same cache
         new_analyzer = DependencyAnalyzer(cache_dir=dependency_analyzer.cache_dir)
         impact = new_analyzer.get_dependency_impact("persist_test")
-        assert 'node_id' in impact
+        assert "node_id" in impact
 
     def test_error_handling(self, dependency_analyzer):
         """Test error handling."""
         # Test with empty inputs
         result = dependency_analyzer.analyze_paper_dependencies("empty", [])
-        assert 'paper_id' in result
-        assert result['direct_dependencies'] == 0
+        assert "paper_id" in result
+        assert result["direct_dependencies"] == 0
 
     def test_enum_functionality(self):
         """Test DependencyType enum."""

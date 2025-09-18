@@ -38,7 +38,7 @@ def pipeline_config(temp_output_dir: str) -> PipelineConfig:
         generate_tex_files=True,
         preserve_intermediates=False,
         burst_size=5,
-        max_files_per_archive=50
+        max_files_per_archive=50,
     )
 
 
@@ -49,7 +49,7 @@ def pipeline(pipeline_config: PipelineConfig) -> ArxivPipeline:
 
 
 # Mock data simulating real ArXiv content
-MOCK_LATEX_SOURCE = b'''\\documentclass{article}
+MOCK_LATEX_SOURCE = b"""\\documentclass{article}
 \\usepackage{amsmath}
 \\title{Test Paper}
 \\author{Test Author}
@@ -59,12 +59,12 @@ MOCK_LATEX_SOURCE = b'''\\documentclass{article}
 This is a test paper with some mathematical content: $E = mc^2$.
 \\section{Conclusion}
 This concludes our test paper.
-\\end{document}'''
+\\end{document}"""
 
 MOCK_FILES_DICT = {
     "main.tex": MOCK_LATEX_SOURCE,
     "references.bib": b"@article{test2023, title={Test}, author={Author}, year={2023}}",
-    "figure1.eps": b"mock eps content"
+    "figure1.eps": b"mock eps content",
 }
 
 MOCK_PDF_CONTENT = b"%PDF-1.4 mock pdf content for testing"
@@ -115,18 +115,22 @@ class TestArxivPipelineIntegration:
         arxiv_id = "2301.12345"
 
         # Mock the downloader with minimal mocking
-        with patch.object(pipeline.downloader, 'download', new_callable=AsyncMock) as mock_download:
+        with patch.object(pipeline.downloader, "download", new_callable=AsyncMock) as mock_download:
             mock_download.return_value = MOCK_LATEX_SOURCE
 
             # Mock the latex processor methods that don't use run_in_executor
-            with patch.object(pipeline.latex_processor, 'find_main_tex_file') as mock_find_main:
+            with patch.object(pipeline.latex_processor, "find_main_tex_file") as mock_find_main:
                 mock_find_main.return_value = "main.tex"
 
-                with patch.object(pipeline.latex_processor, 'extract_text_from_tex') as mock_extract_text:
+                with patch.object(
+                    pipeline.latex_processor, "extract_text_from_tex"
+                ) as mock_extract_text:
                     mock_extract_text.return_value = "Extracted text content from LaTeX"
 
                     # Mock the extract_archive method (this DOES use run_in_executor)
-                    with patch.object(pipeline.latex_processor, 'extract_archive') as mock_extract_archive:
+                    with patch.object(
+                        pipeline.latex_processor, "extract_archive"
+                    ) as mock_extract_archive:
                         mock_extract_archive.return_value = MOCK_FILES_DICT
 
                         # Execute the pipeline - this will exercise run_in_executor code paths
@@ -149,32 +153,47 @@ class TestArxivPipelineIntegration:
         arxiv_id = "2301.56789"
 
         # Mock network call
-        with patch.object(pipeline.downloader, 'download', new_callable=AsyncMock) as mock_download:
+        with patch.object(pipeline.downloader, "download", new_callable=AsyncMock) as mock_download:
             mock_download.return_value = MOCK_LATEX_SOURCE
 
             # Mock latex processor methods
-            with patch.object(pipeline.latex_processor, 'find_main_tex_file') as mock_find_main:
+            with patch.object(pipeline.latex_processor, "find_main_tex_file") as mock_find_main:
                 mock_find_main.return_value = "main.tex"
 
-                with patch.object(pipeline.latex_processor, 'extract_text_from_tex') as mock_extract_text:
+                with patch.object(
+                    pipeline.latex_processor, "extract_text_from_tex"
+                ) as mock_extract_text:
                     mock_extract_text.return_value = "LaTeX text content"
 
                     # Mock both run_in_executor methods
-                    with patch.object(pipeline.latex_processor, 'extract_archive') as mock_extract_archive:
+                    with patch.object(
+                        pipeline.latex_processor, "extract_archive"
+                    ) as mock_extract_archive:
                         mock_extract_archive.return_value = MOCK_FILES_DICT
 
-                        with patch.object(pipeline.latex_processor, 'compile_latex') as mock_compile_latex:
+                        with patch.object(
+                            pipeline.latex_processor, "compile_latex"
+                        ) as mock_compile_latex:
                             mock_compile_latex.return_value = MOCK_PDF_CONTENT
 
                             # Mock PDF processor methods
-                            with patch.object(pipeline.pdf_processor, 'extract_text_from_pdf') as mock_pdf_text:
+                            with patch.object(
+                                pipeline.pdf_processor, "extract_text_from_pdf"
+                            ) as mock_pdf_text:
                                 mock_pdf_text.return_value = "PDF extracted text"
 
-                                with patch.object(pipeline.pdf_processor, 'get_pdf_metadata') as mock_pdf_meta:
-                                    mock_pdf_meta.return_value = {"title": "Test Paper", "author": "Test Author"}
+                                with patch.object(
+                                    pipeline.pdf_processor, "get_pdf_metadata"
+                                ) as mock_pdf_meta:
+                                    mock_pdf_meta.return_value = {
+                                        "title": "Test Paper",
+                                        "author": "Test Author",
+                                    }
 
                                     # Execute the pipeline with PDF compilation
-                                    result = await pipeline.process_paper(arxiv_id, include_pdf=True)
+                                    result = await pipeline.process_paper(
+                                        arxiv_id, include_pdf=True
+                                    )
 
                                     # Verify result structure
                                     assert result["success"] is True
@@ -194,7 +213,7 @@ class TestArxivPipelineIntegration:
         arxiv_id = "2301.99999"
 
         # Mock download failure
-        with patch.object(pipeline.downloader, 'download', new_callable=AsyncMock) as mock_download:
+        with patch.object(pipeline.downloader, "download", new_callable=AsyncMock) as mock_download:
             mock_download.side_effect = Exception("Network error")
 
             # Execute the pipeline
@@ -212,20 +231,24 @@ class TestArxivPipelineIntegration:
         arxiv_ids = ["2301.11111", "2301.22222", "2301.33333"]
 
         # Mock successful processing for all papers
-        with patch.object(pipeline.downloader, 'download', new_callable=AsyncMock) as mock_download:
+        with patch.object(pipeline.downloader, "download", new_callable=AsyncMock) as mock_download:
             mock_download.return_value = MOCK_LATEX_SOURCE
 
-            with patch.object(pipeline.latex_processor, 'extract_archive') as mock_extract_archive:
+            with patch.object(pipeline.latex_processor, "extract_archive") as mock_extract_archive:
                 mock_extract_archive.return_value = MOCK_FILES_DICT
 
-                with patch.object(pipeline.latex_processor, 'find_main_tex_file') as mock_find_main:
+                with patch.object(pipeline.latex_processor, "find_main_tex_file") as mock_find_main:
                     mock_find_main.return_value = "main.tex"
 
-                    with patch.object(pipeline.latex_processor, 'extract_text_from_tex') as mock_extract_text:
+                    with patch.object(
+                        pipeline.latex_processor, "extract_text_from_tex"
+                    ) as mock_extract_text:
                         mock_extract_text.return_value = "Extracted text"
 
                         # Execute batch processing
-                        results = await pipeline.process_multiple_papers(arxiv_ids, include_pdf=False)
+                        results = await pipeline.process_multiple_papers(
+                            arxiv_ids, include_pdf=False
+                        )
 
                         # Verify results
                         assert len(results) == 3
@@ -246,7 +269,7 @@ class TestArxivPipelineIntegration:
         filename = "test_document.docx"
 
         # Mock the document processor
-        with patch.object(pipeline.document_processor, 'process_document') as mock_process:
+        with patch.object(pipeline.document_processor, "process_document") as mock_process:
             # Create a mock result object with all required attributes
             mock_result = MagicMock()
             mock_result.success = True
@@ -272,7 +295,7 @@ class TestArxivPipelineIntegration:
             mock_format_enum = MagicMock()
             mock_format_enum.value = "PDF"
 
-            with patch.object(pipeline.document_processor, 'get_supported_formats') as mock_formats:
+            with patch.object(pipeline.document_processor, "get_supported_formats") as mock_formats:
                 mock_formats.return_value = [mock_format_enum]
 
                 # Execute document processing

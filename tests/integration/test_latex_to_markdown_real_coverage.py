@@ -66,26 +66,24 @@ class TestLaTeXToMarkdownConverterIntegration:
     def test_check_pandoc_available_function(self) -> None:
         """Test the standalone check_pandoc_available function."""
         # This will exercise the real subprocess.run call
-        with patch('subprocess.run') as mock_run:
+        with patch("subprocess.run") as mock_run:
             # Test pandoc available case
             mock_run.return_value.returncode = 0
             result = check_pandoc_available()
+            assert result is True
 
             # Verify subprocess was called correctly
-            mock_run.assert_called_with(
-                ["pandoc", "--version"],
-                capture_output=True,
-                check=True
-            )
+            mock_run.assert_called_with(["pandoc", "--version"], capture_output=True, check=True)
 
             # Note: actual result depends on mock, but we tested the code path
 
     def test_constructor_with_pandoc_available(self) -> None:
         """Test constructor when pandoc is available."""
-        with patch('subprocess.run') as mock_run:
+        with patch("subprocess.run") as mock_run:
             mock_run.return_value.returncode = 0
 
             converter = LaTeXToMarkdownConverter(use_pandoc=True)
+            assert converter.use_pandoc is True
 
             # Verify pandoc check was called during initialization
             assert mock_run.called
@@ -93,7 +91,7 @@ class TestLaTeXToMarkdownConverterIntegration:
 
     def test_constructor_with_pandoc_unavailable(self) -> None:
         """Test constructor when pandoc is unavailable."""
-        with patch('subprocess.run') as mock_run:
+        with patch("subprocess.run") as mock_run:
             mock_run.side_effect = FileNotFoundError("pandoc not found")
 
             converter = LaTeXToMarkdownConverter(use_pandoc=True)
@@ -106,7 +104,7 @@ class TestLaTeXToMarkdownConverterIntegration:
         """Test constructor with extra pandoc arguments."""
         extra_args = ["--filter", "pandoc-citeproc"]
 
-        with patch('subprocess.run') as mock_run:
+        with patch("subprocess.run") as mock_run:
             mock_run.return_value.returncode = 0
 
             converter = LaTeXToMarkdownConverter(use_pandoc=True, pandoc_extra_args=extra_args)
@@ -116,7 +114,7 @@ class TestLaTeXToMarkdownConverterIntegration:
 
     def test_convert_with_pandoc_success(self) -> None:
         """Test successful conversion using pandoc subprocess."""
-        with patch('subprocess.run') as mock_run:
+        with patch("subprocess.run") as mock_run:
             # Mock pandoc availability check (constructor)
             mock_run.return_value.returncode = 0
 
@@ -137,18 +135,12 @@ class TestLaTeXToMarkdownConverterIntegration:
 
             # Verify subprocess.run was called with correct arguments
             mock_run.assert_called_with(
-                [
-                    "pandoc",
-                    "--from=latex",
-                    "--to=markdown",
-                    "--wrap=none",
-                    "--standalone"
-                ],
+                ["pandoc", "--from=latex", "--to=markdown", "--wrap=none", "--standalone"],
                 check=False,
                 input=SAMPLE_LATEX_BASIC,
                 capture_output=True,
                 text=True,
-                timeout=60
+                timeout=60,
             )
 
             # Verify result structure
@@ -159,7 +151,7 @@ class TestLaTeXToMarkdownConverterIntegration:
 
     def test_convert_with_pandoc_failure_fallback(self) -> None:
         """Test pandoc failure falling back to custom converter."""
-        with patch('subprocess.run') as mock_run:
+        with patch("subprocess.run") as mock_run:
             # Mock pandoc availability check (constructor)
             mock_run.return_value.returncode = 0
 
@@ -188,7 +180,7 @@ class TestLaTeXToMarkdownConverterIntegration:
 
     def test_convert_with_pandoc_timeout(self) -> None:
         """Test pandoc timeout handling."""
-        with patch('subprocess.run') as mock_run:
+        with patch("subprocess.run") as mock_run:
             # Mock pandoc availability check (constructor)
             mock_run.return_value.returncode = 0
 
@@ -209,7 +201,7 @@ class TestLaTeXToMarkdownConverterIntegration:
 
     def test_convert_with_complex_latex(self) -> None:
         """Test conversion with more complex LaTeX content."""
-        with patch('subprocess.run') as mock_run:
+        with patch("subprocess.run") as mock_run:
             # Mock pandoc availability
             mock_run.return_value.returncode = 0
 
@@ -221,7 +213,9 @@ class TestLaTeXToMarkdownConverterIntegration:
             # Mock successful complex conversion
             mock_result = MagicMock()
             mock_result.returncode = 0
-            mock_result.stdout = "# Complex Test Paper\n\n## Mathematics\n\nHere is an equation:\n\n$$E = mc^2$$"
+            mock_result.stdout = (
+                "# Complex Test Paper\n\n## Mathematics\n\nHere is an equation:\n\n$$E = mc^2$$"
+            )
             mock_result.stderr = ""
             mock_run.return_value = mock_result
 
@@ -230,7 +224,7 @@ class TestLaTeXToMarkdownConverterIntegration:
 
             # Verify subprocess was called with complex input
             call_args = mock_run.call_args
-            assert call_args[1]['input'] == SAMPLE_LATEX_COMPLEX
+            assert call_args[1]["input"] == SAMPLE_LATEX_COMPLEX
 
             # Verify result
             assert result["success"] is True
@@ -238,7 +232,7 @@ class TestLaTeXToMarkdownConverterIntegration:
 
     def test_convert_with_metadata(self) -> None:
         """Test conversion with metadata passed through."""
-        with patch('subprocess.run') as mock_run:
+        with patch("subprocess.run") as mock_run:
             # Mock pandoc availability
             mock_run.return_value.returncode = 0
 
@@ -267,7 +261,7 @@ class TestLaTeXToMarkdownConverterIntegration:
 
     def test_convert_fallback_only(self) -> None:
         """Test conversion using only fallback converter (no pandoc)."""
-        with patch('subprocess.run') as mock_run:
+        with patch("subprocess.run") as mock_run:
             # Mock pandoc unavailable
             mock_run.side_effect = FileNotFoundError()
 
@@ -288,14 +282,11 @@ class TestLaTeXToMarkdownConverterIntegration:
         """Test that extra pandoc arguments are properly integrated."""
         extra_args = ["--filter", "pandoc-citeproc", "--bibliography", "refs.bib"]
 
-        with patch('subprocess.run') as mock_run:
+        with patch("subprocess.run") as mock_run:
             # Mock pandoc availability
             mock_run.return_value.returncode = 0
 
-            converter = LaTeXToMarkdownConverter(
-                use_pandoc=True,
-                pandoc_extra_args=extra_args
-            )
+            converter = LaTeXToMarkdownConverter(use_pandoc=True, pandoc_extra_args=extra_args)
 
             # Reset mock for conversion call
             mock_run.reset_mock()
@@ -309,6 +300,8 @@ class TestLaTeXToMarkdownConverterIntegration:
 
             # Execute conversion
             result = converter.convert(SAMPLE_LATEX_BASIC)
+            assert result["success"] is True
+            assert "converted content" in result["markdown"]
 
             # Verify extra args were included in subprocess call
             call_args = mock_run.call_args[0][0]  # First positional arg (command list)
@@ -321,6 +314,6 @@ class TestLaTeXToMarkdownConverterIntegration:
                 "--filter",
                 "pandoc-citeproc",
                 "--bibliography",
-                "refs.bib"
+                "refs.bib",
             ]
             assert call_args == expected_cmd

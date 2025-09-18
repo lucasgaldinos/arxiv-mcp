@@ -40,7 +40,9 @@ class DeadCodeAnalyzer:
         cmd = ["uv", "run", "vulture", "--min-confidence", "80", "--sort-by-size"] + self.src_dirs
 
         try:
-            result = subprocess.run(cmd, check=False, capture_output=True, text=True, cwd=self.repo_root)
+            result = subprocess.run(
+                cmd, check=False, capture_output=True, text=True, cwd=self.repo_root
+            )
 
             if result.stdout:
                 findings = result.stdout.strip().split("\n")
@@ -73,7 +75,9 @@ class DeadCodeAnalyzer:
             ]
 
             try:
-                result = subprocess.run(cmd, check=False, capture_output=True, text=True, cwd=self.repo_root)
+                result = subprocess.run(
+                    cmd, check=False, capture_output=True, text=True, cwd=self.repo_root
+                )
 
                 if result.stdout:
                     lines = [line.strip() for line in result.stdout.split("\n") if line.strip()]
@@ -213,7 +217,9 @@ class DeadCodeAnalyzer:
         ] + self.src_dirs
 
         try:
-            result = subprocess.run(cmd, check=False, cwd=self.repo_root, capture_output=True, text=True)
+            result = subprocess.run(
+                cmd, check=False, cwd=self.repo_root, capture_output=True, text=True
+            )
             if result.returncode == 0:
                 print("   ✅ Unused imports fixed successfully")
                 return True

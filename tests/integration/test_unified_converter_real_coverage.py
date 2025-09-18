@@ -177,8 +177,12 @@ class TestUnifiedDownloadConverterRealCoverage:
             assert "latex" in result["formats"]
             assert "markdown" not in result["formats"]
 
-            # Check that real files were created
-            latex_dir = Path(converter.config.output_directory) / "latex" / arxiv_id
+            # Check that real files were created in new paper-name-centric structure
+            # Get the paper directory from the result
+            latex_files = result["files"]["latex"]
+            paper_dir = Path(latex_files["paper_directory"])
+            latex_dir = paper_dir / "latex"
+            
             assert latex_dir.exists()
             assert (latex_dir / "main.tex").exists()
             assert (latex_dir / "references.bib").exists()
@@ -213,14 +217,15 @@ class TestUnifiedDownloadConverterRealCoverage:
             assert "markdown" in result["formats"]
             assert "latex" not in result["formats"]
 
-            # Check that real markdown file was created
-            markdown_dir = Path(converter.config.output_directory) / "markdown" / arxiv_id
-            assert markdown_dir.exists()
-            markdown_file = markdown_dir / f"{arxiv_id}.md"
-            assert markdown_file.exists()
+            # Check that real markdown file was created in new paper-name-centric structure
+            # Get the paper directory from the result
+            markdown_files = result["files"]["markdown"]
+            markdown_file_path = Path(markdown_files["file"])
+            
+            assert markdown_file_path.exists()
 
             # Verify the markdown content was actually processed
-            content = markdown_file.read_text()
+            content = markdown_file_path.read_text()
             assert "title: Markdown Only Test" in content
             assert "Introduction" in content
             assert "Methods" in content
@@ -249,10 +254,14 @@ class TestUnifiedDownloadConverterRealCoverage:
             assert "latex" in result["formats"]
             assert "markdown" in result["formats"]
 
-            # Check that both real output directories exist
-            base_dir = Path(converter.config.output_directory)
-            latex_dir = base_dir / "latex" / arxiv_id
-            markdown_dir = base_dir / "markdown" / arxiv_id
+            # Check that both real output directories exist in new paper-name-centric structure
+            # Get the paper directory from the result
+            latex_files = result["files"]["latex"]
+            markdown_files = result["files"]["markdown"]
+            
+            paper_dir = Path(latex_files["paper_directory"])
+            latex_dir = paper_dir / "latex"
+            markdown_dir = paper_dir / "markdown"
 
             assert latex_dir.exists()
             assert markdown_dir.exists()
@@ -260,10 +269,12 @@ class TestUnifiedDownloadConverterRealCoverage:
             # Verify key files exist
             assert (latex_dir / "main.tex").exists()
             assert (latex_dir / "references.bib").exists()
-            assert (markdown_dir / f"{arxiv_id}.md").exists()
+            
+            markdown_file_path = Path(markdown_files["file"])
+            assert markdown_file_path.exists()
 
             # Verify the conversion actually happened
-            markdown_content = (markdown_dir / f"{arxiv_id}.md").read_text()
+            markdown_content = markdown_file_path.read_text()
             assert "Both Formats Test" in markdown_content
             assert "Introduction" in markdown_content
 
@@ -309,6 +320,10 @@ class TestUnifiedDownloadConverterRealCoverage:
             assert result["success"] is True
             assert result["summary"]["main_tex_file"] == "paper.tex"
 
-            # Check that files were created with correct names
-            latex_dir = Path(converter.config.output_directory) / "latex" / arxiv_id
+            # Check that files were created with correct names in new paper-name-centric structure
+            # Get the paper directory from the result
+            latex_files = result["files"]["latex"]
+            paper_dir = Path(latex_files["paper_directory"])
+            latex_dir = paper_dir / "latex"
+            
             assert (latex_dir / "paper.tex").exists()

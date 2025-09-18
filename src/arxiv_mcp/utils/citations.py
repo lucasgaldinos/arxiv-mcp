@@ -6,15 +6,13 @@ for multiple citation formats (APA, MLA, IEEE, BibTeX) and reference extraction
 from academic papers.
 """
 
-import re
-import warnings
-from typing import List, Optional
 from dataclasses import dataclass
 from enum import Enum
+import re
+import warnings
 
-from .optional_deps import safe_import_nltk
 from .logging import structured_logger
-
+from .optional_deps import safe_import_nltk
 
 # Safe imports with fallbacks
 try:
@@ -58,16 +56,16 @@ class CitationFormat(Enum):
 class Citation:
     """Represents a parsed citation."""
 
-    authors: List[str]
+    authors: list[str]
     title: str
-    journal: Optional[str] = None
-    year: Optional[str] = None
-    volume: Optional[str] = None
-    issue: Optional[str] = None
-    pages: Optional[str] = None
-    doi: Optional[str] = None
-    arxiv_id: Optional[str] = None
-    url: Optional[str] = None
+    journal: str | None = None
+    year: str | None = None
+    volume: str | None = None
+    issue: str | None = None
+    pages: str | None = None
+    doi: str | None = None
+    arxiv_id: str | None = None
+    url: str | None = None
     raw_text: str = ""
     confidence: float = 0.0
 
@@ -110,7 +108,7 @@ class CitationParser:
                 except Exception:
                     self.logger.warning("Failed to download NLTK data")
 
-    def extract_citations_from_text(self, text: str) -> List[Citation]:
+    def extract_citations_from_text(self, text: str) -> list[Citation]:
         """Extract citations from academic paper text."""
         if not text or not isinstance(text, str):
             return []
@@ -156,7 +154,7 @@ class CitationParser:
         self.logger.info(f"Extracted {len(citations)} citations from text")
         return citations
 
-    def extract_citations(self, text: str) -> List[Citation]:
+    def extract_citations(self, text: str) -> list[Citation]:
         """
         Alias for extract_citations_from_text for backward compatibility.
 
@@ -168,7 +166,7 @@ class CitationParser:
         """
         return self.extract_citations_from_text(text)
 
-    def _extract_inline_citations(self, text: str) -> List[Citation]:
+    def _extract_inline_citations(self, text: str) -> list[Citation]:
         """Extract inline citations like (Author et al., Year) from text."""
         citations = []
 
@@ -207,7 +205,7 @@ class CitationParser:
 
         return citations
 
-    def _extract_references_section(self, text: str) -> Optional[str]:
+    def _extract_references_section(self, text: str) -> str | None:
         """Extract the references/bibliography section from paper text."""
         if not text or not isinstance(text, str):
             return None
@@ -251,7 +249,7 @@ class CitationParser:
 
         return None
 
-    def _split_citations(self, text: str) -> List[str]:
+    def _split_citations(self, text: str) -> list[str]:
         """Split reference text into individual citations."""
         citations = []
 
@@ -470,7 +468,7 @@ class CitationParser:
 
         return False
 
-    def _parse_single_citation(self, citation_str: str) -> Optional[Citation]:
+    def _parse_single_citation(self, citation_str: str) -> Citation | None:
         """Parse a single citation string."""
         if not citation_str.strip():
             return None
@@ -491,7 +489,7 @@ class CitationParser:
 
         return citation
 
-    def _extract_authors(self, text: str) -> List[str]:
+    def _extract_authors(self, text: str) -> list[str]:
         """Extract author names from citation text."""
         authors = []
 
@@ -522,7 +520,11 @@ class CitationParser:
         else:
             # Fallback: Pattern for "LastName, FirstName" format - enhanced for Unicode names
             # Supports ASCII, Latin extended, Chinese, and other Unicode letters
-            author_pattern = r"([\w\u00C0-\u017F\u4e00-\u9fff']+(?:\s+[\w\u00C0-\u017F\u4e00-\u9fff]\.?)*),?\s+([\w\u00C0-\u017F\u4e00-\u9fff]\.?(?:\s+[\w\u00C0-\u017F\u4e00-\u9fff]\.?)*|[\w\u00C0-\u017F\u4e00-\u9fff']+)"
+            author_pattern = (
+                r"([\w\u00C0-\u017F\u4e00-\u9fff']+(?:\s+[\w\u00C0-\u017F\u4e00-\u9fff]\.?)*),?"
+                r"\s+([\w\u00C0-\u017F\u4e00-\u9fff]\.?(?:\s+[\w\u00C0-\u017F\u4e00-\u9fff]\.?)*"
+                r"|[\w\u00C0-\u017F\u4e00-\u9fff']+)"
+            )
             matches = re.findall(author_pattern, author_section, re.UNICODE)
 
             for last, first in matches:
@@ -533,7 +535,11 @@ class CitationParser:
         # If still no structured authors found, try simple pattern
         if not authors:
             # Look for "and" separated names - enhanced for Unicode
-            and_pattern = r"([\w\u00C0-\u017F\u4e00-\u9fff']+(?:\s+[\w\u00C0-\u017F\u4e00-\u9fff']+)*)\s+and\s+([\w\u00C0-\u017F\u4e00-\u9fff']+(?:\s+[\w\u00C0-\u017F\u4e00-\u9fff']+)*)"
+            and_pattern = (
+                r"([\w\u00C0-\u017F\u4e00-\u9fff']+(?:\s+[\w\u00C0-\u017F\u4e00-\u9fff']+)*)"
+                r"\s+and\s+"
+                r"([\w\u00C0-\u017F\u4e00-\u9fff']+(?:\s+[\w\u00C0-\u017F\u4e00-\u9fff']+)*)"
+            )
             and_matches = re.findall(and_pattern, author_section, re.UNICODE)
             authors.extend([match[0] for match in and_matches])
             authors.extend([match[1] for match in and_matches])
@@ -618,12 +624,12 @@ class CitationParser:
 
         return ""
 
-    def _extract_year(self, text: str) -> Optional[str]:
+    def _extract_year(self, text: str) -> str | None:
         """Extract publication year."""
         match = re.search(self.patterns["year"], text)
         return match.group(0) if match else None
 
-    def _extract_journal(self, text: str) -> Optional[str]:
+    def _extract_journal(self, text: str) -> str | None:
         """Extract journal name."""
         # Journal often after title, before volume/pages
         journal_patterns = [
@@ -640,32 +646,32 @@ class CitationParser:
 
         return None
 
-    def _extract_doi(self, text: str) -> Optional[str]:
+    def _extract_doi(self, text: str) -> str | None:
         """Extract DOI."""
         match = re.search(self.patterns["doi"], text, re.IGNORECASE)
         return match.group(1) if match else None
 
-    def _extract_arxiv_id(self, text: str) -> Optional[str]:
+    def _extract_arxiv_id(self, text: str) -> str | None:
         """Extract ArXiv ID."""
         match = re.search(self.patterns["arxiv_id"], text, re.IGNORECASE)
         return match.group(1) if match else None
 
-    def _extract_url(self, text: str) -> Optional[str]:
+    def _extract_url(self, text: str) -> str | None:
         """Extract URL."""
         match = re.search(self.patterns["url"], text)
         return match.group(0) if match else None
 
-    def _extract_pages(self, text: str) -> Optional[str]:
+    def _extract_pages(self, text: str) -> str | None:
         """Extract page numbers."""
         match = re.search(self.patterns["pages"], text)
         return match.group(1) if match else None
 
-    def _extract_volume(self, text: str) -> Optional[str]:
+    def _extract_volume(self, text: str) -> str | None:
         """Extract volume number."""
         match = re.search(self.patterns["volume"], text, re.IGNORECASE)
         return match.group(1) if match else None
 
-    def _extract_issue(self, text: str) -> Optional[str]:
+    def _extract_issue(self, text: str) -> str | None:
         """Extract issue number."""
         match = re.search(self.patterns["issue"], text, re.IGNORECASE)
         return match.group(1) if match else None
@@ -692,14 +698,13 @@ class CitationParser:
         """Format citation in specified style."""
         if format_type == CitationFormat.BIBTEX:
             return self._format_bibtex(citation)
-        elif format_type == CitationFormat.APA:
+        if format_type == CitationFormat.APA:
             return self._format_apa(citation)
-        elif format_type == CitationFormat.MLA:
+        if format_type == CitationFormat.MLA:
             return self._format_mla(citation)
-        elif format_type == CitationFormat.IEEE:
+        if format_type == CitationFormat.IEEE:
             return self._format_ieee(citation)
-        else:
-            return citation.raw_text
+        return citation.raw_text
 
     def _format_bibtex(self, citation: Citation) -> str:
         """Format as BibTeX entry."""
@@ -856,14 +861,14 @@ class CitationParser:
         return "".join(key_parts) if key_parts else "unknown"
 
 
-def extract_citations_from_pdf_text(pdf_text: str) -> List[Citation]:
+def extract_citations_from_pdf_text(pdf_text: str) -> list[Citation]:
     """Convenience function to extract citations from PDF text."""
     parser = CitationParser()
     return parser.extract_citations_from_text(pdf_text)
 
 
 def format_citations_as_bibliography(
-    citations: List[Citation], format_type: CitationFormat = CitationFormat.APA
+    citations: list[Citation], format_type: CitationFormat = CitationFormat.APA
 ) -> str:
     """Format multiple citations as a bibliography."""
     parser = CitationParser()

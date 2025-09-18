@@ -32,7 +32,9 @@ def batch_processor(temp_cache_dir: str) -> Generator[BatchProcessor, None, None
     processor.shutdown()
 
 
-def sample_handler(input_data: dict[str, Any], config: dict[str, Any] | None = None) -> dict[str, Any]:
+def sample_handler(
+    input_data: dict[str, Any], config: dict[str, Any] | None = None
+) -> dict[str, Any]:
     """Sample handler function for testing batch operations."""
     config = config or {}
     text = input_data.get("text", "")
@@ -52,7 +54,9 @@ def sample_handler(input_data: dict[str, Any], config: dict[str, Any] | None = N
     return {"result": result, "original": text}
 
 
-def error_handler(input_data: dict[str, Any], config: dict[str, Any] | None = None) -> dict[str, Any]:
+def error_handler(
+    input_data: dict[str, Any], config: dict[str, Any] | None = None
+) -> dict[str, Any]:
     """Handler that raises an error for testing error handling."""
     raise ValueError("Simulated error")
 
@@ -92,14 +96,11 @@ class TestBatchProcessorIntegration:
         items_data = [
             {"text": "hello", "operation": "uppercase"},
             {"text": "WORLD", "operation": "lowercase"},
-            {"text": "test", "operation": "length"}
+            {"text": "test", "operation": "length"},
         ]
 
         # Create and execute batch operation
-        operation = batch_processor.create_batch_operation(
-            BatchOperationType.TRANSFORM,
-            items_data
-        )
+        operation = batch_processor.create_batch_operation(BatchOperationType.TRANSFORM, items_data)
 
         # Execute the batch
         batch_processor.submit_batch_operation(operation.id)
@@ -108,7 +109,11 @@ class TestBatchProcessorIntegration:
         timeout = 10  # seconds
         start_time = asyncio.get_event_loop().time()
 
-        while operation.status not in [BatchStatus.COMPLETED, BatchStatus.FAILED, BatchStatus.PARTIAL]:
+        while operation.status not in [
+            BatchStatus.COMPLETED,
+            BatchStatus.FAILED,
+            BatchStatus.PARTIAL,
+        ]:
             if asyncio.get_event_loop().time() - start_time > timeout:
                 break
             await asyncio.sleep(0.1)
@@ -136,19 +141,17 @@ class TestBatchProcessorIntegration:
         # Create test data with config
         items_data = [
             {"text": "test1", "operation": "reverse"},
-            {"text": "test2", "operation": "reverse"}
+            {"text": "test2", "operation": "reverse"},
         ]
 
         config = {
             "delay": 0.1,  # Small delay for testing
-            "max_concurrent": 1
+            "max_concurrent": 1,
         }
 
         # Create and execute batch operation
         operation = batch_processor.create_batch_operation(
-            BatchOperationType.ANALYZE,
-            items_data,
-            config
+            BatchOperationType.ANALYZE, items_data, config
         )
 
         batch_processor.submit_batch_operation(operation.id)
@@ -157,7 +160,11 @@ class TestBatchProcessorIntegration:
         timeout = 15  # Longer timeout due to delays
         start_time = asyncio.get_event_loop().time()
 
-        while operation.status not in [BatchStatus.COMPLETED, BatchStatus.FAILED, BatchStatus.PARTIAL]:
+        while operation.status not in [
+            BatchStatus.COMPLETED,
+            BatchStatus.FAILED,
+            BatchStatus.PARTIAL,
+        ]:
             if asyncio.get_event_loop().time() - start_time > timeout:
                 break
             await asyncio.sleep(0.1)
@@ -181,14 +188,9 @@ class TestBatchProcessorIntegration:
         batch_processor.register_handler(BatchOperationType.VALIDATE, error_handler)
 
         # Create operation that will have errors
-        items_data = [
-            {"text": "will_fail"}
-        ]
+        items_data = [{"text": "will_fail"}]
 
-        operation = batch_processor.create_batch_operation(
-            BatchOperationType.VALIDATE,
-            items_data
-        )
+        operation = batch_processor.create_batch_operation(BatchOperationType.VALIDATE, items_data)
 
         batch_processor.submit_batch_operation(operation.id)
 
@@ -196,7 +198,11 @@ class TestBatchProcessorIntegration:
         timeout = 10
         start_time = asyncio.get_event_loop().time()
 
-        while operation.status not in [BatchStatus.COMPLETED, BatchStatus.FAILED, BatchStatus.PARTIAL]:
+        while operation.status not in [
+            BatchStatus.COMPLETED,
+            BatchStatus.FAILED,
+            BatchStatus.PARTIAL,
+        ]:
             if asyncio.get_event_loop().time() - start_time > timeout:
                 break
             await asyncio.sleep(0.1)
@@ -214,10 +220,7 @@ class TestBatchProcessorIntegration:
         # Create operation
         items_data = [{"text": "persistence_test"}]
 
-        operation = batch_processor.create_batch_operation(
-            BatchOperationType.EXPORT,
-            items_data
-        )
+        operation = batch_processor.create_batch_operation(BatchOperationType.EXPORT, items_data)
 
         # Verify operation is stored
         assert operation.id in batch_processor.operations

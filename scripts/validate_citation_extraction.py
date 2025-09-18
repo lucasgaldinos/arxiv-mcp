@@ -79,7 +79,8 @@ class CitationTestRunner:
                     "--json-report",
                     "--json-report-file=test_results.json",
                 ],
-                check=False, capture_output=True,
+                check=False,
+                capture_output=True,
                 text=True,
                 cwd=self.project_root,
             )
