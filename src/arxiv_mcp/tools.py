@@ -182,7 +182,10 @@ def get_tools() -> list[Tool]:
         ),
         Tool(
             name="process_document_formats",
-            description="Process multiple document formats (ODT, RTF, DOCX, TXT) with enhanced metadata extraction",
+            description=(
+                "Process multiple document formats (ODT, RTF, DOCX, TXT) "
+                "with enhanced metadata extraction"
+            ),
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -192,11 +195,17 @@ def get_tools() -> list[Tool]:
                     },
                     "document_content": {
                         "type": "string",
-                        "description": "Base64 encoded document content (alternative to file_path)",
+                        "description": (
+                            "Base64 encoded document content "
+                            "(alternative to file_path)"
+                        ),
                     },
                     "filename": {
                         "type": "string",
-                        "description": "Filename for format detection (required if using document_content)",
+                        "description": (
+                            "Filename for format detection "
+                            "(required if using document_content)"
+                        ),
                     },
                     "extract_metadata": {
                         "type": "boolean",
@@ -548,7 +557,9 @@ def handle_generate_documentation(output_format: str = "markdown") -> dict[str, 
 
 
 def handle_parse_citations_from_arxiv(arxiv_id: str) -> dict[str, Any]:
-    """Handle parse_citations_from_arxiv tool combining pipeline and citation parsing."""
+    """
+    Handle parse_citations_from_arxiv tool combining pipeline and citation parsing.
+    """
     # This would use both ArxivPipeline to get the paper and CitationParser to extract citations
     return {
         "status": "success",
@@ -784,10 +795,14 @@ def handle_enhanced_cleanup_output(
         elif cleanup_type == "comprehensive":
             result = adapter.comprehensive_cleanup(time_spec, output_dir)
         else:
+            error_msg = (
+                f"Unknown cleanup_type: {cleanup_type}. "
+                "Must be one of: files, batch, notifications, comprehensive"
+            )
             return {
                 "status": "error",
                 "tool": "enhanced_cleanup_output",
-                "error": f"Unknown cleanup_type: {cleanup_type}. Must be one of: files, batch, notifications, comprehensive",
+                "error": error_msg,
             }
 
         return {
@@ -947,7 +962,10 @@ async def handle_list_tools() -> ListToolsResult:
             ),
             Tool(
                 name="validate_conversion_quality",
-                description="Validate document processing quality with independent format support and 90%+ accuracy targets",
+                description=(
+                    "Validate document processing quality with independent "
+                    "format support and 90%+ accuracy targets"
+                ),
                 inputSchema={
                     "type": "object",
                     "properties": {
@@ -959,7 +977,11 @@ async def handle_list_tools() -> ListToolsResult:
                         },
                         "format_type": {
                             "type": "string",
-                            "description": "Validation mode: 'single' (auto-detect available format), 'latex_only' (LaTeX files only), 'markdown_only' (Markdown files only), or 'both' (legacy mode requiring both formats)",
+                            "description": (
+                                "Validation mode: 'single' (auto-detect available format), "
+                                "'latex_only' (LaTeX files only), 'markdown_only' (Markdown files only), "
+                                "or 'both' (legacy mode requiring both formats)"
+                            ),
                             "enum": ["single", "latex_only", "markdown_only", "both"],
                             "default": "single",
                         },
